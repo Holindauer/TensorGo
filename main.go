@@ -8,12 +8,15 @@ import (
 // It is about testing the functionality of the code in the other files.
 func main() {
 
-	tensor := New_Tensor([]int{2, 3})
+	vector_1 := New_Tensor([]int{3})
+	vector_2 := New_Tensor([]int{3})
 
-	fmt.Println("Tensor shape:", tensor.shape)
-	fmt.Println("Tensor data:", tensor.data)
+	vector_1.data = []float64{1, 2, 3}
+	vector_2.data = []float64{4, 5, 6}
 
-	index := getFlattenedIndex([]int{1, 2}, tensor.shape)
-	fmt.Println("Flattened index:", index)
+	// take dot product
+	dot_product := dot(vector_1, vector_2)
+
+	fmt.Println("Dot Product of vector 1 and 2: ", dot_product)
 
 }
