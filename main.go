@@ -8,15 +8,34 @@ import (
 // It is about testing the functionality of the code in the other files.
 func main() {
 
-	// create 2x3 matrix
-	matrix_1 := New_Tensor([]int{9, 3})
-	matrix_2 := New_Tensor([]int{3, 7})
+	// Run an example of all the functions in vector.go
+	fmt.Println("Testing vector.go")
+	t1 := Range_Tensor([]int{5})
+	t2 := Range_Tensor([]int{5})
+	fmt.Println("t1:", t1)
+	fmt.Println("t2:", t2)
+	fmt.Println("dot(t1, t2):", dot(t1, t2))
+	fmt.Println("norm(t1):", Norm(t1))
+	fmt.Println("unit(t1):", Unit(t1))
+	fmt.Println("Check_Perpindicular(t1, t2):", Check_Perpendicular(t1, t2))
+	fmt.Println("cosine_similar(t1, t2):", Cosine_Similar(t1, t2))
 
-	// take matmul
-	matmul_result := Matmul(matrix_1, matrix_2)
+	// Run an example of all the functions in matrix.go
+	fmt.Println("Testing matrix.go")
+	A := Range_Tensor([]int{3, 4})
+	B := Range_Tensor([]int{4, 5})
+	fmt.Println("A:", A)
+	fmt.Println("B:", B)
+	fmt.Println("matmul(A, B):", Matmul(A, B))
 
-	fmt.Println("Matmul of matrix 1 and 2: ", matmul_result.data)
+	// Run an example of all the functions in tensor.go
+	fmt.Println("Testing tensor.go")
+	t := Range_Tensor([]int{2, 3, 4})
+	fmt.Println("t:", t)
+	fmt.Println("t.shape:", t.shape)
+	fmt.Println("t.data:", t.data)
+	fmt.Println("Index([]int{1, 2, 3}, t.shape):", Index([]int{1, 2, 3}, t.shape))
+	fmt.Println("Zero_Tensor([]int{2, 3, 4}):", Zero_Tensor([]int{2, 3, 4}))
+	fmt.Println("Range_Tensor([]int{2, 3, 4}):", Range_Tensor([]int{2, 3, 4}))
 
-	// display result
-	Display_Matrix(matmul_result)
 }

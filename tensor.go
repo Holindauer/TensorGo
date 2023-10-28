@@ -7,18 +7,15 @@ import (
 // This source file contains the Tensor struct and functions
 // related to instantiating and retrieving data from them
 
-/*
 type Tensor struct {
 	shape []int
 	data  []float64 // <--- this 1D slice to store flattened tensor
 }
-*/
 
 // This function is used to create a new tensor It takes
 // in a shape and returns a Tensor pointer with that shape
 
-/*
-func New_Tensor(shape []int) *Tensor {
+func Zero_Tensor(shape []int) *Tensor {
 
 	t := new(Tensor) //  <--- this is a pointer to a tensor
 	t.shape = shape
@@ -33,7 +30,28 @@ func New_Tensor(shape []int) *Tensor {
 
 	return t
 }
-*/
+
+// This function is used to create a new tensor where the contents
+// of the flattened array range from 0 to the total number of elements
+func Range_Tensor(shape []int) *Tensor {
+
+	t := new(Tensor) //  <--- this is a pointer to a tensor
+	t.shape = shape
+
+	// compute the total number of elements in the tensor
+	num_elements := 1
+	for _, dim := range shape {
+		num_elements *= dim
+	}
+
+	t.data = make([]float64, num_elements) // create slice of floats for data
+
+	for i := 0; i < num_elements; i++ { // populate the tensor with the range of numbers
+		t.data[i] = float64(i)
+	}
+
+	return t
+}
 
 // The general algorithm for computing the index of a flattened tensor from the multi dimensional indices:
 // Create a slice of ints to store the strides. A stride is the number of elements in the tensor that must
@@ -70,7 +88,7 @@ func Display_Matrix(A *Tensor) {
 
 	for i := 0; i < A.shape[0]; i++ {
 		for j := 0; j < A.shape[1]; j++ {
-			A_idx := Index(A.shape, []int{i, j})
+			A_idx := Index([]int{i, j}, A.shape)
 			fmt.Printf("%.1f ", A.data[A_idx])
 		}
 		println()

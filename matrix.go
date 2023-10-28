@@ -1,31 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"sync"
 )
 
-type Tensor struct {
-	shape []int
-	data  []float64 // <--- this 1D slice to store flattened tensor
-}
-
-func New_Tensor(shape []int) *Tensor {
-
-	t := new(Tensor) //  <--- this is a pointer to a tensor
-	t.shape = shape
-
-	// compute the total number of elements in the tensor
-	num_elements := 1
-	for _, dim := range shape {
-		num_elements *= dim
-	}
-
-	t.data = make([]float64, num_elements) // create slice of floats for data
-
-	return t
-}
-
+// This function computes the dot product of two vectors
 func Matmul(A *Tensor, B *Tensor) *Tensor {
 
 	// check if tensor shapes are compatible for matmul
@@ -38,7 +17,7 @@ func Matmul(A *Tensor, B *Tensor) *Tensor {
 		panic("2D Tensors must be compatible for matmul")
 	}
 
-	C := New_Tensor([]int{A.shape[0], B.shape[1]}) // <-- returns pointer to Tensor struct
+	C := Zero_Tensor([]int{A.shape[0], B.shape[1]}) // <-- returns pointer to Tensor struct
 
 	numGoroutines := 4
 	chunkSize := C.shape[0] / numGoroutines
@@ -64,10 +43,9 @@ func Matmul(A *Tensor, B *Tensor) *Tensor {
 	return C
 }
 
+// This is a helper function for Matmul() above. It computes the dot product of a chunk of the vectors
 func computeRow(A *Tensor, B *Tensor, C *Tensor, start int, end int, wg *sync.WaitGroup) {
 	defer wg.Done()
-
-	fmt.Printf("Computing rows %d to %d\n", start, end-1)
 
 	for row := start; row < end; row++ { // <-- iterate through rows of C
 
