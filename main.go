@@ -8,15 +8,15 @@ import (
 // It is about testing the functionality of the code in the other files.
 func main() {
 
-	vector_1 := New_Tensor([]int{3})
-	vector_2 := New_Tensor([]int{3})
+	// create 2x3 matrix
+	matrix_1 := New_Tensor([]int{9, 3})
+	matrix_2 := New_Tensor([]int{3, 7})
 
-	vector_1.data = []float64{1, 2, 3}
-	vector_2.data = []float64{4, 5, 6}
+	// take matmul
+	matmul_result := Matmul(matrix_1, matrix_2)
 
-	// take dot product
-	dot_product := dot(vector_1, vector_2)
+	fmt.Println("Matmul of matrix 1 and 2: ", matmul_result.data)
 
-	fmt.Println("Dot Product of vector 1 and 2: ", dot_product)
-
+	// display result
+	Display_Matrix(matmul_result)
 }
