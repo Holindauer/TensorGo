@@ -18,7 +18,7 @@ func main() {
 	fmt.Println("norm(t1):", Norm(t1))
 	fmt.Println("unit(t1):", Unit(t1))
 	fmt.Println("Check_Perpindicular(t1, t2):", Check_Perpendicular(t1, t2))
-	fmt.Println("cosine_similar(t1, t2):", Cosine_Similar(t1, t2))
+	fmt.Println("cosine_similar(t1, t2):", Cosine_Similarity(t1, t2))
 
 	// Run an example of all the functions in matrix.go
 	fmt.Println("Testing matrix.go")
@@ -37,5 +37,12 @@ func main() {
 	fmt.Println("Index([]int{1, 2, 3}, t.shape):", Index([]int{1, 2, 3}, t.shape))
 	fmt.Println("Zero_Tensor([]int{2, 3, 4}):", Zero_Tensor([]int{2, 3, 4}))
 	fmt.Println("Range_Tensor([]int{2, 3, 4}):", Range_Tensor([]int{2, 3, 4}))
+	fmt.Println("Same_Shape(t, t):", Same_Shape(t, t))
+
+	// Run an example of all the functions in general.go
+	fmt.Println("Testing general.go")
+	fmt.Println("Scalar_Mult_(t, 2):", Scalar_Mult_(t, 2))
+	fmt.Println("Add(t, t):", Add(t, t))
+	fmt.Println("Subtract(t, t):", Subtract(t, t))
 
 }

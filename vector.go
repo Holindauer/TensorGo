@@ -125,7 +125,7 @@ func Check_Perpendicular(t1 *Tensor, t2 *Tensor) bool {
 }
 
 // This function computes the cosine similarity of two vectors
-func Cosine_Similar(t1 *Tensor, t2 *Tensor) float64 {
+func Cosine_Similarity(t1 *Tensor, t2 *Tensor) float64 {
 
 	// check if tensors are vectors
 	if Check_Vector_Compatibility(t1, t2) == false {

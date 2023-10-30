@@ -1,5 +1,7 @@
 package main
 
+// This file contains functions for manipulating 2D
+
 import (
 	"sync"
 )

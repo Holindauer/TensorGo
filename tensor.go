@@ -94,3 +94,20 @@ func Display_Matrix(A *Tensor) {
 		println()
 	}
 }
+
+// This function checks if two tensors are of
+// the same shape. It returns a boolean
+func Same_Shape(A *Tensor, B *Tensor) bool {
+
+	if len(A.shape) != len(B.shape) { // check that they have the same number of dimensions
+		return false
+	}
+
+	for i := 0; i < len(A.shape); i++ { // check that each dimension is the same
+		if A.shape[i] != B.shape[i] {
+			return false
+		}
+	}
+
+	return true
+}

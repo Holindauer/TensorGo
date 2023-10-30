@@ -9,6 +9,7 @@ come from Gilbert Strang's Introduction to Linear Algebra.
 # Documentation:
 The following is an explanation of how Tensors are represened in this library, and how to use and perform operations on them.
 
+-----------------------------------------------------------------------------------------------------
 
 # Tensors
 The basic datatype of this library are tensors, ie multidimensional arrays. 
@@ -38,6 +39,17 @@ tensor. The function returns the index of the element in the 1D array.
     var index int = Index([]int{1,2,3}, []int{2,3,4})
     
     var element float64 = tensor.data[index]
+
+### Same_Shape()
+The Same_Shape() function accepts two Tensor pointers and returns true if the two
+tensors have the same shape. 
+
+    var tensor1 *Tensor = New_Tensor([]int{2,3,4})
+    var tensor2 *Tensor = New_Tensor([]int{2,3,4})
+    
+    var same_shape bool = Same_Shape(tensor1, tensor2)
+
+-----------------------------------------------------------------------------------------------------
 
 # Vector Operations
 The following operations are defined for vectors, ie 1D tensors.
@@ -97,6 +109,7 @@ not compatible.
 
     var cosine_similarity float64 = Cosine_Similarity(tensor1, tensor2)
 
+-----------------------------------------------------------------------------------------------------
 
 # Matrix Operations 
 The following operations are defined for matrices, ie 2D tensors.
@@ -122,3 +135,44 @@ console. The function will panic if the tensor is not 2D.
     tensor.data = {1,2,3,4,5,6}
 
     Display_Matrix(tensor)
+
+-----------------------------------------------------------------------------------------------------
+
+# Operations for Tensors of Any Dimension
+The following operations are defined for tensors of any dimension.
+
+### Scalar_Mult_() 
+The Scalar_Mult_() function accepts a pointer to a tensor and a float64 and multiplies
+each element of the tensor by the float64 in place. 
+
+    var tensor *Tensor = New_Tensor([]int{2,3})
+    tensor.data = {1,2,3,4,5,6}
+
+    Scalar_Mult_(tensor, 2)
+
+### Add()
+The Add() function accepts two Tensor pointers and returns a pointer to a new tensor
+that is the result of the elementwise addition of the two tensors. The function will
+panic if the dimensions of the two tensors are not compatible.
+
+    var tensor1 *Tensor = New_Tensor([]int{2,3})
+    var tensor2 *Tensor = New_Tensor([]int{2,3})
+    
+    tensor1.data = {1,2,3,4,5,6}
+    tensor2.data = {1,2,3,4,5,6}
+
+    var tensor3 *Tensor = Add(tensor1, tensor2)
+
+### Subtract()
+The Subtract() function accepts two Tensor pointers and returns a pointer to a new tensor
+that is the result of the elementwise subtraction of the two tensors. The function will
+panic if the dimensions of the two tensors are not compatible.
+
+    var tensor1 *Tensor = New_Tensor([]int{2,3})
+    var tensor2 *Tensor = New_Tensor([]int{2,3})
+    
+    tensor1.data = {1,2,3,4,5,6}
+    tensor2.data = {1,2,3,4,5,6}
+
+    var tensor3 *Tensor = Subtract(tensor1, tensor2)
+
