@@ -63,6 +63,14 @@ The Eye() function accepts an integer and returns a pointer to a tensor that is 
 
     var tensor *Tensor = Eye(5)
 
+### Partial() 
+The Partial() function accepts a Tensor pointer and a string representing that cotains a 
+python style slice. The function returns a pointer to a new tensor that is a partial
+copy of the original tensor. The function will panic if the slice is not valid.
+
+    var tensor *Tensor = New_Tensor([]int{2,3,4})
+    var tensor_partial *Tensor = Partial(tensor, "0:1,1:3,2:4")
+
 -----------------------------------------------------------------------------------------------------
 
 # Vector Operations
