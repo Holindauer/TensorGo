@@ -9,17 +9,22 @@ import (
 func main() {
 
 	// test partial on 2d tensor
-	A := Range_Tensor([]int{5, 4})
-	A_Partial := Partial(A, ":3, 2:")
+	A := Range_Tensor([]int{6, 5})
+	A_Partial := Partial(A, "2:3, 1:5")
 
 	// use Display_Matrix() to display both tensors
-	fmt.Println("\nA:")
+	fmt.Println("\nA.shape = ", A.shape, "A: ")
 	Display_Matrix(A)
-	fmt.Println("\nA_Partial:")
+	fmt.Println("\nA_Partial.shape: ", A_Partial.shape, "A_Partial:")
 	Display_Matrix(A_Partial)
 
 	// test tensor.Retrieved() on the Partial
-	A_Partial_Retrieved := A_Partial.Retrieve([]int{2, 1})
+	A_Partial_Retrieved := A_Partial.Retrieve([]int{0, 1})
 	fmt.Println("\nA_Partial_Retrieved:", A_Partial_Retrieved)
+
+	// test Reshape on A_Partial
+	fmt.Println("\nA_Partial.shape: ", A_Partial.shape, "A_Partial after reshaping to 2x2: ")
+	A_Partial_Reshaped := A_Partial.Reshape([]int{2, 2})
+	Display_Matrix(A_Partial_Reshaped)
 
 }

@@ -131,3 +131,47 @@ func Partial(A *Tensor, slice string) *Tensor {
 	// Return the filled partial tensor.
 	return partialTensor
 }
+
+// To implement:
+
+// Reshape()  takes a tensors and a new shape for that tensors, and returns a pointer to a
+// new tensors that has the same data as the original tensor, but with the new shape. Reshape
+// can be done in this way becauase data for Tensors in stored contigously in memory.
+func (A *Tensor) Reshape(shape []int) *Tensor {
+
+	numElements := 1
+	for _, v := range shape { // find num elements of shape param
+		numElements *= v
+	}
+	if numElements != len(A.data) {
+		panic("Cannot reshape tensor to shape with different number of elements")
+	}
+	// Create a new tensor to store the reshaped data with the shape param
+	reshapedTensor := Zero_Tensor(shape)
+	for i := 0; i < len(A.data); i++ {
+		reshapedTensor.data[i] = A.data[i] // copy data from A to reshapedTensor
+	}
+	return reshapedTensor
+}
+
+// Functions I am planning to implement are listed below:
+
+// einsum
+
+// transpose --- recievs (2, 3, 1, 0) ie a new ordering of dims
+// manipualtes underlying contiugous data to return a new tensor with the new ordering
+
+// various statistical functions
+// mean std var sum prod
+
+// unique elements of array
+
+// argmax along a dimension
+
+// argmin along a dimension
+
+// covariance matrix computation
+
+// normalization functions --- implement a few major strategies
+
+// concatenate along an axis

@@ -15,6 +15,12 @@ type Tensor struct {
 // This function is used to retrieve a value from a tensor given a slice
 // of the indicies at each dimension. It returns a float64 value
 func (t *Tensor) Retrieve(indices []int) float64 {
+	// check if each index of each dim is within the bounds of the tensor
+	for i, index := range indices {
+		if index >= t.shape[i] {
+			panic("Retrieve() --- Index out of bounds")
+		}
+	}
 
 	flattened_index := Index(indices, t.shape)
 	return t.data[flattened_index]

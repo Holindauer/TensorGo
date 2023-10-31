@@ -207,3 +207,12 @@ panic if the dimensions of the two tensors are not compatible.
 
     var tensor3 *Tensor = Subtract(tensor1, tensor2)
 
+### tensor.Reshpae()
+The Reshape() method accepts a slice of integers that represent the new dimensions of
+the tensor. The dimmensions must be compatible, meaning that the product of the new 
+dimmensions must be equal to the product of the old dimmensions. The function will panic
+if the dimmensions are not compatible. tensro.Reshape() will returns a pointer to a new
+tensor with the new dimmensions.
+
+    var tensor *Tensor = New_Tensor([]int{2,3,4})
+    var tensor_reshaped *Tensor = tensor.Reshape([]int{3,8})
