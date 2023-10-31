@@ -12,6 +12,45 @@ type Tensor struct {
 	data  []float64 // <--- this 1D slice to store flattened tensor
 }
 
+// This function is used to retrieve a value from a tensor given a slice
+// of the indicies at each dimension. It returns a float64 value
+func (t *Tensor) Retrieve(indices []int) float64 {
+
+	flattened_index := Index(indices, t.shape)
+	return t.data[flattened_index]
+}
+
+// The general algorithm for computing the index of a flattened tensor from the multi dimensional indices:
+// Create a slice of ints to store the strides. A stride is the number of elements in the tensor that must
+// be skipped to move one index in a given dimension. Then, iterate over through each dimension of the tensor,
+// multiplying the stride of that dimmension by the index of that dimension. Add the result to the flattened index.
+func Index(indices []int, dims []int) int {
+
+	// check that the number of indices matches the number of dimensions
+	if len(indices) != len(dims) {
+		panic("Number of indices must match number of dimensions")
+	}
+
+	strides := make([]int, len(dims)) // create a slice of ints to store the strides
+	strides[len(dims)-1] = 1          // stride for the last dimension is always 1
+
+	for i := len(dims) - 2; i >= 0; i-- { // iterate backwards through the dimensions
+		strides[i] = strides[i+1] * dims[i+1] // multiply the stride of the current dimension by the size of the next dimension
+		// this is because if you move one element up in dim i, then you must skip the entire
+		// next dimension of the flattened tensor to get there
+	}
+
+	flattenedIndex := 0
+
+	// iterate through tensor indices
+	for i, index := range indices {
+		// multiply the index by the stride of that dimension
+		flattenedIndex += index * strides[i]
+	}
+
+	return flattenedIndex
+}
+
 // This function is used to create a new tensor It takes
 // in a shape and returns a Tensor pointer with that shape
 
@@ -51,32 +90,6 @@ func Range_Tensor(shape []int) *Tensor {
 	}
 
 	return t
-}
-
-// The general algorithm for computing the index of a flattened tensor from the multi dimensional indices:
-// Create a slice of ints to store the strides. A stride is the number of elements in the tensor that must
-// be skipped to move one index in a given dimension. Then, iterate over through each dimension of the tensor,
-// multiplying the stride of that dimmension by the index of that dimension. Add the result to the flattened index.
-func Index(indices []int, dims []int) int {
-
-	strides := make([]int, len(dims)) // create a slice of ints to store the strides
-	strides[len(dims)-1] = 1          // stride for the last dimension is always 1
-
-	for i := len(dims) - 2; i >= 0; i-- { // iterate backwards through the dimensions
-		strides[i] = strides[i+1] * dims[i+1] // multiply the stride of the current dimension by the size of the next dimension
-		// this is because if you move one element up in dim i, then you must skip the entire
-		// next dimension of the flattened tensor to get there
-	}
-
-	flattenedIndex := 0
-
-	// iterate through tensor indices
-	for i, index := range indices {
-		// multiply the index by the stride of that dimension
-		flattenedIndex += index * strides[i]
-	}
-
-	return flattenedIndex
 }
 
 // this function is used to display a 2D tensor as a matrix

@@ -102,7 +102,7 @@ func Partial(A *Tensor, slice string) *Tensor {
 	// The function takes the current dimension as a parameter.
 	var fillPartialTensor func(int)
 	fillPartialTensor = func(dim int) {
-		if dim == len(partialShape) { // <--- This base case is reach for every element in the partial tensor.
+		if dim == len(partialShape) { // <--- This base case is reached for every element in the partial tensor.
 
 			// Calculate the source index in the original tensor.
 			srcIndex := make([]int, len(partialShape))

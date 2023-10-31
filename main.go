@@ -18,4 +18,8 @@ func main() {
 	fmt.Println("\nA_Partial:")
 	Display_Matrix(A_Partial)
 
+	// test tensor.Retrieved() on the Partial
+	A_Partial_Retrieved := A_Partial.Retrieve([]int{2, 1})
+	fmt.Println("\nA_Partial_Retrieved:", A_Partial_Retrieved)
+
 }

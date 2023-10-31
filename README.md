@@ -26,11 +26,20 @@ of the tensor. The function returns a pointer to a tensor initialize with the ra
 
     var tensor *Tensor = Range_Tensor([]int{2,3,4})
 
+### tensor.Retrieve()
+The Retrieve() function accepts a slice of integers that represent the index of the
+element you want to access. The function returns the value of the element at the given
+index. The function will panic if the index is out of bounds.
+
+    var tensor *Tensor = New_Tensor([]int{2,3,4})
+    var element float64 = tensor.Retrieve([]int{1,2,3})
+
 ### Index()
-A tensor can be indexed using the Index() function. Tensor data is represented in 
+A tensor can also be indexed using the Index() function. Tensor data is represented in 
 memory as a 1D contiguous array of floats, regardless of the dimensionality of the
 tensor. The benefit of this method of storage is that there is no need for a Flatten() 
-function, since the data is flattened by default. 
+function, since the data is flattened by default. This function is called internally 
+within the tensor.Retrieve() method.
 
 The Index() function accepts a slice of integers that represent the index
 of the element you want to access and a slice representing the dimensions of the
