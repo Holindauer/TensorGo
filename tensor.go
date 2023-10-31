@@ -111,3 +111,30 @@ func Same_Shape(A *Tensor, B *Tensor) bool {
 
 	return true
 }
+
+// This function creates a copy of a tensor and retrurns a pointer
+// to the new Tensor
+func Copy(A *Tensor) *Tensor {
+
+	B := Zero_Tensor(A.shape) //  <--- returns pointer to Tensor struct
+
+	for i := 0; i < len(A.data); i++ { // copy data from A to B
+		B.data[i] = A.data[i]
+	}
+
+	return B
+}
+
+// This function creates an identity matrix, given the size of
+// a single dimmension of a square matrix. A Tensor* is returned
+func Eye(size int) *Tensor {
+
+	t := Zero_Tensor([]int{size, size}) // <--- returns pointer to Tensor struct
+
+	for i := 0; i < size; i++ {
+		t_idx := Index([]int{i, i}, t.shape) // <-- populate 1s on the diagonal
+		t.data[t_idx] = 1
+	}
+
+	return t
+}

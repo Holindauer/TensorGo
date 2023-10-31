@@ -29,7 +29,8 @@ of the tensor. The function returns a pointer to a tensor initialize with the ra
 ### Index()
 A tensor can be indexed using the Index() function. Tensor data is represented in 
 memory as a 1D contiguous array of floats, regardless of the dimensionality of the
-tensor. 
+tensor. The benefit of this method of storage is that there is no need for a Flatten() 
+function, since the data is flattened by default. 
 
 The Index() function accepts a slice of integers that represent the index
 of the element you want to access and a slice representing the dimensions of the
@@ -48,6 +49,19 @@ tensors have the same shape.
     var tensor2 *Tensor = New_Tensor([]int{2,3,4})
     
     var same_shape bool = Same_Shape(tensor1, tensor2)
+
+### Copy() 
+The Copy() function accepts a Tensor pointer and returns a pointer to a new Tensors
+that is a copy of the original tensor.
+
+    var tensor1 *Tensor = New_Tensor([]int{2,3,4})
+    var tensor1_copy *Tensor = Copy(tensor1)
+
+### Eye()
+The Eye() function accepts an integer and returns a pointer to a tensor that is a
+2D identity matrix of the given size.
+
+    var tensor *Tensor = Eye(5)
 
 -----------------------------------------------------------------------------------------------------
 

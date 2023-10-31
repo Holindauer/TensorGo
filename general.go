@@ -1,5 +1,10 @@
 package main
 
+import (
+	"strconv" // <-- used to convert strings to ints
+	"strings"
+)
+
 // This file contains functions for Tensor Operations, irregardless of dimensionality
 
 // This funciton performs scalar multiplication on a tensor in place
@@ -51,4 +56,78 @@ func Subtract(A *Tensor, B *Tensor) *Tensor {
 	}
 
 	return C // <-- Pointer to the new tensor
+}
+
+// The Partial function is used to retrieve a section out of a Tensor using Python-like slice notation.
+// It accepts a Tensor and a string, then returns a pointer to a new tensor.
+// Example:
+// A := Range_Tensor([]int{3, 4, 9, 2})
+// A_Partial := Partial(A, "0:2, 2:, :3, :")
+func Partial(A *Tensor, slice string) *Tensor {
+	// Remove spaces and split the slice string by commas to handle each dimension separately.
+	slice = strings.ReplaceAll(slice, " ", "")
+	split := strings.Split(slice, ",")
+	if len(split) != len(A.shape) {
+		panic("String slice arg must have the same number of dimensions as the tensor")
+	}
+
+	// Initialize slices to store the shape of the partial tensor and the start/end indices for each dimension.
+	partialShape := make([]int, len(A.shape))
+	partialIndices := make([][]int, len(A.shape))
+
+	// Iterate through each dimension of the tensor to parse the slice string and compute the shape and indices of the partial tensor.
+	for i, s := range split {
+		start, end := 0, A.shape[i] // By default, use the entire dimension.
+		if s != ":" {
+			parts := strings.Split(s, ":")
+
+			if parts[0] != "" { // If there is a start value, update start.
+				start, _ = strconv.Atoi(parts[0])
+			}
+			if parts[1] != "" { // If there is an end value, update end.
+				end, _ = strconv.Atoi(parts[1])
+			}
+		}
+		partialShape[i] = end - start
+		partialIndices[i] = []int{start, end}
+	}
+
+	// Create a new tensor to store the partial data with the computed shape.
+	partialTensor := Zero_Tensor(partialShape)
+
+	// Initialize a slice to store the current multi-dimensional index being processed.
+	tempIndex := make([]int, len(partialShape))
+
+	// Define a recursive function to fill the partial tensor.
+	// The function takes the current dimension as a parameter.
+	var fillPartialTensor func(int)
+	fillPartialTensor = func(dim int) {
+		if dim == len(partialShape) { // <--- This base case is reach for every element in the partial tensor.
+
+			// Calculate the source index in the original tensor.
+			srcIndex := make([]int, len(partialShape))
+			for i, indices := range partialIndices {
+				srcIndex[i] = tempIndex[i] + indices[0]
+			}
+
+			// Convert the multi-dimensional indices to flattened indices and use them to copy the data.
+			srcFlattenedIndex := Index(srcIndex, A.shape)
+			dstFlattenedIndex := Index(tempIndex, partialTensor.shape)
+			partialTensor.data[dstFlattenedIndex] = A.data[srcFlattenedIndex]
+
+			return
+		}
+
+		// Recursively process each index in the current dimension.
+		for i := 0; i < partialShape[dim]; i++ {
+			tempIndex[dim] = i
+			fillPartialTensor(dim + 1)
+		}
+	}
+
+	// Start the recursive process from the first dimension.
+	fillPartialTensor(0)
+
+	// Return the filled partial tensor.
+	return partialTensor
 }
