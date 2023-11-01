@@ -12,7 +12,10 @@ The following is an explanation of how Tensors are represened in this library, a
 -----------------------------------------------------------------------------------------------------
 
 # Tensors
-The basic datatype of this library are tensors, ie multidimensional arrays. 
+The basic datatype of this library are tensors, ie multidimensional arrays. In memory 
+tensors are represented as a 1D slice of floats. However, this library provides methods
+for accessing and manipulating the data as if it were a multidimensional array. Below 
+are some functions and methods that can be used to create and access data from Tensors.
 
 ### Zero_Tensor() 
 The Zero_Tensor() function accepts a slice of integers that represent the dimensions
@@ -36,14 +39,14 @@ index. The function will panic if the index is out of bounds.
 
 ### Index()
 A tensor can also be indexed using the Index() function. Tensor data is represented in 
-memory as a 1D contiguous array of floats, regardless of the dimensionality of the
+memory as a 1D contiguous slice of floats, regardless of the dimensionality of the
 tensor. The benefit of this method of storage is that there is no need for a Flatten() 
 function, since the data is flattened by default. This function is called internally 
 within the tensor.Retrieve() method.
 
 The Index() function accepts a slice of integers that represent the index
 of the element you want to access and a slice representing the dimensions of the
-tensor. The function returns the index of the element in the 1D array.
+tensor. The function returns the index of the element in the 1D slice.
 
     var tensor *Tensor = New_Tensor([]int{2,3,4})
     var index int = Index([]int{1,2,3}, []int{2,3,4})
@@ -216,3 +219,30 @@ tensor with the new dimmensions.
 
     var tensor *Tensor = New_Tensor([]int{2,3,4})
     var tensor_reshaped *Tensor = tensor.Reshape([]int{3,8})
+
+
+-----------------------------------------------------------------------------------------------------
+# Statistical Operations
+The following are statistical operations that can be performed on tensors.
+
+### Sum()
+Sum() calculates the sum of elements in a tensor along a specified axis. This operation results in a tensor 
+with one fewer dimension than the original tensor. For each position along the specified axis, there exists 
+a unique combination of indices for all other axes. The function collapses the tensor by summing the values
+at each unique combination of indices for the other axes, resulting in a new tensor where the dimension along 
+the specified axis is removed. A pointer to the new tensor is returned.
+
+    var tensor *Tensor = New_Tensor([]int{2,3,4})
+    var tensor_summed *Tensor = tensor.Sum(1) // <-- shape: {2,4}
+
+### Mean()
+Mean() calculates the mean of elements in a tensor along a specified axis. This operation results utilizes the 
+Sum() above to calculate the sum of elements along the specified axis. The sum is then divided by the number of
+elements along the specified axis. This operation a pointer to a tensor with one fewer dimension than the original.
+
+    var tensor *Tensor = New_Tensor([]int{2,3,4})
+    var tensor_mean *Tensor = tensor.Mean(1) // <-- shape: {2,4}
+
+
+
+

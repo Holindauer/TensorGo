@@ -154,12 +154,12 @@ func (A *Tensor) Reshape(shape []int) *Tensor {
 	return reshapedTensor
 }
 
+// transpose --- recievs (2, 3, 1, 0) ie a new ordering of dims
+// manipualtes underlying contiugous data to return a new tensor with the new ordering
+
 // Functions I am planning to implement are listed below:
 
 // einsum
-
-// transpose --- recievs (2, 3, 1, 0) ie a new ordering of dims
-// manipualtes underlying contiugous data to return a new tensor with the new ordering
 
 // various statistical functions
 // mean std var sum prod

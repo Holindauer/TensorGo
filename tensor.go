@@ -99,18 +99,23 @@ func Range_Tensor(shape []int) *Tensor {
 }
 
 // this function is used to display a 2D tensor as a matrix
-func Display_Matrix(A *Tensor) {
-
-	if len(A.shape) != 2 {
-		panic("Tensor must be 2D to display as matrix")
-	}
-
-	for i := 0; i < A.shape[0]; i++ {
-		for j := 0; j < A.shape[1]; j++ {
-			A_idx := Index([]int{i, j}, A.shape)
-			fmt.Printf("%.1f ", A.data[A_idx])
+func Display_Matrix(t *Tensor) {
+	if len(t.shape) == 2 {
+		// Handling 2D matrix
+		for i := 0; i < t.shape[0]; i++ {
+			for j := 0; j < t.shape[1]; j++ {
+				fmt.Printf("%v ", t.data[i*t.shape[1]+j])
+			}
+			fmt.Println()
 		}
-		println()
+	} else if len(t.shape) == 1 {
+		// Handling vector
+		for i := 0; i < t.shape[0]; i++ {
+			fmt.Printf("%v ", t.data[i])
+		}
+		fmt.Println()
+	} else {
+		fmt.Println("Tensor must be 1D or 2D to display as matrix or vector")
 	}
 }
 
