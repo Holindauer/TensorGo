@@ -223,7 +223,11 @@ tensor with the new dimmensions.
 
 -----------------------------------------------------------------------------------------------------
 # Statistical Operations
-The following are statistical operations that can be performed on tensors.
+Statistical operations on Tensors can be broken up into two categories. The first being operations perform
+some statistical operation over the all elements of the tensor, irregardless of shape. And the second being 
+operations that perform some statistical operation over a specified axis of the tensor. 
+
+# Statistical Operations over a Specified Axis
 
 ### Sum()
 Sum() calculates the sum of elements in a tensor along a specified axis. This operation results in a tensor 
@@ -244,5 +248,23 @@ elements along the specified axis. This operation a pointer to a tensor with one
     var tensor_mean *Tensor = tensor.Mean(1) // <-- shape: {2,4}
 
 
+# Statistical Operations over all Elements
 
+### Sum_All()
+Sum_All() calculates the sum of all elements in a tensor. This operation results in a float64.
+
+    var tensor *Tensor = New_Tensor([]int{2,3,4})
+    var tensor_summed float64 = tensor.Sum_All()
+
+### Mean_All()
+Mean_All() calculates the mean of all elements in a tensor. This operation results in a float64.
+
+    var tensor *Tensor = New_Tensor([]int{2,3,4})
+    var tensor_mean float64 = tensor.Mean_All()
+
+### Var_All() 
+Var_All() calculates the variance of all elements in a tensor. This operation results in a float64.
+
+    var tensor *Tensor = New_Tensor([]int{2,3,4})
+    var tensor_var float64 = tensor.Var_All()
 

@@ -76,6 +76,26 @@ func Zero_Tensor(shape []int) *Tensor {
 	return t
 }
 
+func Ones_Tensor(shape []int) *Tensor {
+
+	t := new(Tensor) //  <--- this is a pointer to a tensor
+	t.shape = shape
+
+	// compute the total number of elements in the tensor
+	num_elements := 1
+	for _, dim := range shape {
+		num_elements *= dim
+	}
+
+	t.data = make([]float64, num_elements) // create slice of floats for data
+
+	for i := 0; i < num_elements; i++ { // populate the tensor with 1s
+		t.data[i] = 1
+	}
+
+	return t
+}
+
 // This function is used to create a new tensor where the contents
 // of the flattened array range from 0 to the total number of elements
 func Range_Tensor(shape []int) *Tensor {
