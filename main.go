@@ -8,25 +8,27 @@ import (
 // It is about testing the functionality of the code in the other files.
 func main() {
 
-	// Test Mean() // mean along an axis
-	A := Range_Tensor([]int{900, 900, 25})
-	Ones := Ones_Tensor([]int{900, 900, 25})
-	B := Add(A, Ones)
-	//Display_Matrix(B)
+	// Test _All functions
+	A := Range_Tensor([]int{2, 3, 4})
 
-	// Test Mean() along o'th axis
-	C := B.Mean(0)
-	K := B.Var(0)
+	// Sum_All
+	fmt.Println("Sum_All")
+	fmt.Println(A.Sum_All())
+	fmt.Println()
 
-	// Test Sum() along o'th axis
-	D := B.Sum(0)
+	// Mean_All
+	fmt.Println("Mean_All")
+	fmt.Println(A.Mean_All())
+	fmt.Println()
 
-	// Test Std() along o'th axis
-	E := B.Std(0)
+	// Var_All
+	fmt.Println("Var_All")
+	fmt.Println(A.Var_All())
+	fmt.Println()
 
-	fmt.Println(C.shape)
-	fmt.Println(K.shape)
-	fmt.Println(D.shape)
-	fmt.Println(E.shape)
+	// Std_All
+	fmt.Println("Std_All")
+	fmt.Println(A.Std_All())
+	fmt.Println()
 
 }
