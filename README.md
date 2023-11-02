@@ -268,3 +268,10 @@ Var_All() calculates the variance of all elements in a tensor. This operation re
     var tensor *Tensor = New_Tensor([]int{2,3,4})
     var tensor_var float64 = tensor.Var_All()
 
+
+
+
+# Code Base Conventions:
+
+### Naming Conventions:
+- Tensor pointers parameters within functions are named with capital letters starting A, B, C, etc.
