@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 // This source file contains the Tensor struct and functions
 // related to instantiating and retrieving data from them
 
@@ -11,6 +7,8 @@ type Tensor struct {
 	shape []int
 	data  []float64 // <--- this 1D slice to store flattened tensor
 }
+
+//=============================================================================================================Accesing Data from a Tensor
 
 // This function is used to retrieve a value from a tensor given a slice
 // of the indicies at each dimension. It returns a float64 value
@@ -57,128 +55,96 @@ func Index(indices []int, dims []int) int {
 	return flattenedIndex
 }
 
-// This function is used to create a new tensor It takes
-// in a shape and returns a Tensor pointer with that shape
+//=============================================================================================================Creating Tensors
 
-func Zero_Tensor(shape []int) *Tensor {
+// TensorInitializer is an interface for initializing tensor data at each element
+type TensorInitializer interface {
+	ValueAt(index int) float64
+}
 
-	t := new(Tensor) //  <--- this is a pointer to a tensor
-	t.shape = shape
+// ConstInitializer sets a constant value for each element
+type ConstInitializer struct {
+	value float64
+}
 
-	// compute the total number of elements in the tensor
-	num_elements := 1
-	for _, dim := range shape {
-		num_elements *= dim
+func (ci *ConstInitializer) ValueAt(index int) float64 {
+	return ci.value
+}
+
+// RangeInitializer sets a value equal to the index for each element
+type RangeInitializer struct{}
+
+func (ri *RangeInitializer) ValueAt(index int) float64 {
+	return float64(index)
+}
+
+// InitializeData creates and initializes a Tensor's data using a given TensorInitializer
+func InitializeData(shape []int, initializer TensorInitializer) *Tensor {
+	// create a new Tensor struct, setting its shape
+	A := new(Tensor)
+	A.shape = shape
+	num_elements := Product(shape) // <--- Product() is a function from utils.go
+	A.data = make([]float64, num_elements)
+
+	for i := range A.data {
+		A.data[i] = initializer.ValueAt(i) // <--- ValueAt() is a method of TensorInitializer
 	}
 
-	t.data = make([]float64, num_elements) // create slice of floats for data
+	return A
+}
 
-	return t
+// The following are functions for creating tensors with different initializers
+
+func Const_Tensor(shape []int, constant float64) *Tensor {
+	initializer := &ConstInitializer{value: constant}
+	return InitializeData(shape, initializer)
+}
+
+func Zero_Tensor(shape []int) *Tensor {
+	return Const_Tensor(shape, 0) // <--- returns *Tensor from Const_Tensor() call
 }
 
 func Ones_Tensor(shape []int) *Tensor {
-
-	t := new(Tensor) //  <--- this is a pointer to a tensor
-	t.shape = shape
-
-	// compute the total number of elements in the tensor
-	num_elements := 1
-	for _, dim := range shape {
-		num_elements *= dim
-	}
-
-	t.data = make([]float64, num_elements) // create slice of floats for data
-
-	for i := 0; i < num_elements; i++ { // populate the tensor with 1s
-		t.data[i] = 1
-	}
-
-	return t
+	return Const_Tensor(shape, 1) // <--- returns *Tensor from Const_Tensor() call
 }
 
-// This function is used to create a new tensor where the contents
-// of the flattened array range from 0 to the total number of elements
 func Range_Tensor(shape []int) *Tensor {
-
-	t := new(Tensor) //  <--- this is a pointer to a tensor
-	t.shape = shape
-
-	// compute the total number of elements in the tensor
-	num_elements := 1
-	for _, dim := range shape {
-		num_elements *= dim
-	}
-
-	t.data = make([]float64, num_elements) // create slice of floats for data
-
-	for i := 0; i < num_elements; i++ { // populate the tensor with the range of numbers
-		t.data[i] = float64(i)
-	}
-
-	return t
+	initializer := &RangeInitializer{}
+	return InitializeData(shape, initializer) // <--- pass initializer pointer to InitializeData()
 }
 
-// this function is used to display a 2D tensor as a matrix
-func Display_Matrix(t *Tensor) {
-	if len(t.shape) == 2 {
-		// Handling 2D matrix
-		for i := 0; i < t.shape[0]; i++ {
-			for j := 0; j < t.shape[1]; j++ {
-				fmt.Printf("%v ", t.data[i*t.shape[1]+j])
-			}
-			fmt.Println()
-		}
-	} else if len(t.shape) == 1 {
-		// Handling vector
-		for i := 0; i < t.shape[0]; i++ {
-			fmt.Printf("%v ", t.data[i])
-		}
-		fmt.Println()
-	} else {
-		fmt.Println("Tensor must be 1D or 2D to display as matrix or vector")
-	}
+// CopyInitializer copies data from another tensor
+type CopyInitializer struct {
+	sourceData []float64
 }
 
-// This function checks if two tensors are of
-// the same shape. It returns a boolean
-func Same_Shape(A *Tensor, B *Tensor) bool {
-
-	if len(A.shape) != len(B.shape) { // check that they have the same number of dimensions
-		return false
-	}
-
-	for i := 0; i < len(A.shape); i++ { // check that each dimension is the same
-		if A.shape[i] != B.shape[i] {
-			return false
-		}
-	}
-
-	return true
+func (ci *CopyInitializer) ValueAt(index int) float64 {
+	return ci.sourceData[index]
 }
 
-// This function creates a copy of a tensor and retrurns a pointer
-// to the new Tensor
+// IdentityInitializer creates an identity matrix
+type IdentityInitializer struct {
+	size int
+}
+
+func (ii *IdentityInitializer) ValueAt(index int) float64 {
+	// Determine the row and column from the index
+	row := index / ii.size
+	col := index % ii.size
+	if row == col {
+		return 1
+	}
+	return 0
+}
+
+// Modified Copy function
 func Copy(A *Tensor) *Tensor {
-
-	B := Zero_Tensor(A.shape) //  <--- returns pointer to Tensor struct
-
-	for i := 0; i < len(A.data); i++ { // copy data from A to B
-		B.data[i] = A.data[i]
-	}
-
-	return B
+	initializer := &CopyInitializer{sourceData: A.data}
+	return InitializeData(A.shape, initializer)
 }
 
-// This function creates an identity matrix, given the size of
-// a single dimmension of a square matrix. A Tensor* is returned
+// Creates Identity Matrix (Only Square Matrices)
 func Eye(size int) *Tensor {
-
-	t := Zero_Tensor([]int{size, size}) // <--- returns pointer to Tensor struct
-
-	for i := 0; i < size; i++ {
-		t_idx := Index([]int{i, i}, t.shape) // <-- populate 1s on the diagonal
-		t.data[t_idx] = 1
-	}
-
-	return t
+	initializer := &IdentityInitializer{size: size}
+	return InitializeData([]int{size, size}, initializer)
 }

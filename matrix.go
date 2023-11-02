@@ -3,6 +3,7 @@ package main
 // This file contains functions for manipulating 2D
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -66,5 +67,26 @@ func computeRow(A *Tensor, B *Tensor, C *Tensor, start int, end int, wg *sync.Wa
 			// write to C.data slice directly
 			C.data[C_idx] = sum
 		}
+	}
+}
+
+// this function is used to display a 2D tensor as a matrix
+func Display_Matrix(t *Tensor) {
+	if len(t.shape) == 2 {
+		// Handling 2D matrix
+		for i := 0; i < t.shape[0]; i++ {
+			for j := 0; j < t.shape[1]; j++ {
+				fmt.Printf("%v ", t.data[i*t.shape[1]+j])
+			}
+			fmt.Println()
+		}
+	} else if len(t.shape) == 1 {
+		// Handling vector
+		for i := 0; i < t.shape[0]; i++ {
+			fmt.Printf("%v ", t.data[i])
+		}
+		fmt.Println()
+	} else {
+		fmt.Println("Tensor must be 1D or 2D to display as matrix or vector")
 	}
 }

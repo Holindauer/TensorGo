@@ -38,45 +38,46 @@ type Operation interface {
 //     The operation is applied to pairs of float64 values and returns a float64 result.
 //
 // It returns a pointer to a new Tensor that is the result of applying the operation.
-func (t *Tensor) AxisOperation(axis int, op Operation) *Tensor {
-	if axis < 0 || axis >= len(t.shape) { // Check that the axis is valid.
+func (A *Tensor) AxisOperation(axis int, op Operation) *Tensor {
+	if axis < 0 || axis >= len(A.shape) { // <--- Check that the axis is valid.
 		panic("Invalid axis")
 	}
 
 	// Calculate the shape of the result tensor.
-	newShape := make([]int, len(t.shape)-1)
-	copy(newShape, t.shape[:axis]) // Remove specified dimension by excluding it from the copy.
-	copy(newShape[axis:], t.shape[axis+1:])
+	newShape := make([]int, len(A.shape)-1) // <--- set new shape 1 dim smaller than original
+	copy(newShape, A.shape[:axis])          // <--- Remove specified dimension by excluding it from the copy.
+	copy(newShape[axis:], A.shape[axis+1:]) // <---
 
 	// Initialize the data for the result tensor.
 	newData := make([]float64, Product(newShape))
-	indices := make([]int, len(t.shape))
+	indices := make([]int, len(A.shape)) // <--- multi dim indexing for iterating through tensor
 
 	// Perform the operation along the specified axis.
-	for i := 0; i < len(t.data); i++ {
-		concatIndices := append(indices[:axis], indices[axis+1:]...) // Remove the specified axis by appending the indices before and after it.
-		resultIndex := Index(concatIndices, newShape)
-		newData[resultIndex] = op.Apply(newData[resultIndex], t.data[i]) // Apply the operation to the current value and the result so far.
+	for i := 0; i < len(A.data); i++ {
+		// Concatenate the indices before and after the specified axis to form the reduced-dimension indices.
+		concatIndices := append(indices[:axis], indices[axis+1:]...)
 
-		// Increment the multi-dimensional indices.
-		for dim := len(t.shape) - 1; dim >= 0; dim-- {
-			indices[dim]++
-			if indices[dim] < t.shape[dim] {
+		// Convert the reduced-dimension indices to a flattened index for the result tensor.
+		resultIndex := Index(concatIndices, newShape)
+
+		// Apply the operation to the current element in the tensor and update the result tensor.
+		newData[resultIndex] = op.Apply(newData[resultIndex], A.data[i])
+
+		// Increment the multi-dimensional indices, like an odometer with each wheel representing a dimension's index.
+		// For ex: in a 3x3 matrix this would be [0,0] -> [0,1] -> [0,2] -> [1,0] -> [1,1] -> [1,2] -> [2,0] -> [2,1] -> [2,2]
+		for dim := len(A.shape) - 1; dim >= 0; dim-- {
+			indices[dim]++ // Advance the index in the current dimension.
+
+			if indices[dim] < A.shape[dim] {
+				// If the index within the current dimension is still within bounds, continue with the next element.
 				break
 			}
+			// If the current dimension's index "overflows", reset it to zero and move to increment the next higher dimension.
 			indices[dim] = 0
 		}
 	}
-	return &Tensor{shape: newShape, data: newData}
-}
 
-// Helper function for AxisOperation() for computing the product of elements in a slice
-func Product(shape []int) int {
-	product := 1
-	for _, dim := range shape {
-		product *= dim
-	}
-	return product
+	return &Tensor{shape: newShape, data: newData}
 }
 
 // ============================================================================================================ Summation on an Axis
@@ -144,66 +145,6 @@ type AllOperation interface {
 	CombineResults([]float64) float64 // CombineResults combines the results from all chunks.
 }
 
-// SumAllOperation represents a summation operation over the entire tensor.
-type SumAllOperation struct{}
-
-// Apply performs the summation on a chunk of the tensor's data for a go routine.
-func (s SumAllOperation) Apply(t *Tensor, start, end int) float64 {
-	var sum float64
-	for i := start; i < end; i++ {
-		sum += t.data[i]
-	}
-	return sum
-}
-
-// CombineResults combines the summation results from all chunks of a go routine.
-func (s SumAllOperation) CombineResults(results []float64) float64 {
-	var sum float64
-	for _, v := range results {
-		sum += v
-	}
-	return sum
-}
-
-// MeanAllOperation represents a mean calculation operation over the entire tensor.
-type MeanAllOperation struct{}
-
-// Apply performs the mean calculation on a chunk of the tensor's data for a go routine.
-func (m MeanAllOperation) Apply(t *Tensor, start, end int) float64 {
-	sumOp := SumAllOperation{}
-	sum := sumOp.Apply(t, start, end)
-	return sum / float64(end-start)
-}
-
-// CombineResults combines the mean results from all chunks of a go routine.
-func (m MeanAllOperation) CombineResults(results []float64) float64 {
-	sumOp := SumAllOperation{}
-	sum := sumOp.CombineResults(results)
-	return sum / float64(len(results))
-}
-
-// VarAllOperation represents a variance calculation operation over the entire tensor.
-type VarAllOperation struct {
-	mean float64
-}
-
-// Apply performs the variance calculation on a chunk of the tensor's data.
-func (v VarAllOperation) Apply(t *Tensor, start, end int) float64 {
-	var variance float64
-	for i := start; i < end; i++ {
-		diff := t.data[i] - v.mean
-		variance += diff * diff
-	}
-	return variance
-}
-
-// CombineResults combines the variance results from all chunks.
-func (v VarAllOperation) CombineResults(results []float64) float64 {
-	sumOp := SumAllOperation{}
-	sum := sumOp.CombineResults(results)
-	return sum / float64(len(results))
-}
-
 // AllOperation applies a specified operation to all elements of the tensor.
 //
 // This function performs computations on all elements of the tensor, utilizing concurrency to
@@ -248,24 +189,93 @@ func (t *Tensor) AllOperation(op AllOperation) float64 {
 	return op.CombineResults(results) // Combine the results from all chunks.
 }
 
-func (t *Tensor) Sum_All() float64 {
-	sumOp := SumAllOperation{}
-	return t.AllOperation(sumOp)
+//=========================================================================================================== Summation on All Elements
+
+// SumAllOperation represents a summation operation over the entire tensor.
+type SumAllOperation struct{}
+
+// Apply performs the summation on a chunk of the tensor's data for a go routine.
+func (s SumAllOperation) Apply(A *Tensor, start, end int) float64 {
+	var sum float64
+	for i := start; i < end; i++ { // sum the elements in the goroutine chunk
+		sum += A.data[i]
+	}
+	return sum
 }
 
-func (t *Tensor) Mean_All() float64 {
-	meanOp := MeanAllOperation{}
-	return t.AllOperation(meanOp)
+// CombineResults combines the summation results from each chunk of a go routine.
+func (s SumAllOperation) CombineResults(results []float64) float64 {
+	var sum float64
+	for _, v := range results { // sum the results from each goroutine chunk
+		sum += v
+	}
+	return sum
+}
+
+// Sum_All() calculates the sum of all elements in a tensor. It accepts a Tensor pointer and returns a float64.
+func (A *Tensor) Sum_All() float64 {
+	sumOp := SumAllOperation{}   // <--- create sum operation
+	return A.AllOperation(sumOp) // <--- apply sum operation to all elements
+}
+
+//=========================================================================================================== Mean on All Elements
+
+// MeanAllOperation represents a mean calculation operation over the entire tensor.
+type MeanAllOperation struct{}
+
+// Apply performs the mean calculation on a chunk of the tensor's data for a go routine.
+func (m MeanAllOperation) Apply(A *Tensor, start, end int) float64 {
+	sumOp := SumAllOperation{}        // <--- create sum operation
+	sum := sumOp.Apply(A, start, end) // <--- sum goroutine chunk
+	return sum / float64(end-start)   // <--- avg of chunk
+}
+
+// CombineResults combines the mean results from all chunks of a go routine.
+func (m MeanAllOperation) CombineResults(results []float64) float64 {
+	sumOp := SumAllOperation{}           // <-- create sum operation
+	sum := sumOp.CombineResults(results) // <-- combine sum results from all chunks
+	return sum / float64(len(results))   // <-- return avg of sum
+}
+
+func (A *Tensor) Mean_All() float64 {
+	meanOp := MeanAllOperation{}  // <-- create mean operation
+	return A.AllOperation(meanOp) // <-- apply mean operation to all elements
+}
+
+//=========================================================================================================== Variance on All Elements
+
+// VarAllOperation represents a variance calculation operation over the entire tensor.
+type VarAllOperation struct {
+	mean float64
+}
+
+// Apply is a method of VarAllOperation that performs the variance calculation on a chunk of the tensor's data for a go routine.
+func (v VarAllOperation) Apply(t *Tensor, start, end int) float64 {
+	var variance float64
+	for i := start; i < end; i++ {
+		diff := t.data[i] - v.mean // <--- var definition: sum((x - mean)^2) / n
+		variance += diff * diff    // <--- Appy() performs: (x - mean)^2 for each x
+	}
+	return variance
+}
+
+// CombineResults combines the variance results from all chunks.
+func (v VarAllOperation) CombineResults(results []float64) float64 {
+	sumOp := SumAllOperation{}           // <-- create sum operation
+	sum := sumOp.CombineResults(results) // <-- combine sum results from all chunks
+	return sum / float64(len(results))   // <-- return avg of sum
 }
 
 func (t *Tensor) Var_All() float64 {
-	mean := t.Mean_All()
-	varOp := VarAllOperation{mean: mean}
-	return t.AllOperation(varOp)
+	mean := t.Mean_All()                 // <-- calculate mean
+	varOp := VarAllOperation{mean: mean} // <-- pass mean to variance operation
+	return t.AllOperation(varOp)         // <-- apply variance operation to all elements
 }
 
+//=========================================================================================================== Standard Deviation on All Elements
+
 func (t *Tensor) Std_All() float64 {
-	varOp := VarAllOperation{mean: t.Mean_All()}
-	variance := t.AllOperation(varOp)
-	return math.Sqrt(variance)
+	varOp := VarAllOperation{mean: t.Mean_All()} // <-- pass mean to variance operation
+	variance := t.AllOperation(varOp)            // <-- calculate variance of all elements
+	return math.Sqrt(variance)                   // <-- return sqrt(variance)
 }

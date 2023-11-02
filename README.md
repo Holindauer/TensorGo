@@ -17,11 +17,17 @@ tensors are represented as a 1D slice of floats. However, this library provides 
 for accessing and manipulating the data as if it were a multidimensional array. Below 
 are some functions and methods that can be used to create and access data from Tensors.
 
-### Zero_Tensor() 
-The Zero_Tensor() function accepts a slice of integers that represent the dimensions
-of the tensor. The function returns a pointer to a tensor initialize with zeros.
+### Zero_Tensor(), Ones_Tensor(), Const_Tensor()
+The above funcitons are used to create a tensor of a given shape with a uniform value
+at each element. Const_Tensor() accepts a float64 as a second parameter that represents
+the value of each element. The functions return a pointer to a tensor. Zero_Tensor()
+and Ones_Tensor() internally call Const_Tensor() with the vals their names suggest, but
+only require the shape of the tensor as a parameter.
 
     var tensor *Tensor = Zero_Tensor([]int{2,3,4})
+    var tensor *Tensor = Ones_Tensor([]int{2,3,4})
+    s
+    var tensor *Tensor = Const_Tensor([]int{2,3,4}, 5)
 
 ### Range_Tensor() 
 The Range_Tensor() function accepts a slice of integers that represent the dimensions
