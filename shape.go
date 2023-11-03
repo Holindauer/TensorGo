@@ -1,62 +1,11 @@
 package main
 
+// This source file contains functions related to manipulating the shape of a tensor.
+
 import (
 	"strconv" // <-- used to convert strings to ints
 	"strings"
 )
-
-// This file contains functions for Tensor Operations, irregardless of dimensionality
-
-// This funciton performs scalar multiplication on a tensor in place
-// It returns a pointer to the same tensor
-func Scalar_Mult_(A *Tensor, scalar float64) *Tensor {
-
-	for i := 0; i < len(A.data); i++ {
-		A.data[i] *= scalar
-	}
-
-	return A // <-- Pointer to the same tensor
-}
-
-// This function performs elementwise addition on two tensors
-// The tensors must have the same shape. It returns a pointer to a new tensor
-func Add(A *Tensor, B *Tensor) *Tensor {
-
-	// Check that the tensors have the same shape
-	if !Same_Shape(A, B) {
-		panic("Tensors must have the same shape")
-	}
-
-	// Create a new tensor to hold the result
-	C := Zero_Tensor(A.shape)
-
-	// Perform the elementwise addition
-	for i := 0; i < len(A.data); i++ {
-		C.data[i] = A.data[i] + B.data[i]
-	}
-
-	return C // <-- Pointer to the new tensor
-}
-
-// This function performs elementwise subtraction on two tensors
-// The tensors must have the same shape. It returns a pointer to a new tensor
-func Subtract(A *Tensor, B *Tensor) *Tensor {
-
-	// Check that the tensors have the same shape
-	if !Same_Shape(A, B) {
-		panic("Tensors must have the same shape")
-	}
-
-	// Create a new tensor to hold the result
-	C := Zero_Tensor(A.shape)
-
-	// Perform the elementwise subtraction
-	for i := 0; i < len(A.data); i++ {
-		C.data[i] = A.data[i] - B.data[i]
-	}
-
-	return C // <-- Pointer to the new tensor
-}
 
 // The Partial function is used to retrieve a section out of a Tensor using Python-like slice notation.
 // It accepts a Tensor and a string, then returns a pointer to a new tensor.
@@ -132,8 +81,6 @@ func Partial(A *Tensor, slice string) *Tensor {
 	return partialTensor
 }
 
-// To implement:
-
 // Reshape()  takes a tensors and a new shape for that tensors, and returns a pointer to a
 // new tensors that has the same data as the original tensor, but with the new shape. Reshape
 // can be done in this way becauase data for Tensors in stored contigously in memory.
@@ -154,24 +101,53 @@ func (A *Tensor) Reshape(shape []int) *Tensor {
 	return reshapedTensor
 }
 
-// transpose --- recievs (2, 3, 1, 0) ie a new ordering of dims
-// manipualtes underlying contiugous data to return a new tensor with the new ordering
+// Transpose returns a new tensor with the axes transposed according to the given specification
+// This function is modeled after the NumPy transpose function. It accepts a tensor and an array
+// of integers specifying the new order of the axes. For example, if the tensor has shape [2, 3, 4]
+// and the axes array is [2, 0, 1], then the resulting tensor will have shape [4, 2, 3].
+func (A *Tensor) Transpose(axes []int) *Tensor {
 
-// Functions I am planning to implement are listed below:
+	// Check for invalid axes
+	if len(axes) != len(A.shape) {
+		panic("The number of axes does not match the number of dimensions of the tensor.")
+	}
 
-// einsum
+	// Check for duplicate or out-of-range axes
+	seen := make(map[int]bool) // map is like dict in python
+	for _, axis := range axes {
+		if axis < 0 || axis >= len(A.shape) || seen[axis] {
+			panic("Invalid axis specification for transpose.")
+		}
+		seen[axis] = true
+	}
 
-// various statistical functions
-// mean std var sum prod
+	// Determine the new shape from the reordering in axes
+	newShape := make([]int, len(A.shape))
+	for i, axis := range axes {
+		newShape[i] = A.shape[axis]
+	}
 
-// unique elements of array
+	// Allocate the new tensor
+	newData := make([]float64, len(A.data))
+	B := &Tensor{shape: newShape, data: newData} // <-- B is a pointer to a new tensor
 
-// argmax along a dimension
+	// Reindex and copy data
+	for i := range A.data {
+		// Get the multi-dimensional indices for the current element
+		originalIndices := UnravelIndex(i, A.shape)
 
-// argmin along a dimension
+		// Reorder the indices according to the axes array for transpose
+		newIndices := make([]int, len(originalIndices))
+		for j, axis := range axes {
+			newIndices[j] = originalIndices[axis]
+		}
 
-// covariance matrix computation
+		// Convert the reordered multi-dimensional indices back to a flat index
+		newIndex := Index(newIndices, newShape)
 
-// normalization functions --- implement a few major strategies
+		// Assign the i'th value of original tensor to the newIndex'th val of new tensor
+		B.data[newIndex] = A.data[i]
+	}
 
-// concatenate along an axis
+	return B
+}

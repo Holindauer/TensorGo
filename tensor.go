@@ -55,6 +55,27 @@ func Index(indices []int, dims []int) int {
 	return flattenedIndex
 }
 
+// UnravelIndex converts a flat index into multi-dimensional indices based on the shape of the tensor.
+// index: The flat index in the one-dimensional representation of the tensor.
+// shape: The dimensions of the tensor.
+func UnravelIndex(index int, shape []int) []int {
+	// Create a slice to store the multi-dimensional indices.
+	indices := make([]int, len(shape))
+
+	// Iterate over the shape in reverse order.
+	for i := len(shape) - 1; i >= 0; i-- {
+		// The index for the i-th dimension is the remainder of the index
+		// divided by the size of the i-th dimension.
+		indices[i] = index % shape[i]
+		// Update the index for the next iteration to be the quotient
+		// of the index divided by the size of the i-th dimension.
+		index = index / shape[i]
+	}
+
+	// Return the calculated multi-dimensional indices.
+	return indices
+}
+
 //=============================================================================================================Creating Tensors
 
 // TensorInitializer is an interface for initializing tensor data at each element

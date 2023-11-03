@@ -106,6 +106,19 @@ The function will panic if the dimensions of the two tensors are not compatible.
 
     var length_squared float64 = Dot(tensor1, tensor2)
 
+### Outer Product
+The Outer_Product() function accepts two tensors and returns the outer product of the
+two tensors. The function will panic if the dimensions of the two tensors are not
+both 1D.
+
+    var tensor1 *Tensor = New_Tensor([]int{5})
+    var tensor2 *Tensor = New_Tensor([]int{12})
+    
+    tensor1.data = {1,2,3,4,5}
+    tensor2.data = {1,2,3,4,5,6,7,8,9,10,11,12}
+
+    var outer_product *Tensor = Outer_Product(tensor1, tensor2) // shape: {5,12}
+
 ### Norm() 
 The Norm() function accepts a tensor and returns the norm of the tensor.
 
@@ -281,3 +294,4 @@ Var_All() calculates the variance of all elements in a tensor. This operation re
 
 ### Naming Conventions:
 - Tensor pointers parameters within functions are named with capital letters starting A, B, C, etc.
+- indices refers to a slice for storing a temp multidimensional index of a Tensor

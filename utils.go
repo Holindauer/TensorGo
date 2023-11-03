@@ -2,6 +2,11 @@ package main
 
 // utils.go contains helper functions for this projects
 
+// Operation is an interface representing an operation on individual tensor elements
+type Operation interface {
+	Apply(float64, float64) float64 // performs op on 2 float64s, returns float64
+}
+
 // Helper function for computing the product of elements in a slice
 func Product(shape []int) int {
 	product := 1

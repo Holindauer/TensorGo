@@ -134,3 +134,24 @@ func Cosine_Similarity(t1 *Tensor, t2 *Tensor) float64 {
 
 	return dot(t1, t2) / (Norm(t1) * Norm(t2))
 }
+
+// This function computes the outer product of two vectors
+func Outer_Product(t1 *Tensor, t2 *Tensor) *Tensor {
+
+	// check if tensors are vectors
+	if !(len(t1.shape) == 1 && len(t2.shape) == 1) {
+		panic("Tensors must both be vectors to compute outer product")
+	}
+
+	// create a new tensor to store the result
+	C := Zero_Tensor([]int{len(t1.data), len(t2.data)})
+
+	// compute the outer product
+	for i := 0; i < len(t1.data); i++ {
+		for j := 0; j < len(t2.data); j++ {
+			C.data[i*len(t2.data)+j] = t1.data[i] * t2.data[j] // Cij = ai * bj
+		}
+	}
+
+	return C
+}
