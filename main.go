@@ -4,22 +4,10 @@ import (
 	"fmt"
 )
 
-// Functions I am intednding to implement are listed below:
+// NOTE: go over funcs/methods and be deliberate about why a func is a methods
+// vs a func. Propbably make inplace methods methods and the rest funcs
 
-// transpose --- recievs (2, 3, 1, 0) ie a new ordering of dims
-// manipualtes underlying contiugous data to return a new tensor with the new ordering
-// perhaps this could be implemented by adding a new member to the tensor struct called
-// something like: "special_indexing" which would be able to be set to a new ordering of dims
-// and then the data would be manipulated to return a new tensor with the new ordering
-
-// Symetrix_Matrix --- R * R^T <--- Requires Transpose first
-
-// Functions I am planning to implement are listed below:
-
-// einsum
-
-// various statistical functions
-// mean std var sum prod
+// Functions I am intednding to implement are listed below
 
 // unique elements of array
 
@@ -39,12 +27,28 @@ import (
 // It is about testing the functionality of the code in the other files.
 func main() {
 
-	// Test the transpose function
-	A := Range_Tensor([]int{3, 4})
-	fmt.Println("A:")
+	//Test the concat funciton on a 2D tensor
+	A := Range_Tensor([]int{2, 3})
 	Display_Matrix(A)
+	println("")
 
-	fmt.Println("A.T:")
-	Display_Matrix(A.Transpose([]int{1, 0}))
+	B := Range_Tensor([]int{2, 3})
+	Display_Matrix(B)
+	println("")
+
+	// Concatenate A and B along the first axis
+	C := A.Concat(B, 0)
+
+	// Display the concatenated tensor
+	fmt.Println("Concatenated Tensor back in Main")
+	Display_Matrix(C)
+
+	// Test Transpose function on a 2D tensor
+	// A := Range_Tensor([]int{2, 3})
+	// Display_Matrix(A)
+
+	// // Transpose A
+	// A_T := A.Transpose([]int{1, 0})
+	// Display_Matrix(A_T)
 
 }

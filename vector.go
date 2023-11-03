@@ -136,6 +136,7 @@ func Cosine_Similarity(t1 *Tensor, t2 *Tensor) float64 {
 }
 
 // This function computes the outer product of two vectors
+// it returns a pointer to a new 2D tensor
 func Outer_Product(t1 *Tensor, t2 *Tensor) *Tensor {
 
 	// check if tensors are vectors

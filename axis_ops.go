@@ -8,6 +8,11 @@ import (
 
 // =========================================================================================================== Axis Operations Generalization
 
+// Operation is an interface representing an operation on individual tensor elements
+type Operation interface {
+	Apply(float64, float64) float64 // performs op on 2 float64s, returns float64
+}
+
 // AxisOperation applies a specified operation along a given axis of the tensor.
 //
 // This function performs computations along a specific axis of the tensor, collapsing

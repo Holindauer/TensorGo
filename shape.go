@@ -3,6 +3,7 @@ package main
 // This source file contains functions related to manipulating the shape of a tensor.
 
 import (
+	"fmt"
 	"strconv" // <-- used to convert strings to ints
 	"strings"
 )
@@ -150,4 +151,90 @@ func (A *Tensor) Transpose(axes []int) *Tensor {
 	}
 
 	return B
+}
+
+// tenors_1.Concat(tensor_2, axi_of_concatenation) returns a new tensor that is the concatenation
+// of the two tensors along the specified axis. The axis of concatenation must have the same length
+// for both tensors, but all other axes must be the same length.
+func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
+
+	// Ensure that the number of dimensions of the tensors are the same
+	if len(A.shape) != len(B.shape) {
+		panic("The number of dimensions of the tensors must be the same.")
+	}
+
+	// Ensure that the shape of the tensors are the same except for the axis of concatenation
+	for i := 0; i < len(A.shape); i++ {
+		if i != axis_cat && A.shape[i] != B.shape[i] { // Condition is satisfied when i'th dim  of A and B are not equal and i != axis_cat ,, ie the shapes are not the same except for the axis of concatenation
+			panic("The shapes of the tensors must be the same except for the axis of concatenation.")
+		}
+	}
+
+	// Determine the shape of the concatenated tensor
+	concatShape := make([]int, len(A.shape))
+	for i := 0; i < len(A.shape); i++ {
+		if i == axis_cat {
+			concatShape[i] = A.shape[i] + B.shape[i] // <--- concatenation extends this dimension
+		} else {
+			concatShape[i] = A.shape[i]
+		}
+	}
+
+	// This algorithm relies on Transposing Tensor A and B such that the axis of concatenation is the last axis
+	// for them both. We'll use the Transpose() method to do this, which takes an array of integers specifying
+	// the reordering of the axes. For example, if the tensor has shape [2, 3, 4] and the axes array is [2, 0, 1],
+
+	// Here we are reordering the axes such that the axis of concatenation is the last axis
+	axes_reordering := make([]int, len(A.shape))
+	for i := 0; i < len(A.shape); i++ {
+		axes_reordering[i] = i
+	}
+
+	// create a copy of the original axis before reordering
+	original_axis_order := make([]int, len(A.shape))
+	copy(original_axis_order, axes_reordering)
+
+	// If the axis of concatenation is the last axis of the tensor, then we don't need to do anything.
+	if axis_cat != len(A.shape)-1 {
+		axes_reordering[axis_cat] = 0
+		axes_reordering[0] = axis_cat
+	} else if axis_cat == len(A.shape)-1 {
+		axes_reordering[axis_cat] = len(A.shape) - 1
+		axes_reordering[len(A.shape)-1] = axis_cat
+
+	}
+
+	// Print A and B before Transposing
+	fmt.Println("Before Transposing")
+	Display_Matrix(A)
+	fmt.Println("")
+	Display_Matrix(B)
+	fmt.Println("")
+
+	// Transpose A and B with the axes reordering
+	A_T := A.Transpose(axes_reordering)
+	B_T := B.Transpose(axes_reordering)
+
+	// Print A_T and B_T after Transposing
+	fmt.Println("After Transposing")
+	Display_Matrix(A_T)
+	fmt.Println("")
+	Display_Matrix(B_T)
+	fmt.Println("")
+
+	// Because we've moved the Axis of concatenation to the last axis, appening the contigous
+	// data does not require any striding of the multidimensional data. We can simply append
+	// the data from A_T and B_T to create the Tranposed concatenated data.
+	concatData := append(A_T.data, B_T.data...) // <--- the dots unpack the elements of B_T.data
+
+	// create new tensor pointer with the concatenated data and shape
+	concatTensor := &Tensor{shape: concatShape, data: concatData}
+
+	// Print the concatenated tensor
+	fmt.Println("Concatenated Tensor")
+	Display_Matrix(concatTensor)
+	fmt.Println("")
+
+	// Return the Transpose of the concatenated tensor with the original axis order
+	return concatTensor.Transpose(original_axis_order)
 }

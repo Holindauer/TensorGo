@@ -72,8 +72,8 @@ tensors have the same shape.
 The Copy() function accepts a Tensor pointer and returns a pointer to a new Tensors
 that is a copy of the original tensor.
 
-    var tensor1 *Tensor = New_Tensor([]int{2,3,4})
-    var tensor1_copy *Tensor = Copy(tensor1)
+    var tensor *Tensor = Range_Tensor([]int{2,3,4})
+    var tensor_copy *Tensor = tensor.Copy()
 
 ### Eye()
 The Eye() function accepts an integer and returns a pointer to a tensor that is a
