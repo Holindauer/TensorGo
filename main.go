@@ -27,28 +27,20 @@ import (
 // It is about testing the functionality of the code in the other files.
 func main() {
 
-	//Test the concat funciton on a 2D tensor
-	A := Range_Tensor([]int{2, 3})
-	Display_Matrix(A)
-	println("")
+	// Test Concat() on a 2d tensor in both axes
+	t1 := Range_Tensor([]int{2, 5})
+	t2 := Range_Tensor([]int{2, 5})
 
-	B := Range_Tensor([]int{2, 3})
-	Display_Matrix(B)
-	println("")
+	Display_Matrix(t1)
+	fmt.Println("")
+	Display_Matrix(t2)
+	fmt.Println("")
 
-	// Concatenate A and B along the first axis
-	C := A.Concat(B, 0)
+	t3 := t1.Concat(t2, 0)
+	Display_Matrix(t3)
+	fmt.Println("")
 
-	// Display the concatenated tensor
-	fmt.Println("Concatenated Tensor back in Main")
-	Display_Matrix(C)
-
-	// Test Transpose function on a 2D tensor
-	// A := Range_Tensor([]int{2, 3})
-	// Display_Matrix(A)
-
-	// // Transpose A
-	// A_T := A.Transpose([]int{1, 0})
-	// Display_Matrix(A_T)
+	t4 := t1.Concat(t2, 1)
+	Display_Matrix(t4)
 
 }
