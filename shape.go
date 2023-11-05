@@ -5,6 +5,7 @@ package main
 import (
 	"strconv" // <-- used to convert strings to ints
 	"strings"
+	"sync"
 )
 
 // The Partial function is used to retrieve a section out of a Tensor using Python-like slice notation.
@@ -254,4 +255,64 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 	}
 
 	return concatTensor
+}
+
+// The Extend() method is used to add a new dimmension to the tensor. The new dimmension each element
+// across the new dimmension contains a state of the pre extended tensor with all other dimmension elements
+// copied into it. The new dimmension is added to the end of the shape of the tensor. The Extend() method
+// returns a pointer to a new tensor with the extended shape and zeroed data.
+func (A *Tensor) Extend(num_elements int) *Tensor {
+	// Check that the number of elements is valid
+	if num_elements < 1 {
+		panic("The number of elements must be positive.")
+	}
+
+	// Create a new shape with the additional dimension
+	newShape := make([]int, len(A.shape)+1)
+	copy(newShape, A.shape)               // <--- Copy the original shape
+	newShape[len(A.shape)] = num_elements // <---  Add the new dimension at the end
+
+	// Create a new tensor with the extended shape and zeroed data
+	extendedTensor := Zero_Tensor(newShape)
+
+	// WaitGroup to wait for all goroutines to finish
+	var wg sync.WaitGroup
+
+	// Recursive function to fill the extended tensor
+	var fillExtendedTensor func(int, []int)
+	fillExtendedTensor = func(dim int, tempIndex []int) {
+		defer wg.Done()
+
+		if dim == len(A.shape) { // If we reached the last original dimension
+			srcFlattenedIndex := Index(tempIndex[:len(tempIndex)-1], A.shape)
+			for i := 0; i < num_elements; i++ {
+				tempIndex[len(tempIndex)-1] = i
+				dstFlattenedIndex := Index(tempIndex, newShape)
+				extendedTensor.data[dstFlattenedIndex] = A.data[srcFlattenedIndex]
+			}
+			return
+		}
+
+		// Recursively process each index in the current dimension
+		for i := 0; i < A.shape[dim]; i++ {
+			// Make a copy of tempIndex for concurrent use
+			newTempIndex := make([]int, len(tempIndex))
+			copy(newTempIndex, tempIndex)
+			newTempIndex[dim] = i
+
+			wg.Add(1)
+			// Start a new goroutine for each recursive call
+			go fillExtendedTensor(dim+1, newTempIndex)
+		}
+	}
+
+	// Add to the WaitGroup and start the first call to fillExtendedTensor
+	wg.Add(1)
+	go fillExtendedTensor(0, make([]int, len(newShape)))
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+
+	// Return the filled extended tensor
+	return extendedTensor
 }
