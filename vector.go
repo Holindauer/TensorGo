@@ -29,7 +29,7 @@ func dot(t1 *Tensor, t2 *Tensor) float64 {
 
 	// check if tensors are vectors
 	if Check_Vector_Compatibility(t1, t2) == false {
-		panic("Tensors must both be vectors to compute dot product")
+		panic("Within dot(): Tensors must both be vectors to compute dot product")
 	}
 
 	numGoroutines := 4 // Adjust this value to control the number of goroutines
@@ -76,7 +76,7 @@ func Norm(t *Tensor) float64 {
 
 	// check if tensor is a vector
 	if len(t.shape) != 1 {
-		panic("Tensor must be a vector to compute norm")
+		panic("Within Norm(): Tensor must be a vector to compute norm")
 	}
 
 	return math.Sqrt(dot(t, t))
@@ -88,7 +88,7 @@ func Unit(A *Tensor) *Tensor {
 
 	// check if tensor is a vector
 	if len(A.shape) != 1 {
-		panic("Tensor must be a vector to compute unit vector")
+		panic("Within Unit(): Tensor must be a vector to compute unit vector")
 	}
 
 	norm := Norm(A) // compute norm of A
@@ -113,7 +113,7 @@ func Check_Perpendicular(t1 *Tensor, t2 *Tensor) bool {
 
 	// check if tensors are vectors
 	if Check_Vector_Compatibility(t1, t2) == false {
-		panic("Tensors must both be vectors to check if perpendicular")
+		panic("Within Check_Perpindicular(): Tensors must both be vectors to check if perpendicular")
 	}
 
 	// check if the dot product is zero
@@ -129,7 +129,7 @@ func Cosine_Similarity(t1 *Tensor, t2 *Tensor) float64 {
 
 	// check if tensors are vectors
 	if Check_Vector_Compatibility(t1, t2) == false {
-		panic("Tensors must both be vectors to compute cosine similarity")
+		panic("Wihtin Cosine_Similarity(): Tensors must both be vectors to compute cosine similarity")
 	}
 
 	return dot(t1, t2) / (Norm(t1) * Norm(t2))
@@ -141,7 +141,7 @@ func Outer_Product(t1 *Tensor, t2 *Tensor) *Tensor {
 
 	// check if tensors are vectors
 	if !(len(t1.shape) == 1 && len(t2.shape) == 1) {
-		panic("Tensors must both be vectors to compute outer product")
+		panic("Within Outer_Product(): Tensors must both be vectors to compute outer product")
 	}
 
 	// create a new tensor to store the result

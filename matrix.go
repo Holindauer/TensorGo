@@ -12,12 +12,12 @@ func Matmul(A *Tensor, B *Tensor) *Tensor {
 
 	// check if tensor shapes are compatible for matmul
 	if len(A.shape) != 2 || len(B.shape) != 2 {
-		panic("Tensors must both be 2D to compute matmul")
+		panic("Within Matmul(): Tensors must both be 2D to compute matmul")
 	}
 
 	// check if mxn and nxp
 	if A.shape[1] != B.shape[0] {
-		panic("2D Tensors must be compatible for matmul")
+		panic("Within Matmul(): 2D Tensors must be compatible for matmul")
 	}
 
 	C := Zero_Tensor([]int{A.shape[0], B.shape[1]}) // <-- returns pointer to Tensor struct
@@ -87,6 +87,6 @@ func Display_Matrix(t *Tensor) {
 		}
 		fmt.Println()
 	} else {
-		fmt.Println("Tensor must be 1D or 2D to display as matrix or vector")
+		fmt.Println("Within Display_Matrix(): Tensor must be 1D or 2D to display as matrix or vector")
 	}
 }

@@ -102,7 +102,7 @@ func Eye(size int) *Tensor {
 func Gramien_Matrix(A *Tensor) *Tensor {
 	// Check that A 2D
 	if len(A.shape) != 2 {
-		panic("Gramien_Matrix() --- Tensor must be 2D")
+		panic("Within Gramien_Matrix(): Tensor must be 2D")
 	}
 
 	return Matmul(A, A.Transpose([]int{1, 0}))

@@ -32,7 +32,7 @@ type Operation interface {
 // It returns a pointer to a new Tensor that is the result of applying the operation.
 func (A *Tensor) AxisOperation(axis int, op Operation) *Tensor {
 	if axis < 0 || axis >= len(A.shape) { // <--- Check that the axis is valid.
-		panic("Invalid axis")
+		panic("Within AxisOperation(): Invalid axis")
 	}
 
 	// Calculate the shape of the result tensor.

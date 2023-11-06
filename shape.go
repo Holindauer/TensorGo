@@ -3,9 +3,9 @@ package main
 // This source file contains functions related to manipulating the shape of a tensor.
 
 import (
+	//"fmt"
 	"strconv" // <-- used to convert strings to ints
 	"strings"
-	"sync"
 )
 
 // The Partial function is used to retrieve a section out of a Tensor using Python-like slice notation.
@@ -18,7 +18,7 @@ func Partial(A *Tensor, slice string) *Tensor {
 	slice = strings.ReplaceAll(slice, " ", "")
 	split := strings.Split(slice, ",")
 	if len(split) != len(A.shape) {
-		panic("String slice arg must have the same number of dimensions as the tensor")
+		panic("Within Partial(): String slice arg must have the same number of dimensions as the tensor")
 	}
 
 	// Initialize slices to store the shape of the partial tensor and the start/end indices for each dimension.
@@ -92,7 +92,7 @@ func (A *Tensor) Reshape(shape []int) *Tensor {
 		numElements *= v
 	}
 	if numElements != len(A.data) {
-		panic("Cannot reshape tensor to shape with different number of elements")
+		panic("Within Reshape(): Cannot reshape tensor to shape with different number of elements")
 	}
 	// Create a new tensor to store the reshaped data with the shape param
 	reshapedTensor := Zero_Tensor(shape)
@@ -110,14 +110,14 @@ func (A *Tensor) Transpose(axes []int) *Tensor {
 
 	// Check for invalid axes
 	if len(axes) != len(A.shape) {
-		panic("The number of axes does not match the number of dimensions of the tensor.")
+		panic("Within Transpose(): The number of axes does not match the number of dimensions of the tensor.")
 	}
 
 	// Check for duplicate or out-of-range axes
 	seen := make(map[int]bool) // map is like dict in python
 	for _, axis := range axes {
 		if axis < 0 || axis >= len(A.shape) || seen[axis] {
-			panic("Invalid axis specification for transpose.")
+			panic("Within Transpose(): Invalid axis specification for transpose.")
 		}
 		seen[axis] = true
 	}
@@ -173,18 +173,18 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 
 	// Ensure that the number of dimensions of the tensors are the same
 	if len(A.shape) != len(B.shape) {
-		panic("The number of dimensions of the tensors must be the same.")
+		panic("Within Concat(): The number of dimensions of the tensors must be the same.")
 	}
 
 	// Check that axis_cat is within the valid range
 	if axis_cat < 0 || axis_cat >= len(A.shape) {
-		panic("axis_cat is out of bounds for the shape of the tensors.")
+		panic("Within Concat(): axis_cat is out of bounds for the shape of the tensors.")
 	}
 
 	// Ensure that the shape of the tensors are the same except for the axis of concatenation
 	for i := 0; i < len(A.shape); i++ {
 		if i != axis_cat && A.shape[i] != B.shape[i] {
-			panic("The shapes of the tensors must be the same except for the axis of concatenation.")
+			panic("Within Concat(): The shapes of the tensors must be the same except for the axis of concatenation.")
 		}
 	}
 
@@ -261,29 +261,29 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 // across the new dimmension contains a state of the pre extended tensor with all other dimmension elements
 // copied into it. The new dimmension is added to the end of the shape of the tensor. The Extend() method
 // returns a pointer to a new tensor with the extended shape and zeroed data.
-func (A *Tensor) Extend(num_elements int) *Tensor {
+func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	// Check that the number of elements is valid
 	if num_elements < 1 {
-		panic("The number of elements must be positive.")
+		panic("Within Extend_Shape(): The number of elements must be positive.")
 	}
 
 	// Create a new shape with the additional dimension
 	newShape := make([]int, len(A.shape)+1)
-	copy(newShape, A.shape)               // <--- Copy the original shape
-	newShape[len(A.shape)] = num_elements // <---  Add the new dimension at the end
+	copy(newShape, A.shape)               // Copy the original shape
+	newShape[len(A.shape)] = num_elements // Add the new dimension at the end
 
 	// Create a new tensor with the extended shape and zeroed data
 	extendedTensor := Zero_Tensor(newShape)
 
-	// WaitGroup to wait for all goroutines to finish
-	var wg sync.WaitGroup
+	// Fill the extended tensor with data from the original tensor
+	// Initialize a slice to store the current multi-dimensional index for the new tensor
+	tempIndex := make([]int, len(newShape))
 
 	// Recursive function to fill the extended tensor
-	var fillExtendedTensor func(int, []int)
-	fillExtendedTensor = func(dim int, tempIndex []int) {
-		defer wg.Done()
-
+	var fillExtendedTensor func(int)
+	fillExtendedTensor = func(dim int) {
 		if dim == len(A.shape) { // If we reached the last original dimension
+			// Copy the data from the original tensor to the extended tensor
 			srcFlattenedIndex := Index(tempIndex[:len(tempIndex)-1], A.shape)
 			for i := 0; i < num_elements; i++ {
 				tempIndex[len(tempIndex)-1] = i
@@ -295,24 +295,67 @@ func (A *Tensor) Extend(num_elements int) *Tensor {
 
 		// Recursively process each index in the current dimension
 		for i := 0; i < A.shape[dim]; i++ {
-			// Make a copy of tempIndex for concurrent use
-			newTempIndex := make([]int, len(tempIndex))
-			copy(newTempIndex, tempIndex)
-			newTempIndex[dim] = i
-
-			wg.Add(1)
-			// Start a new goroutine for each recursive call
-			go fillExtendedTensor(dim+1, newTempIndex)
+			tempIndex[dim] = i
+			fillExtendedTensor(dim + 1)
 		}
 	}
 
-	// Add to the WaitGroup and start the first call to fillExtendedTensor
-	wg.Add(1)
-	go fillExtendedTensor(0, make([]int, len(newShape)))
-
-	// Wait for all goroutines to finish
-	wg.Wait()
+	// Start the recursive process from the first dimension
+	fillExtendedTensor(0)
 
 	// Return the filled extended tensor
+	return extendedTensor
+}
+
+// The Extend_Dim() method is used to add new dimmensions to an already existing axis within a tensor.
+// The new data will be initialized to zero. The integer argument axis specifies the axis to be extended,
+// and the integer argument num_elements specifies the number of zeroed elements to be added to the axis.
+// The Extend_Dim() method returns a pointer to a new tensor with the extended shape and zeroed data.
+func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
+	// Check that the axis is valid
+	if axis < 0 || axis >= len(A.shape) {
+		panic("Within Extend_Dim(): The axis is out of bounds for the shape of the tensor.")
+	}
+
+	// Check that the number of elements is valid
+	if num_elements < 1 {
+		panic("Within Extend_Dim(): The number of elements must be positive and greater than 0.")
+	}
+
+	// Create a new shape with extended dimmension
+	newShape := make([]int, len(A.shape))
+	copy(newShape, A.shape)                       // <--- Copy the original shape
+	newShape[axis] = num_elements + A.shape[axis] // <--- Add the new dimension to axis
+
+	// Create a new tensor with the extended shape and zeroed data
+	extendedTensor := Zero_Tensor(newShape)
+
+	// Next is to fill the extended tensor with data from the original tensor. First,
+	// Initialize a slice to store the current multi-dimensional index for the new tensor
+	tempIndex := make([]int, len(newShape))
+
+	// Recursive function to fill the extended tensor
+	var fillExtendedTensor func(int)
+	fillExtendedTensor = func(dim int) {
+		if dim >= len(A.shape) {
+			// As the recursion unwinds, this base case is reached where we copy data from the original tensor in the appropriate idx
+			srcFlattenedIndex := Index(tempIndex, A.shape)  // <---  Index() call for og vs dest differ by shape provided as arg
+			dstFlattenedIndex := Index(tempIndex, newShape) // <---
+			extendedTensor.data[dstFlattenedIndex] = A.data[srcFlattenedIndex]
+			return
+		}
+
+		// Recursively process each index in the current dimension  By default the new tensors have
+		// zeroed data, so we only need to copy data from the original tensor @ appropriate indices
+		// each recursive call iterates over all elements within a single dimmension of the tensor
+		for i := 0; i < A.shape[dim]; i++ {
+			tempIndex[dim] = i
+			fillExtendedTensor(dim + 1)
+		}
+	}
+
+	// Start the recursive process from the first dimension
+	fillExtendedTensor(0)
+
 	return extendedTensor
 }

@@ -162,7 +162,7 @@ func Add(A *Tensor, B *Tensor) *Tensor {
 
 	// Check that the tensors have the same shape
 	if !Same_Shape(A, B) {
-		panic("Tensors must have the same shape")
+		panic("Within Add(): Tensors must have the same shape")
 	}
 
 	// Create a new tensor to hold the result
@@ -184,7 +184,7 @@ func Subtract(A *Tensor, B *Tensor) *Tensor {
 
 	// Check that the tensors have the same shape
 	if !Same_Shape(A, B) {
-		panic("Tensors must have the same shape")
+		panic("Wihtin Subtract(): Tensors must have the same shape")
 	}
 
 	// Create a new tensor to hold the result

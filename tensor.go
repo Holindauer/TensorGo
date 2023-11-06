@@ -16,7 +16,7 @@ func (t *Tensor) Retrieve(indices []int) float64 {
 	// check if each index of each dim is within the bounds of the tensor
 	for i, index := range indices {
 		if index >= t.shape[i] {
-			panic("Retrieve() --- Index out of bounds")
+			panic("Within Retrieve(); Index out of bounds")
 		}
 	}
 
@@ -32,7 +32,7 @@ func Index(indices []int, dims []int) int {
 
 	// check that the number of indices matches the number of dimensions
 	if len(indices) != len(dims) {
-		panic("Number of indices must match number of dimensions")
+		panic("Within Index(): Number of indices must match number of dimensions")
 	}
 
 	strides := make([]int, len(dims)) // create a slice of ints to store the strides
