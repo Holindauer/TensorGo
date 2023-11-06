@@ -13,7 +13,7 @@ import (
 // Example:
 // A := Range_Tensor([]int{3, 4, 9, 2})
 // A_Partial := Partial(A, "0:2, 2:, :3, :")
-func Partial(A *Tensor, slice string) *Tensor {
+func (A *Tensor) Partial(slice string) *Tensor {
 	// Remove spaces and split the slice string by commas to handle each dimension separately.
 	slice = strings.ReplaceAll(slice, " ", "")
 	split := strings.Split(slice, ",")

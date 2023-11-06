@@ -1,297 +1,279 @@
 # Go-LinAlg
 GoLang Linear Algebra Library
 
+-----------------------------------------------------------------------------------------------------
 
-The goal of this repository is to create an linear algebra library in golang that
-takes advantage of concurrency. The ideas and formulas used within this repository will 
-come from Gilbert Strang's Introduction to Linear Algebra.
+The goal of this repository is to create a linear algebra library in GoLang that is easy to use and understand.
+Many of the ideas and concepts implemented in this repository come from Introduction to Linear Algebra by Gilbert Strang
+and adaptations from the NumPy library.
 
 # Documentation:
-The following is an explanation of how Tensors are represened in this library, and how to use and perform operations on them.
 
 -----------------------------------------------------------------------------------------------------
 
 # Tensors
-The basic datatype of this library are tensors, ie multidimensional arrays. In memory 
-tensors are represented as a 1D slice of floats. However, this library provides methods
-for accessing and manipulating the data as if it were a multidimensional array. Below 
-are some functions and methods that can be used to create and access data from Tensors.
+This library represents Tensors (n-dimmensional arrays) as a 1D slice of float64 values stored contiguosly in memory.  
+Multidimmensionality is simulated using a stride based indexing schema. A Tensor struct contains two members:
 
-### Zero_Tensor(), Ones_Tensor(), Const_Tensor()
-The above funcitons are used to create a tensor of a given shape with a uniform value
-at each element. Const_Tensor() accepts a float64 as a second parameter that represents
-the value of each element. The functions return a pointer to a tensor. Zero_Tensor()
-and Ones_Tensor() internally call Const_Tensor() with the vals their names suggest, but
-only require the shape of the tensor as a parameter.
+    - Data: A 1D slice of float64 values
+    - Shape: A 1D slice of int values representing the multi-dimmensional shape of the tensor
 
-    var tensor *Tensor = Zero_Tensor([]int{2,3,4})
-    var tensor *Tensor = Ones_Tensor([]int{2,3,4})
-    s
-    var tensor *Tensor = Const_Tensor([]int{2,3,4}, 5)
+-----------------------------------------------------------------------------------------------------
 
-### Range_Tensor() 
-The Range_Tensor() function accepts a slice of integers that represent the dimensions
-of the tensor. The function returns a pointer to a tensor initialize with the range of
+# Tensor Initialization
+Tensor initialization functions in this library always return a pointer to a Tensor struct.  The following functions
+are used to create different types of Tensors:
 
-    var tensor *Tensor = Range_Tensor([]int{2,3,4})
+### Const_Tensor(), Zero_Tensor(), Ones_Tensor()
+The Const_Tensor() function accepts a slice of ints representing the shape of the Tensor and a float64 value to fill its data member with.
+Range_Tensor and Ones_Tensors() call Const_Tensor() internally, filling the data member with the float64 value their names suggest. 
 
-### tensor.Retrieve()
-The Retrieve() function accepts a slice of integers that represent the index of the
-element you want to access. The function returns the value of the element at the given
-index. The function will panic if the index is out of bounds.
+    var A *Tensor = Const_Tensor([]int{2, 2, 8}, 1.7) // <--- Creates a 2x2x8 Tensor filled with 1.7
 
-    var tensor *Tensor = New_Tensor([]int{2,3,4})
-    var element float64 = tensor.Retrieve([]int{1,2,3})
+    var B *Tensor = Zero_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with 0.0 
+    var C *Tensor = Ones_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with 1.0
 
-### Index()
-A tensor can also be indexed using the Index() function. Tensor data is represented in 
-memory as a 1D contiguous slice of floats, regardless of the dimensionality of the
-tensor. The benefit of this method of storage is that there is no need for a Flatten() 
-function, since the data is flattened by default. This function is called internally 
-within the tensor.Retrieve() method.
+### Range_Tensor()
+The Range_Tensor() function accepts a slice of ints representing the shape of the Tensor and fills the contiguous memory with float64 values
+incrementing up the indicies from 0 to len(tensor.data)-1
 
-The Index() function accepts a slice of integers that represent the index
-of the element you want to access and a slice representing the dimensions of the
-tensor. The function returns the index of the element in the 1D slice.
+    var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
 
-    var tensor *Tensor = New_Tensor([]int{2,3,4})
-    var index int = Index([]int{1,2,3}, []int{2,3,4})
-    
-    var element float64 = tensor.data[index]
+### Copy()
+The Copy() function accepts a pointer to a Tensor struct and returns a pointer to a new Tensor struct with the same shape and data values as the input Tensor.
 
-### Same_Shape()
-The Same_Shape() function accepts two Tensor pointers and returns true if the two
-tensors have the same shape. 
-
-    var tensor1 *Tensor = New_Tensor([]int{2,3,4})
-    var tensor2 *Tensor = New_Tensor([]int{2,3,4})
-    
-    var same_shape bool = Same_Shape(tensor1, tensor2)
-
-### Copy() 
-The Copy() function accepts a Tensor pointer and returns a pointer to a new Tensors
-that is a copy of the original tensor.
-
-    var tensor *Tensor = Range_Tensor([]int{2,3,4})
-    var tensor_copy *Tensor = tensor.Copy()
+    var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+    var B *Tensor = Copy(A)                      // <--- Creates a new Tensor with the same shape and data values as A
 
 ### Eye()
-The Eye() function accepts an integer and returns a pointer to a tensor that is a
-2D identity matrix of the given size.
+The Eye() function accepts an integer argument represeting the shape of a square matrix. It returns a pointer to a 2D Tensor struct containing an identity matrix.
 
-    var tensor *Tensor = Eye(5)
+    var A *Tensor = Eye(3) // <--- Creates a 3x3 identity matrix
 
-### Partial() 
-The Partial() function accepts a Tensor pointer and a string representing that contains a 
-python style slice. The function returns a pointer to a new tensor that is a partial
-copy of the original tensor. The function will panic if the slice is not valid.
+### Gramien_Matrix()
+The Gramient_Matrix() function accepts a 2D Tensor and returns a pointer to a Tensor struct that is the Matrix Multiplication of the input Tensor and its transpose.
 
-    var tensor *Tensor = New_Tensor([]int{2,3,4})
-    var tensor_partial *Tensor = Partial(tensor, "0:1,1:3,2:4")
+    var A *Tensor = Range_Tensor([]int{8, 7}) // <--- Creates a 8x7 Tensor filled with values from 0 to 55
+    var B *Tensor = Gramien_Matrix(A)         // <--- Creates a 8x8 Gramien Matrix
+
+-----------------------------------------------------------------------------------------------------
+
+# Tensor Indexing
+Tensor data is stored in memory as a 1D slice of float64 values. Multidimmensionality is simulated using the follwing indexing functions. These functions implement a stride based indexing schema. 
+This means that for a slice of ints representing the multidimensional index of a tensor, the index of the flat 1D slice that corresponds to the multidimensional index is computed and then can be used
+to simply index the 1D slice. The intuition is that for a flattned multidimmensional array, in order to reach the next element of a given dimmension, you must "skip" over all the values of the high dimmension above it (contiguously stored values that is).
+
+### Retrieve()
+The retireve method acts on a Tensor struct and accepts a slice of ints representing an indexing of that Tensor. The method returns the value at that indexing.
+    
+        var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+        var B float64 = A.Retrieve([]int{1, 1, 1})   // <--- B = 29
+
+### Index()
+The Index() function is called internally within Retrieve() to calculate the flattened index from a multidimmensional array. However it can also be called on its own. It accepts 
+a slice of ints representing the multidimmensional indexing meant to be retrieved from the Tensor. As well as the shape of the Tensor being indexed. It returns an integer of the flat index.
+
+        var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+        var idx int = Index([]int{1, 1, 1}, A.shape) // <--- idx = 29
+
+### Unravel_Index()
+If you find yourself in a situation where you need to compute the multidimmensional indexing of a Tensor from its flattened index, you can use the Unravel_Index() function. It accepts an integer representing the flattened index
+and a slice of ints representing the shape of the Tensor. It returns a slice of ints representing the multidimmensional indexing of the Tensor.
+
+        var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+        var idx int = Index([]int{1, 1, 1}, A.shape) // <--- idx = 29
+        var idxs []int = Unravel_Index(idx, A.shape) // <--- idxs = []int{1, 1, 1}
+
+-----------------------------------------------------------------------------------------------------
+
+# Tensor Shape Operations
+The following functions are used to manipulate the shape of a Tensor.
+
+### Partial()
+The Partial method is used to retrieve a portion of a Tensor. It acts on a Tensor struct and accepts a string containing a python stye slice notation indexing of the Tensor. It returns a pointer to a new Tensor struct containing the portion of the Tensor specified by the slice notation. The Bounds of the slice notation are exlusive, to index the end of the Tensor, use the ":" character. The ":" character can also be used to index the entire Tensor along a given dimmension.
+
+        var A *Tensor = Range_Tensor([]int{8, 8, 8, 8}) // <--- Creates an 8x8x8x8 Tensor 
+        var B *Tensor = A.Partial(":, 4:6, :6, 2:")     // <--- Creates a 8x2x6x6 Tensor
+
+### Reshape()
+The Reshape() method Copys the data from the Tensor it acts on into the shape specified by the slice of ints passed in as an argument. The product of the shape must be equal to the length of the data. It returns a pointer to a new Tensor struct with the new shape.
+    
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B *Tensor = A.Reshape([]int{4, 4})       // <--- Creates a 4x4 Tensor filled with values from 0 to 15
+
+### Transpose()
+The Transpose method acts on a Tensor and accepts a slice of ints representing an intended reordering of the dimmensions of the Tensor. Under the hood, creates a new Tensor struct of which its contiguous data has been reorganized to match the dimmensions of the swapped dimmensions. It returns a pointer to a new Tensor struct with the new shape.
+
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B *Tensor = A.Transpose([]int{2, 0, 1})  // <--- Creates a 8x2x2 Tensor the data is no longer 0 to 63
+
+### Concat()
+The Concat() method acts on a Tensor by concatenating a Tensor argument along a specified dimmension. It returns a pointer to a new Tensor struct with the new shape. 
+
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var C *Tensor = A.Concat(B, 2)               // <--- Creates a 2x2x16 Tensor
+
+Under the hood, the Tensor is Transposed such that the axis of concatenation is swapped with the first dimmension (if needed) then the contiguos data of the arg Tensor is appeneded contiguously to the data of the Tensor it acts on. Finally the shape is updated to reflect the new shape.
+
+### Extend_Dim()
+The Extened_Dim() method acts on a Tensor by extending the length of a specified dimmension by a specified amount. The new values along that dimmension are initialized to zero. 
+
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B *Tensor = A.Extend_Dim(2, 4)           // <--- Creates a 2x2x12 Tensor with the new 2x2x4 data initialized to 0.0
+
+### Extend_Shape()
+The Extend_Shape() method acts on a Tensor by extneding the number of dimmension of the Tensor by 1. This added dim is appended to the end of the original shape. This new dimmension has the elements specified by the num_elements integer argument. For each element of the new dim, it can be thought of that a new 'state' of the original Tensor shape has been created. By deault, this 'state' is the same as the original Tensor. This becomes more dramatic with higher dimmensional Tensors.
+
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B *Tensor = A.Extend_Shape(4)            // <--- Creates a 2x2x8x4 Tensor with the new 2x2x8 data initialized to 0.0
+                                                         //      Each 2x2x8 'state' across the 0'th dim is the same as the original Tensor 
+
 
 -----------------------------------------------------------------------------------------------------
 
 # Vector Operations
-The following operations are defined for vectors, ie 1D tensors.
+The following Tensor operations are used to manipulate Tensors that are vectors (1D Tensors).
 
-### Dot Product
-The Dot() function accepts two tensors and returns the dot product of the two tensors.
-The function will panic if the dimensions of the two tensors are not compatible.
+### dot()
+The dot() function accepts two 1D tensor and returns a float64 value that is the dot product of the two vectors. Tensors must be the same shape vectors.
 
-    var tensor1 *Tensor = New_Tensor([]int{5})
-    var tensor2 *Tensor = New_Tensor([]int{5})
-    
-    tensor1.data = {1,2,3,4,5}
-    tensor2.data = {1,2,3,4,5}
+            var A *Tensor = Range_Tensor([]int{8}) // <--- Creates a 8x1 Tensor filled with values from 0 to 7
+            var B *Tensor = Range_Tensor([]int{8}) // <--- Creates a 8x1 Tensor filled with values from 0 to 7
+            var C float64 = dot(A, B)              // <--- C = 140
 
-    var length_squared float64 = Dot(tensor1, tensor2)
-
-### Outer Product
-The Outer_Product() function accepts two tensors and returns the outer product of the
-two tensors. The function will panic if the dimensions of the two tensors are not
-both 1D.
-
-    var tensor1 *Tensor = New_Tensor([]int{5})
-    var tensor2 *Tensor = New_Tensor([]int{12})
-    
-    tensor1.data = {1,2,3,4,5}
-    tensor2.data = {1,2,3,4,5,6,7,8,9,10,11,12}
-
-    var outer_product *Tensor = Outer_Product(tensor1, tensor2) // shape: {5,12}
 
 ### Norm() 
-The Norm() function accepts a tensor and returns the norm of the tensor.
+The Norm() function returns the float64 norm of two vector Tensors. 
 
-    var tensor *Tensor = New_Tensor([]int{5})
-    tensor.data = {1,2,3,4,5}
+            var A *Tensor = Range_Tensor([]int{8}) 
+            var B float64 = Norm(A)                
 
-    var norm float64 = Norm(tensor)         
-    length = math.Sqrt(Dot(tensor, tensor))  // <--- equivalent to Norm()
+### Unit()
+The Unit() function returns a pointer to a new Tensor struct that is the unit vector of the input vector Tensor.
 
-### Unit() 
-The Unit() function accepts a tensor and returns a unit vector in the same direction.
+            var A *Tensor = Range_Tensor([]int{8}) 
+            var B *Tensor = Unit(A)
 
-    var tensor *Tensor = Range_Tensor([]int{5})
-    tensor.data = {1,2,3,4,5}
+## Check_Perpendicular()
+The Check_Perpendicular() function returns a boolean value indicating if two vector Tensors are perpendicular.
 
-    var unit_vector *Tensor = Unit(tensor)
-
-### Check_Perpendicular()
-The Check_Perpendicular() function accepts two tensors and returns true if the two
-tensors are perpendicular (if their dot product is zero). The function will panic if
-the dimensions of the two tensors are not compatible.
-
-    var tensor1 *Tensor = New_Tensor([]int{5})
-    var tensor2 *Tensor = New_Tensor([]int{5})
-    
-    tensor1.data = {1,2,3,4,5}
-    tensor2.data = {1,2,3,4,5}
-
-    var perpendicular bool = Check_Perpendicular(tensor1, tensor2)
+            var A *Tensor = Range_Tensor([]int{8}) 
+            var B *Tensor = Range_Tensor([]int{8}) 
+            var C bool = Check_Perpendicular(A, B) // <--- C = false
 
 ### Cosine_Similarity()
-The Cosine_Similarity() function accepts two tensors and returns the cosine similarity
-of the two tensors. The function will panic if the dimensions of the two tensors are
-not compatible.
+The Cosine_Similarity() function returns a float64 value indicating the cosine similarity of two vector Tensors.
 
-    var tensor1 *Tensor = New_Tensor([]int{5})
-    var tensor2 *Tensor = New_Tensor([]int{5})
-    
-    tensor1.data = {1,2,3,4,5}
-    tensor2.data = {1,2,3,4,5}
+            var A *Tensor = Range_Tensor([]int{8}) 
+            var B *Tensor = Range_Tensor([]int{8}) 
+            var C float64 = Cosine_Similarity(A, B) // <--- C = 1.0
 
-    var cosine_similarity float64 = Cosine_Similarity(tensor1, tensor2)
+### Outer_Product()
+The Outer_Product() function returns a pointer to a new Tensor struct that is the outer product of two vector Tensors.
+
+            var A *Tensor = Range_Tensor([]int{8}) 
+            var B *Tensor = Range_Tensor([]int{8}) 
+            var C *Tensor = Outer_Product(A, B)     // <--- C is a 8x8 Tensor
 
 -----------------------------------------------------------------------------------------------------
 
-# Matrix Operations 
-The following operations are defined for matrices, ie 2D tensors.
+# Matrix Operations
 
 ### Matmul()
-The Matmul() function accepts two Tensor pointers and returns a pointer to a new tensor 
-that is the result of the matrix multiplication of the two tensors. The function will
-panic if the dimensions of the two tensors are not compatible.
+The Matmul() function accepts two 2D Tensor structs and returns a pointer to a new Tensor struct that is the matrix multiplication of the two input Tensors. The shape of the two input Tensors must be compatible for matrix multiplication.
 
-    var tensor1 *Tensor = New_Tensor([]int{2,3})
-    var tensor2 *Tensor = New_Tensor([]int{3,4})
-    
-    tensor1.data = {1,2,3,4,5,6}
-    tensor2.data = {1,2,3,4,5,6,7,8,9,10,11,12}
+            var A *Tensor = Range_Tensor([]int{8, 7}) // <--- Creates a 8x7 Tensor filled with values from 0 to 55
+            var B *Tensor = Range_Tensor([]int{7, 8}) // <--- Creates a 7x8 Tensor filled with values from 0 to 55
+            var C *Tensor = Matmul(A, B)              // <--- Creates a 8x8 Tensor
 
-    var tensor3 *Tensor = Matmul(tensor1, tensor2)
+### Display_Matrix()
 
-## Display_Matrix()
-The Display_Matrix() function accepts a pointer to a tensor and prints the tensor to the
-console. The function will panic if the tensor is not 2D.
+The Display_Matrix() function accepts a 2D Tensor struct and prints the values of the Tensor in a matrix format.
 
-    var tensor *Tensor = New_Tensor([]int{2,3})
-    tensor.data = {1,2,3,4,5,6}
-
-    Display_Matrix(tensor)
+            var A *Tensor = Range_Tensor([]int{8, 7}) // <--- Creates a 8x7 Tensor filled with values from 0 to 55
+            Display_Matrix(A)                         // <--- Prints the values of A in a matrix format
 
 -----------------------------------------------------------------------------------------------------
 
-# Operations for Tensors of Any Dimension
-The following operations are defined for tensors of any dimension.
+# Operations Along an Axis
+The following methods perform operation on Tensors along a specified axis. This can be thought of intuitively as performing an elementwise operation along the 'state' of the Tensor outlined by the other dimensions of 
+the Operand Tensor at a given element along the axis of operation. For example, if you have a 3D Tensor of shape 2x2x8 and you perform an operation along the 0'th axis, you can think of this as performing an operation on the two 2x8 'states' of the Tensor which sit along that axis. The result is a 2x8 Tensor, which is 1 dimmension less because the axis of operation has been collapsed into the other dimmensions in order to perform the operation.
 
-### Scalar_Mult_() 
-The Scalar_Mult_() function accepts a pointer to a tensor and a float64 and multiplies
-each element of the tensor by the float64 in place. 
+### Sum_Axis()
+The Sum_Axis() method acts on a Tensor and accepts an integer representing the axis along which the sum is to be performed. It returns a pointer to a new Tensor struct with the new shape. 
 
-    var tensor *Tensor = New_Tensor([]int{2,3})
-    tensor.data = {1,2,3,4,5,6}
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B *Tensor = A.Sum_Axis(0)                // <--- Creates a 2x8 Tensor
 
-    Scalar_Mult_(tensor, 2)
+### Mean_Axis()
+The Mean_Axis() method acts on a Tensor and accepts an integer representing the axis along which the mean is to be performed. It returns a pointer to a new Tensor struct with the new shape. 
 
-### Add()
-The Add() function accepts two Tensor pointers and returns a pointer to a new tensor
-that is the result of the elementwise addition of the two tensors. The function will
-panic if the dimensions of the two tensors are not compatible.
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B *Tensor = A.Mean_Axis(0)               // <--- Creates a 2x8 Tensor
 
-    var tensor1 *Tensor = New_Tensor([]int{2,3})
-    var tensor2 *Tensor = New_Tensor([]int{2,3})
-    
-    tensor1.data = {1,2,3,4,5,6}
-    tensor2.data = {1,2,3,4,5,6}
+### Var_Axis()
+The Var_Axis() method acts on a Tensor and accepts an integer representing the axis along which the variance is to be performed. It returns a pointer to a new Tensor struct with the new shape. 
 
-    var tensor3 *Tensor = Add(tensor1, tensor2)
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B *Tensor = A.Var_Axis(0)                // <--- Creates a 2x8 Tensor
 
-### Subtract()
-The Subtract() function accepts two Tensor pointers and returns a pointer to a new tensor
-that is the result of the elementwise subtraction of the two tensors. The function will
-panic if the dimensions of the two tensors are not compatible.
+### Std_Axis()
+The Std_Axis() method acts on a Tensor and accepts an integer representing the axis along which the standard deviation is to be performed. It returns a pointer to a new Tensor struct with the new shape. 
 
-    var tensor1 *Tensor = New_Tensor([]int{2,3})
-    var tensor2 *Tensor = New_Tensor([]int{2,3})
-    
-    tensor1.data = {1,2,3,4,5,6}
-    tensor2.data = {1,2,3,4,5,6}
-
-    var tensor3 *Tensor = Subtract(tensor1, tensor2)
-
-### tensor.Reshpae()
-The Reshape() method accepts a slice of integers that represent the new dimensions of
-the tensor. The dimmensions must be compatible, meaning that the product of the new 
-dimmensions must be equal to the product of the old dimmensions. The function will panic
-if the dimmensions are not compatible. tensro.Reshape() will returns a pointer to a new
-tensor with the new dimmensions.
-
-    var tensor *Tensor = New_Tensor([]int{2,3,4})
-    var tensor_reshaped *Tensor = tensor.Reshape([]int{3,8})
-
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B *Tensor = A.Std_Axis(0)                // <--- Creates a 2x8 Tensor
 
 -----------------------------------------------------------------------------------------------------
-# Statistical Operations
-Statistical operations on Tensors can be broken up into two categories. The first being operations perform
-some statistical operation over the all elements of the tensor, irregardless of shape. And the second being 
-operations that perform some statistical operation over a specified axis of the tensor. 
 
-# Statistical Operations over a Specified Axis
+# Operations Across All Elements
+The following function/methods act upon all elements of a Tensor at once. There are two types of operations that fall into this category. That being ones that return a single scalar value and ones that perform an elementwise operation of a Tensor and return a new Tensor of the same shape.
 
-### Sum()
-Sum() calculates the sum of elements in a tensor along a specified axis. This operation results in a tensor 
-with one fewer dimension than the original tensor. For each position along the specified axis, there exists 
-a unique combination of indices for all other axes. The function collapses the tensor by summing the values
-at each unique combination of indices for the other axes, resulting in a new tensor where the dimension along 
-the specified axis is removed. A pointer to the new tensor is returned.
-
-    var tensor *Tensor = New_Tensor([]int{2,3,4})
-    var tensor_summed *Tensor = tensor.Sum(1) // <-- shape: {2,4}
-
-### Mean()
-Mean() calculates the mean of elements in a tensor along a specified axis. This operation results utilizes the 
-Sum() above to calculate the sum of elements along the specified axis. The sum is then divided by the number of
-elements along the specified axis. This operation a pointer to a tensor with one fewer dimension than the original.
-
-    var tensor *Tensor = New_Tensor([]int{2,3,4})
-    var tensor_mean *Tensor = tensor.Mean(1) // <-- shape: {2,4}
-
-
-# Statistical Operations over all Elements
+# Operations that Return a Scalar
 
 ### Sum_All()
-Sum_All() calculates the sum of all elements in a tensor. This operation results in a float64.
+The Sum_All() method adds up all elements in a Tensor into float64 value
 
-    var tensor *Tensor = New_Tensor([]int{2,3,4})
-    var tensor_summed float64 = tensor.Sum_All()
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B float64 = A.Sum_All()                  // <--- B = 2016
 
 ### Mean_All()
-Mean_All() calculates the mean of all elements in a tensor. This operation results in a float64.
+The Mean_All() method computes the mean of all elements in a Tensor into float64 value
 
-    var tensor *Tensor = New_Tensor([]int{2,3,4})
-    var tensor_mean float64 = tensor.Mean_All()
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B float64 = A.Mean_All()                 // <--- B = 7.875
 
-### Var_All() 
-Var_All() calculates the variance of all elements in a tensor. This operation results in a float64.
+### Var_All()
+The Var_All() method computes the variance of all elements in a Tensor into float64 value
 
-    var tensor *Tensor = New_Tensor([]int{2,3,4})
-    var tensor_var float64 = tensor.Var_All()
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B float64 = A.Var_All()                  // <--- B = 546.0
 
+### Std_All()
+The Std_All() method computes the standard deviation of all elements in a Tensor into float64 value
 
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor filled with values from 0 to 63
+            var B float64 = A.Std_All()                  // <--- B = 23.366642891095847
 
+# Operations that Return a Tensor
 
-# Code Base Conventions:
+### Add()
+The Add() function performs an elementwise addition of two Tensors, returning a pointer to a new Tensor of their Sum.
+    
+                var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor
+                var B *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor
+                var C *Tensor = Add(A, B)                    // <--- Creates a 2x2x8 Tensor
 
-### Naming Conventions:
-- Tensor pointers parameters within functions are named with capital letters starting A, B, C, etc.
-- indices refers to a slice for storing a temp multidimensional index of a Tensor
+### Subtract()
+The Subtract() function performs an elementwise subtraction of two Tensors, returning a pointer to a new Tensor of their Difference.
+    
+                var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor
+                var B *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor
+                var C *Tensor = Subtract(A, B)               // <--- Creates a 2x2x8 Tensor
+
+### Scalar_Mult()
+The Scalar_Mult() method acts on a Tensor and accepts a float64 value. It returns a pointer to a new Tensor struct with the new shape. 
+
+                var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor
+                var B *Tensor = A.Scalar_Mult(2.0)           // <--- Creates a 2x2x8 Tensor
+

@@ -80,15 +80,15 @@ type SumOperation struct{}
 func (s SumOperation) Apply(a, b float64) float64 { // Apply summation on two float64 values.
 	return a + b
 }
-func (A *Tensor) Sum(axis int) *Tensor {
+func (A *Tensor) Sum_Axis(axis int) *Tensor {
 	return A.AxisOperation(axis, SumOperation{}) // sum along an axis
 }
 
 // ============================================================================================================ Mean on an Axis
 
 // Mean calculates the mean of elements in a tensor along a specified axis
-func (A *Tensor) Mean(axis int) *Tensor {
-	sumTensor := A.Sum(axis) // sum along axis
+func (A *Tensor) Mean_Axis(axis int) *Tensor {
+	sumTensor := A.Sum_Axis(axis) // sum along axis
 	count := A.shape[axis]
 	for i := range sumTensor.data {
 		sumTensor.data[i] /= float64(count)
@@ -108,8 +108,8 @@ func (v VarOperation) Apply(a, b float64) float64 { // apply variance calculatio
 	diff := b - v.mean
 	return a + diff*diff
 }
-func (A *Tensor) Var(axis int) *Tensor {
-	meanTensor := A.Mean(axis)                      // mean along axis
+func (A *Tensor) Var_Axis(axis int) *Tensor {
+	meanTensor := A.Mean_Axis(axis)                 // mean along axis
 	varOp := VarOperation{mean: meanTensor.data[0]} // pass the mean to the operation
 	return A.AxisOperation(axis, varOp)             // variance along an axis
 }
@@ -118,7 +118,7 @@ func (A *Tensor) Var(axis int) *Tensor {
 
 // Std() calculates the standard deviation of elements in a tensor along a specified axis.
 func (A *Tensor) Std(axis int) *Tensor {
-	varTensor := A.Var(axis)
+	varTensor := A.Var_Axis(axis)
 	for i := range varTensor.data {
 		varTensor.data[i] = math.Sqrt(varTensor.data[i])
 	}

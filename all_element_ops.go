@@ -202,7 +202,7 @@ func Subtract(A *Tensor, B *Tensor) *Tensor {
 
 // This funciton performs scalar multiplication on a tensor in place
 // It returns a pointer to the same tensor
-func Scalar_Mult_(A *Tensor, scalar float64) *Tensor {
+func (A *Tensor) Scalar_Mult_(scalar float64) *Tensor {
 
 	for i := 0; i < len(A.data); i++ {
 		A.data[i] *= scalar
