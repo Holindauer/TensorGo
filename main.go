@@ -1,8 +1,6 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // NOTE: go over funcs/methods and be deliberate about why a func is a methods
 // vs a func. Propbably make inplace methods methods and the rest funcs
@@ -27,22 +25,15 @@ import (
 // It is about testing the functionality of the code in the other files.
 func main() {
 
-	// Test the Extend_Shape() funciton on a 1D Zero_Tensor
-	tensor := Range_Tensor([]int{7})
+	// Test the ArgMax function
+	A := Range_Tensor([]int{3, 3})
 
-	fmt.Println("The tensor is:", tensor)
+	Display_Matrix(A)
 
-	// Test the Extend_Shape() funciton on tensor
+	// Remove_Dim()
+	fmt.Println("Remove_Dim()")
+	A_Removed := A.Remove_Dim(1, 2)
 
-	fmt.Println("The extended tensor is:")
-	extended_tensor := tensor.Extend_Shape(6)
-
-	Display_Matrix(extended_tensor)
-
-	// Test the Extend_Dim
-	fmt.Println("Extending the 0'th dim of the shape extended tensor by 5: ")
-	extended_tensor = extended_tensor.Extend_Dim(1, 5)
-
-	Display_Matrix(extended_tensor)
+	Display_Matrix(A_Removed)
 
 }

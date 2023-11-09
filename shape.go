@@ -4,6 +4,7 @@ package main
 
 import (
 	//"fmt"
+	"fmt"
 	"strconv" // <-- used to convert strings to ints
 	"strings"
 )
@@ -358,4 +359,67 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 	fillExtendedTensor(0)
 
 	return extendedTensor
+}
+
+// This function uses the Partial() method to take remove remove an axis from a tensor by taking the Partial
+// with all dims kept the same, except for one becoming a singleton dimmension. This requires  an argument of
+// the axis in which to remove the dim as well as which index of that axis to keep. Remove_Dim() first checks.
+func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tensor {
+	// create an empty string to store the slice string for Partial()
+	var builder strings.Builder
+
+	// Iterate through the shape of the tensor, appending ":," if the dim is not the element of retrieval
+	// and element_of_retrieval : (element_of_retrieval + 1) if it is the element of retrieval
+	for i := range A.shape {
+		if i == axis_of_removal {
+			// Add the specific index for the axis of removal
+			builder.WriteString(fmt.Sprintf("%d:%d,", element_of_retrieval, element_of_retrieval+1))
+		} else {
+			// Add ':' to keep the entire dimension
+			builder.WriteString(":,")
+		}
+	}
+
+	// Remove the trailing comma
+	sliceString := strings.TrimRight(builder.String(), ",")
+
+	// Use the Partial() method to take a partial tensor
+	A_Partial := A.Partial(sliceString)
+
+	// Remove Singleton
+	A_Partial_Remove_Singleton := A_Partial.Remove_Singleton()
+
+	return A_Partial_Remove_Singleton
+}
+
+// This function is used to remove a singleton dimmension from a Tensor, It will remove all singleton dimmensions
+// it finds. Which essentially just means that it adjusts the shape slice of the tensor to remove elements of val 1
+func (A *Tensor) Remove_Singleton() *Tensor {
+
+	// initialize a slice to store the new shape of the tensor
+	squeezedShape := make([]int, 0)
+
+	// iterate through the shape of the tensor and append all elements that are not 1 to newShape
+	for _, dim := range A.shape {
+		if dim != 1 {
+			squeezedShape = append(squeezedShape, dim)
+		}
+	}
+
+	// create a new tensor with the new shape and copy the data from A to the new tensor
+	newTensor := A.Copy()
+	newTensor.shape = squeezedShape // <--- Replace the old shape with the squeezed shape
+
+	return newTensor
+
+}
+
+// This function is used to add a singleton dimmension to a Tensor, this menas that a 1 is simply appended to the end
+// of the shape of the existing Tensor. A pointer to a new Tensor is return.
+func (A *Tensor) Add_Singleton() *Tensor {
+
+	newTensor := A.Copy()
+	newTensor.shape = append(newTensor.shape, 1) // <--- Append a 1 to the end of the shape slice
+
+	return newTensor
 }

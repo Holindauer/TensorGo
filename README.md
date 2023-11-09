@@ -129,6 +129,25 @@ The Extend_Shape() method acts on a Tensor by extneding the number of dimmension
             var B *Tensor = A.Extend_Shape(4)            // <--- Creates a 2x2x8x4 Tensor with the new 2x2x8 data initialized to 0.0
                                                          //      Each 2x2x8 'state' across the 0'th dim is the same as the original Tensor 
 
+### Remove_Dim()
+The Removed_Dim() method acts on a Tensor by Removing an entire dimmension out from a Tensor at a specific element of the dimmension. This can be thought of as removing retrieving the 'state' of all other dimmensions of the Tensor at a specific element of the dimmension of removal. The element of the dimmension is specified by the integer argument. The new shape of the Tensor is returned.
+
+            var A *Tensor = Range_Tensor([]int{3, 3}) // <--- Creates a 2D 3x3 Tensor filled with values from 0 to 8
+            var B *Tensor = A.Remove_Dim(1, 0)      // <--- Creates a 1D 3 element Tensor with the values 1, 4, 7 (the 0th elements of the 1st dimmension of A)
+                                                           
+
+### Add_Singleton()
+The Add_Singleton() method appends a 1 to the shape of a Tensor. It does nto change the underlying contiguous  memory. Indexing works the same way with a singleotn dimmensions.
+
+            var A *Tensor = Range_Tensor([]int{2, 2, 8}) // <--- Creates a 2x2x8 Tensor
+            var B *Tensor = A.Add_Singleton()            // <--- Creates a 2x2x8x1 Tensor
+
+### Remove_Singleton()
+The Remove_Singleton() method removes a singleton dimmension from a Tensor. It does not change the underlying contiguous memory. Indexing works the same way with a singleotn dimmensions.
+
+            var A *Tensor = Range_Tensor([]int{2, 2, 8, 1}) // <--- Creates a 2x2x8x1 Tensor
+            var B *Tensor = A.Remove_Singleton()            // <--- Creates a 2x2x8 Tensor
+
 
 -----------------------------------------------------------------------------------------------------
 

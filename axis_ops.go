@@ -124,3 +124,24 @@ func (A *Tensor) Std(axis int) *Tensor {
 	}
 	return varTensor
 }
+
+// ============================================================================================================ ArgMax on an Axis
+
+// // ArgMaxOperation represents an argmax operation.
+// type ArgMaxOperation struct {
+// 	max float64 // used within Apply() to calculate argmax
+// }
+
+// func (a ArgMaxOperation) Apply(max, current float64) float64 { // apply argmax calculation on two float64 values.
+// 	if current > a.max {
+// 		return current
+// 	}
+// 	return max
+// }
+
+// func (A *Tensor) ArgMax(axis int) *Tensor {
+
+// 	// Create a 1D tensor with the same number oif elements as the specified axis
+// 	// This tensor will hold the argmax indices for each position along the specified axis.
+
+// }
