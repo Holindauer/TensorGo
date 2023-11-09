@@ -148,7 +148,6 @@ The Remove_Singleton() method removes a singleton dimmension from a Tensor. It d
             var A *Tensor = Range_Tensor([]int{2, 2, 8, 1}) // <--- Creates a 2x2x8x1 Tensor
             var B *Tensor = A.Remove_Singleton()            // <--- Creates a 2x2x8 Tensor
 
-
 -----------------------------------------------------------------------------------------------------
 
 # Vector Operations
@@ -212,6 +211,32 @@ The Display_Matrix() function accepts a 2D Tensor struct and prints the values o
 
             var A *Tensor = Range_Tensor([]int{8, 7}) // <--- Creates a 8x7 Tensor filled with values from 0 to 55
             Display_Matrix(A)                         // <--- Prints the values of A in a matrix format
+
+### Swap_Rows()
+The Swap_Rows() method swaps two rows of a square matrix. This function acts on a 2D Tensor in place. It's primary use is in the Gaussian_Elimination() function. However, it can also be called by itself.
+
+            var A *Tensor = Range_Tensor([]int{3, 3}) // <--- Creates a 2D 3x3 Tensor filled with values from 0 to 8
+            A.Swap_Rows(0, 1)                         // <--- Swaps the 0th and 1st rows of A
+
+
+### Augment_Matrix()
+The Augment_Matrix() function augments two Tensors, returning a pointer to a new Tensor. It's main job is within the Gaussian_Elimination() function. But it can also be called on its own.
+
+            var A *Tensor = Range_Tensor([]int{3, 3}) // <--- Creates a 2D 3x3 Tensor filled with values from 0 to 8
+            var B *Tensor = Range_Tensor([]int{3, 3}) // <--- Creates a 2D 3x3 Tensor filled with values from 0 to 8
+            var C *Tensor = Augment_Matrix(A, B)      // <--- Creates a 2D 3x6 Tensor
+
+-----------------------------------------------------------------------------------------------------
+
+# Linear Systems of Equations Solvers
+The following functions are used to solve x in Ax = b where A is a square matrix and b is a vector.
+
+### Gaussian_Elimination()
+The Gaussian_Elimination() function accepts two 2D Tensor structs representing the coefficient matrix and the constant vector of a linear system of equations. It returns a pointer to a new Tensor struct that is the solution vector of the linear system of equations. The coefficient matrix must be square and the constant vector must have the same number of rows as the coefficient matrix. The function uses Gaussian Elimination with partial pivoting to solve the linear system of equations. 
+
+            var A *Tensor = Range_Tensor([]int{3, 3}) // <--- Creates a 2D 3x3 Tensor filled with values from 0 to 8
+            var B *Tensor = Range_Tensor([]int{3, 1}) // <--- Creates a 2D 3x1 Tensor filled with values from 0 to 2
+            var C *Tensor = Gaussian_Elimination(A, B)// <--- Creates a 2D 3x1 Tensor
 
 -----------------------------------------------------------------------------------------------------
 

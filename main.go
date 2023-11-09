@@ -1,6 +1,6 @@
 package main
 
-import "fmt"
+///import "fmt"
 
 // NOTE: go over funcs/methods and be deliberate about why a func is a methods
 // vs a func. Propbably make inplace methods methods and the rest funcs
@@ -26,14 +26,18 @@ import "fmt"
 func main() {
 
 	// Test the ArgMax function
-	A := Range_Tensor([]int{3, 3})
-
+	A := Zero_Tensor([]int{3, 3})
+	// 2, 4, -2, 4, 9, -3, -2, -3, 7
+	A.data = []float64{2, 4, -2, 4, 9, -3, -2, -3, 7}
 	Display_Matrix(A)
 
-	// Remove_Dim()
-	fmt.Println("Remove_Dim()")
-	A_Removed := A.Remove_Dim(1, 2)
+	b := Zero_Tensor([]int{3})
+	b.data = []float64{2, 8, 10}
+	Display_Matrix(b)
 
-	Display_Matrix(A_Removed)
+	// Test Gaussian Elimination
+	x := Gaussian_Elimination(A, b)
+
+	Display_Matrix(x)
 
 }
