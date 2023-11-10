@@ -40,4 +40,9 @@ func main() {
 
 	Display_Matrix(x)
 
+	// Test Gauss-Jordan Elimination
+	x = Gauss_Jordan_Elimination(A, b)
+
+	Display_Matrix(x)
+
 }

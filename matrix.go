@@ -90,3 +90,21 @@ func Display_Matrix(t *Tensor) {
 		fmt.Println("Within Display_Matrix(): Tensor must be 1D or 2D to display as matrix or vector")
 	}
 }
+
+// This fucntion creates an augmented matrix fromt two matrix (2D) Tensors for use in the Gaussian_Elimination function.
+// Put simply, this fucniton checks that the two matricies are compatible for contatination alogn the 1'th axis, are 2
+// dimensional, and then concatenates them along that 1'th axis.
+func Augment_Matrix(A *Tensor, B *Tensor) *Tensor {
+
+	// Check that hte two Tensors are 2 D
+	if len(A.shape) != 2 || len(B.shape) != 2 {
+		panic(" Augment_Matrix() --- Both Tensors must be 2 dimensional")
+	}
+
+	// Check that the 1'th dimmension of the two Tensors are the same
+	if A.shape[0] != B.shape[0] {
+		panic("Augment_Matrix() Both Tensors must have the same number of rows")
+	}
+
+	return A.Concat(B, 1) // <--- return the concatenation of the two Tensors along the 1'th axis
+}
