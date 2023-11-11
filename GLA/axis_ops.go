@@ -1,4 +1,4 @@
-package main
+package GLA
 
 // This source file contians Tensor operations performed over a specified axis
 
@@ -139,9 +139,6 @@ func (A *Tensor) Std(axis int) *Tensor {
 // 	return max
 // }
 
-// func (A *Tensor) ArgMax(axis int) *Tensor {
-
-// 	// Create a 1D tensor with the same number oif elements as the specified axis
-// 	// This tensor will hold the argmax indices for each position along the specified axis.
-
+// func (A *Tensor) ArgMax_Axis(axis int) *Tensor {
+// 	return A.AxisOperation(axis, ArgMaxOperation{max: math.Inf(-1)}) // argmax along an axis
 // }

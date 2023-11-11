@@ -1,4 +1,4 @@
-package main
+package GLA
 
 // This source file contains the Tensor struct and functions
 // related to instantiating and retrieving data from them

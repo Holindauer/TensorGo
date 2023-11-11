@@ -1,4 +1,4 @@
-package main
+package GLA
 
 // This source contains functions related to
 // vector/single dimensional tensor operations

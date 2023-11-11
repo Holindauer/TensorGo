@@ -1,4 +1,4 @@
-package main
+package GLA
 
 // utils.go contains helper functions for this projects
 

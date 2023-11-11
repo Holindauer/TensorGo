@@ -1,20 +1,10 @@
-package main
+package GLA
+
+// This file contains algorithms for solving systems of linear equations
 
 import (
 	"math"
 )
-
-// This file contains algorithms for solving systems of linear equations
-
-// Gaussian Elimination
-
-// Plan for implementing Gaussian Elimination:
-
-// I will need to implement a concat() function that concatenates two tensors along a specified axis.
-// This will be used to build out the upper triangular matrix while keeping the original matrix intact.
-// I will also need to implement a swap() function that swaps two rows of a matrix for cases where the
-// pivot is zero. This will be used to swap rows to avoid dividing by zero.
-// I'll also need to figure out some kind of simple equation solver for back substitution.
 
 // --------------------------------------------------------------------------------------------------Normal Gaussian Elimination
 
@@ -50,6 +40,27 @@ func Gauss_Jordan_Elimination(A *Tensor, b *Tensor) *Tensor {
 	return Ab.Remove_Dim(1, 3) // <--- Remove all columns except the last one (whihc is the solution in the augmented matrix)
 }
 
+// The below function currently does not work and needs to be looked at in more detail
+// // This function computes the inverse of a square matrix by using Gauss Jordan Elimination. The 2D Tensor A is augmented with the identity
+// // matrix and is converted to reduced row echelon form (RREF), then to the identity matrix. The inverse is then extracted from the augmented
+// // matrix and returned.
+// func Square_Inverse(A *Tensor) *Tensor {
+
+// 	// augment A with the identity matrix
+// 	I := Eye(A.shape[0])
+// 	AI := Augment_Matrix(A, I)
+
+// 	// Gauss Jordan Elimination
+// 	Forward_Elimination(AI)
+// 	RREF(AI)
+
+// 	return AI.Partial(fmt.Sprintf(":, %d:", A.shape[1])) // <--- return the rightmost columns of the augmented matrix
+// }
+
+//--------------------------------------------------------------------------------------------------Helper Functions for Elimination Functions
+
+// This function reduces a matrix to reduced row echelon form (RREF). It takes one parameter: Ab, which is an n x (n + 1) augmented matrix.
+// It returns nothing, but it modifies the matrix in place.
 func RREF(Ab *Tensor) {
 
 	// Convert to Reduced Row Echelon Form (RREF)

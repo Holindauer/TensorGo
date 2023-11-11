@@ -1,4 +1,4 @@
-package main
+package GLA
 
 // This source file contains functions for initializing tensors
 

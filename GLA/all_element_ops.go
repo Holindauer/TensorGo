@@ -1,4 +1,4 @@
-package main
+package GLA
 
 // This source file contains operations performed over all elements of a tensor
 

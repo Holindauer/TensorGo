@@ -1,4 +1,4 @@
-package main
+package GLA
 
 // This source file contains functions related to manipulating the shape of a tensor.
 

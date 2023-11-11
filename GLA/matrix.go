@@ -1,4 +1,4 @@
-package main
+package GLA
 
 // This file contains functions for manipulating 2D
 

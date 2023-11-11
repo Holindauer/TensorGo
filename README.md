@@ -8,6 +8,17 @@ Many of the ideas and concepts implemented in this repository come from Introduc
 and adaptations from the NumPy library.
 
 # Documentation:
+-----------------------------------------------------------------------------------------------------
+
+To set up this use this package in your own project, first install the package using the following command:
+
+    go get github.com/Holindauer/Go-LinAlg
+
+Then import the package into your project:
+
+    import . "github.com/WillAbides/Go-LinAlg/GLA"
+
+Don't forget the . before the import statement. This allows you to call the functions and methods in this package without having to specify the package name.
 
 -----------------------------------------------------------------------------------------------------
 
@@ -237,6 +248,13 @@ The Gaussian_Elimination() function accepts two 2D Tensor structs representing t
             var A *Tensor = Range_Tensor([]int{3, 3}) // <--- Creates a 2D 3x3 Tensor filled with values from 0 to 8
             var B *Tensor = Range_Tensor([]int{3, 1}) // <--- Creates a 2D 3x1 Tensor filled with values from 0 to 2
             var C *Tensor = Gaussian_Elimination(A, B)// <--- Creates a 2D 3x1 Tensor
+
+### Gauss_Jordan_Elimination()
+The Gauss_Jordan_Elimination() function accepts two 2D Tensor structs representing the coefficient matrix and the constant vector of a linear system of equations. It returns a pointer to a new Tensor struct that is the solution vector of the linear system of equations. The coefficient matrix must be square and the constant vector must have the same number of rows as the coefficient matrix. The function uses Gauss Jordan Elimination with partial pivoting to solve the linear system of equations. 
+
+            var A *Tensor = Range_Tensor([]int{3, 3}) // <--- Creates a 2D 3x3 Tensor filled with values from 0 to 8
+            var B *Tensor = Range_Tensor([]int{3, 1}) // <--- Creates a 2D 3x1 Tensor filled with values from 0 to 2
+            var C *Tensor = Gauss_Jordan_Elimination(A, B)// <--- Creates a 2D 3x1 Tensor
 
 -----------------------------------------------------------------------------------------------------
 
