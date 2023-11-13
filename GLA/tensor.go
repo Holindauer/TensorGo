@@ -4,7 +4,7 @@ package GLA
 // related to instantiating and retrieving data from them
 
 type Tensor struct {
-	shape []int
+	Shape []int
 	data  []float64 // <--- this 1D slice to store flattened tensor
 }
 
@@ -15,12 +15,12 @@ type Tensor struct {
 func (t *Tensor) Retrieve(indices []int) float64 {
 	// check if each index of each dim is within the bounds of the tensor
 	for i, index := range indices {
-		if index >= t.shape[i] {
+		if index >= t.Shape[i] {
 			panic("Within Retrieve(); Index out of bounds")
 		}
 	}
 
-	flattened_index := Index(indices, t.shape)
+	flattened_index := Index(indices, t.Shape)
 	return t.data[flattened_index]
 }
 

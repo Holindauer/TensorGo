@@ -12,7 +12,7 @@ import (
 func Check_Vector_Compatibility(t1 *Tensor, t2 *Tensor) bool {
 
 	// check if tensors are vectors
-	if len(t1.shape) != 1 || len(t2.shape) != 1 {
+	if len(t1.Shape) != 1 || len(t2.Shape) != 1 {
 		return false
 	}
 
@@ -23,6 +23,21 @@ func Check_Vector_Compatibility(t1 *Tensor, t2 *Tensor) bool {
 
 	return true
 }
+
+//---------------------------------------------------------------------------------------------------------------------------- dot()
+
+// // define a struct to hold the parameters and anon func for dot()
+// type dot_FuncHolder struct {
+// 	t1       *Tensor
+// 	t2       *Tensor
+// 	batching bool
+// 	dot_func func(t1 *Tensor, t2 *Tensor) float64
+// }
+
+// // setup the interface for dot()
+// func (dfh *dot_FuncHolder) Batch_Op() float64 {
+// 	return dfh.dot_func(dfh.t1, dfh.t2)
+// }
 
 // This function computes the dot product of two vectors
 func dot(t1 *Tensor, t2 *Tensor) float64 {
@@ -71,11 +86,13 @@ func computeDot(t1 *Tensor, t2 *Tensor, start int, end int, results chan<- float
 	results <- sum // <-- Write the result to the channel
 }
 
+//---------------------------------------------------------------------------------------------------------------------------- Norm()
+
 // this function computes and returns the norm of a vector
 func Norm(t *Tensor) float64 {
 
 	// check if tensor is a vector
-	if len(t.shape) != 1 {
+	if len(t.Shape) != 1 {
 		panic("Within Norm(): Tensor must be a vector to compute norm")
 	}
 
@@ -87,18 +104,18 @@ func Norm(t *Tensor) float64 {
 func Unit(A *Tensor) *Tensor {
 
 	// check if tensor is a vector
-	if len(A.shape) != 1 {
+	if len(A.Shape) != 1 {
 		panic("Within Unit(): Tensor must be a vector to compute unit vector")
 	}
 
 	norm := Norm(A) // compute norm of A
 
 	if norm == 0 {
-		return Zero_Tensor(A.shape)
+		return Zero_Tensor(A.Shape)
 	}
 
 	// create a new tensor to store the unit vector
-	B := Zero_Tensor(A.shape)
+	B := Zero_Tensor(A.Shape)
 
 	// compute the unit vector
 	for i := 0; i < len(A.data); i++ {
@@ -140,7 +157,7 @@ func Cosine_Similarity(t1 *Tensor, t2 *Tensor) float64 {
 func Outer_Product(t1 *Tensor, t2 *Tensor) *Tensor {
 
 	// check if tensors are vectors
-	if !(len(t1.shape) == 1 && len(t2.shape) == 1) {
+	if !(len(t1.Shape) == 1 && len(t2.Shape) == 1) {
 		panic("Within Outer_Product(): Tensors must both be vectors to compute outer product")
 	}
 

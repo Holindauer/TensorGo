@@ -21,11 +21,24 @@
 // It is about testing the functionality of the code in the other files.
 package main
 
-import . "github.com/Holindauer/Go-LinAlg.git/GLA"
+import (
+	"fmt"
+
+	. "github.com/Holindauer/Go-LinAlg.git/GLA"
+)
 
 func main() {
 	// Test ArgMax_Axis()
-	A := Range_Tensor([]int{3, 3})
+	A := Range_Tensor([]int{1, 3, 3})
+	C := A.Concat(A, 0)
 
-	Display_Matrix(A)
+	C = C.Concat(A, 0)
+	fmt.Println("Input in main: ", C.Shape)
+	fmt.Println()
+
+	// Test batched version of Sum_Axis()
+	Sum_C := C.Sum_Axis(0, true)
+
+	Display_Matrix(Sum_C)
+
 }

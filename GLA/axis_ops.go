@@ -31,18 +31,18 @@ type Operation interface {
 //
 // It returns a pointer to a new Tensor that is the result of applying the operation.
 func (A *Tensor) AxisOperation(axis int, op Operation) *Tensor {
-	if axis < 0 || axis >= len(A.shape) { // <--- Check that the axis is valid.
+	if axis < 0 || axis >= len(A.Shape) { // <--- Check that the axis is valid.
 		panic("Within AxisOperation(): Invalid axis")
 	}
 
 	// Calculate the shape of the result tensor.
-	newShape := make([]int, len(A.shape)-1) // <--- set new shape 1 dim smaller than original
-	copy(newShape, A.shape[:axis])          // <--- Remove specified dimension by excluding it from the copy.
-	copy(newShape[axis:], A.shape[axis+1:]) // <---
+	newShape := make([]int, len(A.Shape)-1) // <--- set new shape 1 dim smaller than original
+	copy(newShape, A.Shape[:axis])          // <--- Remove specified dimension by excluding it from the copy.
+	copy(newShape[axis:], A.Shape[axis+1:]) // <---
 
 	// Initialize the data for the result tensor.
 	newData := make([]float64, Product(newShape))
-	indices := make([]int, len(A.shape)) // <--- multi dim indexing for iterating through tensor
+	indices := make([]int, len(A.Shape)) // <--- multi dim indexing for iterating through tensor
 
 	// Perform the operation along the specified axis.
 	for i := 0; i < len(A.data); i++ {
@@ -57,10 +57,10 @@ func (A *Tensor) AxisOperation(axis int, op Operation) *Tensor {
 
 		// Increment the multi-dimensional indices, like an odometer with each wheel representing a dimension's index.
 		// For ex: in a 3x3 matrix this would be [0,0] -> [0,1] -> [0,2] -> [1,0] -> [1,1] -> [1,2] -> [2,0] -> [2,1] -> [2,2]
-		for dim := len(A.shape) - 1; dim >= 0; dim-- {
+		for dim := len(A.Shape) - 1; dim >= 0; dim-- {
 			indices[dim]++ // Advance the index in the current dimension.
 
-			if indices[dim] < A.shape[dim] {
+			if indices[dim] < A.Shape[dim] {
 				// If the index within the current dimension is still within bounds, continue with the next element.
 				break
 			}
@@ -69,27 +69,70 @@ func (A *Tensor) AxisOperation(axis int, op Operation) *Tensor {
 		}
 	}
 
-	return &Tensor{shape: newShape, data: newData}
+	return &Tensor{Shape: newShape, data: newData}
 }
 
 // ============================================================================================================ Summation on an Axis
 
-// SumOperation represents a summation operation.
+// This interface is used to generalize batching within any Tensor Operation. It is specific to operations that take in
+// a single Tensor Argument and return a single Tensor.
+type Batch_Tensor_Tensor_Interface interface {
+	Execute(tensor *Tensor) *Tensor // Execute the operation and return a tensor.
+}
+
+func Batch_Tensor_Tensor_Operation(op Batch_Tensor_Tensor_Interface, A *Tensor) *Tensor {
+
+	//define the above code as an anon func
+	eachElementOp := func(example int) *Tensor {
+		Batched_Output := A.Remove_Dim(example, 0)                            // <--- retrieve the first element from the 0'th dim of the batch tensor
+		Output := op.Execute(Batched_Output).Add_Singleton()                  // <--- execute the operation on the first element
+		singletonReordering := Indicies_First_Last_Swapped(len(Output.Shape)) // <--- swap the 0'th and len(A.Shape) - 1'th indicies
+		return Output.Transpose(singletonReordering)                          // <--- reorder conitguous memory
+	}
+
+	// Start Batched Output Process by executing the operation on the first element
+	Batched_Output := eachElementOp(0)
+
+	for i := 1; i < A.Shape[0]; i++ { // <--- iterate through the remaining elements of the batch tensor
+		Output := eachElementOp(i) // <--- execute the operation on the current element
+		Batched_Output = Batched_Output.Concat(Output, 0)
+	}
+
+	return Batched_Output
+}
+
+// Interface for summations on a Tensor along a specified axis (using the AxisOperation() function)
 type SumOperation struct{}
 
 func (s SumOperation) Apply(a, b float64) float64 { // Apply summation on two float64 values.
 	return a + b
 }
-func (A *Tensor) Sum_Axis(axis int) *Tensor {
-	return A.AxisOperation(axis, SumOperation{}) // sum along an axis
+
+// This struct is used has applied to ut the Execute() method of the Batch_Tensor_Tensor_Interface.
+type SumAxisBatchOperation struct{ axis int }
+
+// This function defines the Execute method within the Batch_Tensor_Tensor_Interface. This method is called by the
+// Batch_Tensor_Tensor_Operation() function in order to performed batched Tensor summation along a specified axis.
+func (op SumAxisBatchOperation) Execute(tensor *Tensor) *Tensor {
+	return tensor.AxisOperation(op.axis, SumOperation{})
+}
+
+// This function Sums the elements of a Tensor along a specified axis. With the option for batched processing.
+func (A *Tensor) Sum_Axis(axis int, batching bool) *Tensor {
+	if !batching {
+		return A.AxisOperation(axis, SumOperation{}) // Apply Axis Op to entire Tensor
+	} else {
+		batchOp := SumAxisBatchOperation{axis: axis}     // create a batch op struct for summation along an axis
+		return Batch_Tensor_Tensor_Operation(batchOp, A) // Apply Axis Op to each element individually
+	}
 }
 
 // ============================================================================================================ Mean on an Axis
 
 // Mean calculates the mean of elements in a tensor along a specified axis
-func (A *Tensor) Mean_Axis(axis int) *Tensor {
-	sumTensor := A.Sum_Axis(axis) // sum along axis
-	count := A.shape[axis]
+func (A *Tensor) Mean_Axis(axis int, batching bool) *Tensor {
+	sumTensor := A.Sum_Axis(axis, batching) // sum along axis
+	count := A.Shape[axis]
 	for i := range sumTensor.data {
 		sumTensor.data[i] /= float64(count)
 	}
@@ -108,8 +151,8 @@ func (v VarOperation) Apply(a, b float64) float64 { // apply variance calculatio
 	diff := b - v.mean
 	return a + diff*diff
 }
-func (A *Tensor) Var_Axis(axis int) *Tensor {
-	meanTensor := A.Mean_Axis(axis)                 // mean along axis
+func (A *Tensor) Var_Axis(axis int, batching bool) *Tensor {
+	meanTensor := A.Mean_Axis(axis, batching)       // mean along axis
 	varOp := VarOperation{mean: meanTensor.data[0]} // pass the mean to the operation
 	return A.AxisOperation(axis, varOp)             // variance along an axis
 }
@@ -117,8 +160,8 @@ func (A *Tensor) Var_Axis(axis int) *Tensor {
 // ============================================================================================================ Standard Deviation on an Axis
 
 // Std() calculates the standard deviation of elements in a tensor along a specified axis.
-func (A *Tensor) Std(axis int) *Tensor {
-	varTensor := A.Var_Axis(axis)
+func (A *Tensor) Std(axis int, batching bool) *Tensor {
+	varTensor := A.Var_Axis(axis, batching)
 	for i := range varTensor.data {
 		varTensor.data[i] = math.Sqrt(varTensor.data[i])
 	}

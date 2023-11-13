@@ -166,7 +166,7 @@ func Add(A *Tensor, B *Tensor) *Tensor {
 	}
 
 	// Create a new tensor to hold the result
-	C := Zero_Tensor(A.shape)
+	C := Zero_Tensor(A.Shape)
 
 	// Perform the elementwise addition
 	for i := 0; i < len(A.data); i++ {
@@ -188,7 +188,7 @@ func Subtract(A *Tensor, B *Tensor) *Tensor {
 	}
 
 	// Create a new tensor to hold the result
-	C := Zero_Tensor(A.shape)
+	C := Zero_Tensor(A.Shape)
 
 	// Perform the elementwise subtraction
 	for i := 0; i < len(A.data); i++ {

@@ -18,17 +18,17 @@ func (A *Tensor) Partial(slice string) *Tensor {
 	// Remove spaces and split the slice string by commas to handle each dimension separately.
 	slice = strings.ReplaceAll(slice, " ", "")
 	split := strings.Split(slice, ",")
-	if len(split) != len(A.shape) {
+	if len(split) != len(A.Shape) {
 		panic("Within Partial(): String slice arg must have the same number of dimensions as the tensor")
 	}
 
 	// Initialize slices to store the shape of the partial tensor and the start/end indices for each dimension.
-	partialShape := make([]int, len(A.shape))
-	partialIndices := make([][]int, len(A.shape))
+	partialShape := make([]int, len(A.Shape))
+	partialIndices := make([][]int, len(A.Shape))
 
 	// Iterate through each dimension of the tensor to parse the slice string and compute the shape and indices of the partial tensor.
 	for i, s := range split {
-		start, end := 0, A.shape[i] // By default, use the entire dimension.
+		start, end := 0, A.Shape[i] // By default, use the entire dimension.
 		if s != ":" {
 			parts := strings.Split(s, ":")
 
@@ -62,8 +62,8 @@ func (A *Tensor) Partial(slice string) *Tensor {
 			}
 
 			// Convert the multi-dimensional indices to flattened indices and use them to copy the data.
-			srcFlattenedIndex := Index(srcIndex, A.shape)
-			dstFlattenedIndex := Index(tempIndex, partialTensor.shape)
+			srcFlattenedIndex := Index(srcIndex, A.Shape)
+			dstFlattenedIndex := Index(tempIndex, partialTensor.Shape)
 			partialTensor.data[dstFlattenedIndex] = A.data[srcFlattenedIndex]
 
 			return
@@ -110,33 +110,33 @@ func (A *Tensor) Reshape(shape []int) *Tensor {
 func (A *Tensor) Transpose(axes []int) *Tensor {
 
 	// Check for invalid axes
-	if len(axes) != len(A.shape) {
+	if len(axes) != len(A.Shape) {
 		panic("Within Transpose(): The number of axes does not match the number of dimensions of the tensor.")
 	}
 
 	// Check for duplicate or out-of-range axes
 	seen := make(map[int]bool) // map is like dict in python
 	for _, axis := range axes {
-		if axis < 0 || axis >= len(A.shape) || seen[axis] {
+		if axis < 0 || axis >= len(A.Shape) || seen[axis] {
 			panic("Within Transpose(): Invalid axis specification for transpose.")
 		}
 		seen[axis] = true
 	}
 
 	// Determine the new shape from the reordering in axes
-	newShape := make([]int, len(A.shape))
+	newShape := make([]int, len(A.Shape))
 	for i, axis := range axes {
-		newShape[i] = A.shape[axis]
+		newShape[i] = A.Shape[axis]
 	}
 
 	// Allocate the new tensor
 	newData := make([]float64, len(A.data))
-	B := &Tensor{shape: newShape, data: newData} // <-- B is a pointer to a new tensor
+	B := &Tensor{Shape: newShape, data: newData} // <-- B is a pointer to a new tensor
 
 	// Reindex and copy data
 	for i := range A.data {
 		// Get the multi-dimensional indices for the current element
-		originalIndices := UnravelIndex(i, A.shape)
+		originalIndices := UnravelIndex(i, A.Shape)
 
 		// Reorder the indices according to the axes array for transpose
 		newIndices := make([]int, len(originalIndices))
@@ -173,18 +173,18 @@ func (A *Tensor) Transpose(axes []int) *Tensor {
 func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 
 	// Ensure that the number of dimensions of the tensors are the same
-	if len(A.shape) != len(B.shape) {
+	if len(A.Shape) != len(B.Shape) {
 		panic("Within Concat(): The number of dimensions of the tensors must be the same.")
 	}
 
 	// Check that axis_cat is within the valid range
-	if axis_cat < 0 || axis_cat >= len(A.shape) {
+	if axis_cat < 0 || axis_cat >= len(A.Shape) {
 		panic("Within Concat(): axis_cat is out of bounds for the shape of the tensors.")
 	}
 
 	// Ensure that the shape of the tensors are the same except for the axis of concatenation
-	for i := 0; i < len(A.shape); i++ {
-		if i != axis_cat && A.shape[i] != B.shape[i] {
+	for i := 0; i < len(A.Shape); i++ {
+		if i != axis_cat && A.Shape[i] != B.Shape[i] {
 			panic("Within Concat(): The shapes of the tensors must be the same except for the axis of concatenation.")
 		}
 	}
@@ -196,12 +196,12 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 	if axis_cat == 0 {
 
 		// Determine the shape of the concatenated tensor
-		concatShape := make([]int, len(A.shape))
-		for i := 0; i < len(A.shape); i++ {
+		concatShape := make([]int, len(A.Shape))
+		for i := 0; i < len(A.Shape); i++ {
 			if i == axis_cat {
-				concatShape[i] = A.shape[i] + B.shape[i] // <--- concatenation extends this dimension
+				concatShape[i] = A.Shape[i] + B.Shape[i] // <--- concatenation extends this dimension
 			} else {
-				concatShape[i] = A.shape[i]
+				concatShape[i] = A.Shape[i]
 			}
 		}
 
@@ -209,18 +209,18 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 		concatData := append(A.data, B.data...)
 
 		// create new tensor to store concatenated data for return
-		concatTensor = &Tensor{shape: concatShape, data: concatData}
+		concatTensor = &Tensor{Shape: concatShape, data: concatData}
 	} else if axis_cat != 0 {
 
 		// determine the reordering of the axes for transpose to make axis_cat the 0'th axis the slice
 		// will be a permutation of the numbers 0 through len(A.shape) - 1 with axis cat and 0 swapped
-		axes_reordering := make([]int, len(A.shape))
+		axes_reordering := make([]int, len(A.Shape))
 
 		// set axis cat to 0'th axis
 		axes_reordering[0] = axis_cat
 
 		// Now fill in the rest of the axes.
-		for i, count := 1, 0; count < len(A.shape); count++ {
+		for i, count := 1, 0; count < len(A.Shape); count++ {
 			// exclude axis_cat from the reordering, its already at 0
 			if count != axis_cat {
 				axes_reordering[i] = count
@@ -238,17 +238,17 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 		// We now have a slice of contigous data that is the concatenation of A_T and B_T, in order to use
 		// this data to create a new tensor, we must first determine the shape of the new tensor in this
 		// Trasnposed form. This can be done by copying A_T.shape and adding B_T.shape[0] to it.
-		concatShape_Transposed := make([]int, len(A_T.shape))
-		for i := 0; i < len(A_T.shape); i++ {
+		concatShape_Transposed := make([]int, len(A_T.Shape))
+		for i := 0; i < len(A_T.Shape); i++ {
 			if i == 0 {
-				concatShape_Transposed[i] = A_T.shape[i] + B_T.shape[i]
+				concatShape_Transposed[i] = A_T.Shape[i] + B_T.Shape[i]
 			} else {
-				concatShape_Transposed[i] = A_T.shape[i]
+				concatShape_Transposed[i] = A_T.Shape[i]
 			}
 		}
 
 		// create new tensor to store the transposed concatenated data
-		concatTensor_Transposed := &Tensor{shape: concatShape_Transposed, data: concatData_Transposed}
+		concatTensor_Transposed := &Tensor{Shape: concatShape_Transposed, data: concatData_Transposed}
 
 		// transpose the concatenated tensor back to the original ordering of axes. Because we only swapped
 		// two axes, we can just reuse the same axe_reordering array from the originbal transpose.
@@ -269,9 +269,9 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	}
 
 	// Create a new shape with the additional dimension
-	newShape := make([]int, len(A.shape)+1)
-	copy(newShape, A.shape)               // Copy the original shape
-	newShape[len(A.shape)] = num_elements // Add the new dimension at the end
+	newShape := make([]int, len(A.Shape)+1)
+	copy(newShape, A.Shape)               // Copy the original shape
+	newShape[len(A.Shape)] = num_elements // Add the new dimension at the end
 
 	// Create a new tensor with the extended shape and zeroed data
 	extendedTensor := Zero_Tensor(newShape)
@@ -283,9 +283,9 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	// Recursive function to fill the extended tensor
 	var fillExtendedTensor func(int)
 	fillExtendedTensor = func(dim int) {
-		if dim == len(A.shape) { // If we reached the last original dimension
+		if dim == len(A.Shape) { // If we reached the last original dimension
 			// Copy the data from the original tensor to the extended tensor
-			srcFlattenedIndex := Index(tempIndex[:len(tempIndex)-1], A.shape)
+			srcFlattenedIndex := Index(tempIndex[:len(tempIndex)-1], A.Shape)
 			for i := 0; i < num_elements; i++ {
 				tempIndex[len(tempIndex)-1] = i
 				dstFlattenedIndex := Index(tempIndex, newShape)
@@ -295,7 +295,7 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 		}
 
 		// Recursively process each index in the current dimension
-		for i := 0; i < A.shape[dim]; i++ {
+		for i := 0; i < A.Shape[dim]; i++ {
 			tempIndex[dim] = i
 			fillExtendedTensor(dim + 1)
 		}
@@ -314,7 +314,7 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 // The Extend_Dim() method returns a pointer to a new tensor with the extended shape and zeroed data.
 func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 	// Check that the axis is valid
-	if axis < 0 || axis >= len(A.shape) {
+	if axis < 0 || axis >= len(A.Shape) {
 		panic("Within Extend_Dim(): The axis is out of bounds for the shape of the tensor.")
 	}
 
@@ -324,9 +324,9 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 	}
 
 	// Create a new shape with extended dimmension
-	newShape := make([]int, len(A.shape))
-	copy(newShape, A.shape)                       // <--- Copy the original shape
-	newShape[axis] = num_elements + A.shape[axis] // <--- Add the new dimension to axis
+	newShape := make([]int, len(A.Shape))
+	copy(newShape, A.Shape)                       // <--- Copy the original shape
+	newShape[axis] = num_elements + A.Shape[axis] // <--- Add the new dimension to axis
 
 	// Create a new tensor with the extended shape and zeroed data
 	extendedTensor := Zero_Tensor(newShape)
@@ -338,9 +338,9 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 	// Recursive function to fill the extended tensor
 	var fillExtendedTensor func(int)
 	fillExtendedTensor = func(dim int) {
-		if dim >= len(A.shape) {
+		if dim >= len(A.Shape) {
 			// As the recursion unwinds, this base case is reached where we copy data from the original tensor in the appropriate idx
-			srcFlattenedIndex := Index(tempIndex, A.shape)  // <---  Index() call for og vs dest differ by shape provided as arg
+			srcFlattenedIndex := Index(tempIndex, A.Shape)  // <---  Index() call for og vs dest differ by shape provided as arg
 			dstFlattenedIndex := Index(tempIndex, newShape) // <---
 			extendedTensor.data[dstFlattenedIndex] = A.data[srcFlattenedIndex]
 			return
@@ -349,7 +349,7 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 		// Recursively process each index in the current dimension  By default the new tensors have
 		// zeroed data, so we only need to copy data from the original tensor @ appropriate indices
 		// each recursive call iterates over all elements within a single dimmension of the tensor
-		for i := 0; i < A.shape[dim]; i++ {
+		for i := 0; i < A.Shape[dim]; i++ {
 			tempIndex[dim] = i
 			fillExtendedTensor(dim + 1)
 		}
@@ -370,7 +370,7 @@ func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tens
 
 	// Iterate through the shape of the tensor, appending ":," if the dim is not the element of retrieval
 	// and element_of_retrieval : (element_of_retrieval + 1) if it is the element of retrieval
-	for i := range A.shape {
+	for i := range A.Shape {
 		if i == axis_of_removal {
 			// Add the specific index for the axis of removal
 			builder.WriteString(fmt.Sprintf("%d:%d,", element_of_retrieval, element_of_retrieval+1))
@@ -384,12 +384,9 @@ func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tens
 	sliceString := strings.TrimRight(builder.String(), ",")
 
 	// Use the Partial() method to take a partial tensor
-	A_Partial := A.Partial(sliceString)
+	A_Partial := A.Partial(sliceString).Remove_Singleton()
 
-	// Remove Singleton
-	A_Partial_Remove_Singleton := A_Partial.Remove_Singleton()
-
-	return A_Partial_Remove_Singleton
+	return A_Partial
 }
 
 // This function is used to remove a singleton dimmension from a Tensor, It will remove all singleton dimmensions
@@ -400,7 +397,7 @@ func (A *Tensor) Remove_Singleton() *Tensor {
 	squeezedShape := make([]int, 0)
 
 	// iterate through the shape of the tensor and append all elements that are not 1 to newShape
-	for _, dim := range A.shape {
+	for _, dim := range A.Shape {
 		if dim != 1 {
 			squeezedShape = append(squeezedShape, dim)
 		}
@@ -408,7 +405,7 @@ func (A *Tensor) Remove_Singleton() *Tensor {
 
 	// create a new tensor with the new shape and copy the data from A to the new tensor
 	newTensor := A.Copy()
-	newTensor.shape = squeezedShape // <--- Replace the old shape with the squeezed shape
+	newTensor.Shape = squeezedShape // <--- Replace the old shape with the squeezed shape
 
 	return newTensor
 
@@ -419,7 +416,7 @@ func (A *Tensor) Remove_Singleton() *Tensor {
 func (A *Tensor) Add_Singleton() *Tensor {
 
 	newTensor := A.Copy()
-	newTensor.shape = append(newTensor.shape, 1) // <--- Append a 1 to the end of the shape slice
+	newTensor.Shape = append(newTensor.Shape, 1) // <--- Append a 1 to the end of the shape slice
 
 	return newTensor
 }

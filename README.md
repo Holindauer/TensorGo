@@ -154,7 +154,7 @@ The Add_Singleton() method appends a 1 to the shape of a Tensor. It does nto cha
             var B *Tensor = A.Add_Singleton()            // <--- Creates a 2x2x8x1 Tensor
 
 ### Remove_Singleton()
-The Remove_Singleton() method removes a singleton dimmension from a Tensor. It does not change the underlying contiguous memory. Indexing works the same way with a singleotn dimmensions.
+The Remove_Singleton() method removes a singleton dimmension from a Tensor. It does not change the underlying contiguous memory. Indexing works the same way with a singleotn dimmensions. 
 
             var A *Tensor = Range_Tensor([]int{2, 2, 8, 1}) // <--- Creates a 2x2x8x1 Tensor
             var B *Tensor = A.Remove_Singleton()            // <--- Creates a 2x2x8 Tensor

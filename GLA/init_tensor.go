@@ -11,7 +11,7 @@ type TensorInitializer interface {
 func InitializeData(shape []int, initializer TensorInitializer) *Tensor {
 	// create a new Tensor struct, setting its shape
 	A := new(Tensor)
-	A.shape = shape
+	A.Shape = shape
 	num_elements := Product(shape) // <--- Product() is a function from utils.go
 	A.data = make([]float64, num_elements)
 
@@ -67,7 +67,7 @@ func Range_Tensor(shape []int) *Tensor {
 // copy_tensor = tensor.Copy() creates a copy of tensor
 func (A *Tensor) Copy() *Tensor {
 	// Create a new tensor to store the copy.
-	B := Zero_Tensor(A.shape)
+	B := Zero_Tensor(A.Shape)
 	copy(B.data, A.data) // <--- copy() is a built-in function
 	return B
 }
@@ -101,7 +101,7 @@ func Eye(size int) *Tensor {
 // The Gramien Matrix is always symmetric
 func Gramien_Matrix(A *Tensor) *Tensor {
 	// Check that A 2D
-	if len(A.shape) != 2 {
+	if len(A.Shape) != 2 {
 		panic("Within Gramien_Matrix(): Tensor must be 2D")
 	}
 
