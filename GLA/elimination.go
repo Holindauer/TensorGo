@@ -8,20 +8,37 @@ import (
 
 // --------------------------------------------------------------------------------------------------Normal Gaussian Elimination
 
-// Gaussian_Elimination() performs Gaussian Elimination on a system of linear equations.
-// It takes two parameters: A and b, where A is an n x n matrix and b is an n x 1 column vector.
-// It returns a column vector x that is the solution to the system of linear equations.
-func Gaussian_Elimination(A *Tensor, b *Tensor) *Tensor {
+type GaussianElimination struct{}
 
+func (ge GaussianElimination) Execute(A, b *Tensor) *Tensor {
+	// Implement the Gaussian Elimination logic here.
+	// You can use the existing Gaussian_Elimination function logic.
 	if len(b.Shape) == 1 {
-		b = b.Add_Singleton() // <--- Augment_Matrix() requires a 2D Tensor
+		b = b.Add_Singleton() // Augment_Matrix() requires a 2D Tensor
 	}
 
-	// Perform Forward ELimination and Backsubstitiution on the augmented matrix
+	// Perform Forward Elimination and Back Substitution on the augmented matrix
 	Ab := Augment_Matrix(A, b)
 	Forward_Elimination(Ab)
-	return Back_Substitution(Ab, A) // <--- returns x
+	return Back_Substitution(Ab, A) // returns x
 }
+
+// Gaussian_Elimination() performs Gaussian Elimination on a system of linear equations. It takes 3 parameters. A, b, and batching.
+// batching is a bool determining whether to use batched processing. A is an n x n matrix, b is an n x 1 column vector. It returns x of Ax=b
+func Gaussian_Elimination(A *Tensor, b *Tensor, batching bool) *Tensor {
+
+	GE := GaussianElimination{} // create instance of GaussianElimination struct
+	var Output *Tensor
+
+	if batching == false {
+		Output = GaussianElimination{}.Execute(A, b) // single processing
+	} else {
+		Output = Batch_TwoTensor_Tensor_Operation(GE, A, b) // batched processing
+	}
+	return Output
+}
+
+// --- ---------------------------------------------------------------------------------------------Gauss Jordan Elimination
 
 // This function performs Gauss Jordan Elimination on a system of linear equations. Which means that in addition to forward Propagation,
 // The function also reduces the matrix to reduced row echelon form (RREF). It takes two parameters: A and b, where A is an n x n matrix
@@ -45,15 +62,12 @@ func Gauss_Jordan_Elimination(A *Tensor, b *Tensor) *Tensor {
 // // matrix and is converted to reduced row echelon form (RREF), then to the identity matrix. The inverse is then extracted from the augmented
 // // matrix and returned.
 // func Square_Inverse(A *Tensor) *Tensor {
-
 // 	// augment A with the identity matrix
 // 	I := Eye(A.shape[0])
 // 	AI := Augment_Matrix(A, I)
-
 // 	// Gauss Jordan Elimination
 // 	Forward_Elimination(AI)
 // 	RREF(AI)
-
 // 	return AI.Partial(fmt.Sprintf(":, %d:", A.shape[1])) // <--- return the rightmost columns of the augmented matrix
 // }
 
@@ -114,7 +128,7 @@ func Forward_Elimination(Ab *Tensor) {
 // It returns a column vector x that is the solution to the system of linear equations.
 func Back_Substitution(Ab *Tensor, A *Tensor) *Tensor {
 	// Back Substitution
-	x := Zero_Tensor([]int{Ab.Shape[0], 1})
+	x := Zero_Tensor([]int{Ab.Shape[0], 1}, false)
 	for i := Ab.Shape[0] - 1; i >= 0; i-- { // <--- decrement through rows
 		sum := 0.0
 		for j := i + 1; j < Ab.Shape[0]; j++ {
@@ -155,7 +169,7 @@ func (A *Tensor) Swap_Rows(i int, j int) {
 func (A *Tensor) Get_Row(row int) *Tensor {
 
 	// Create a new Tensor to store the row
-	B := Zero_Tensor([]int{1, A.Shape[1]})
+	B := Zero_Tensor([]int{1, A.Shape[1]}, false)
 
 	// Copy the row into the new Tensor
 	for i := 0; i < A.Shape[1]; i++ {

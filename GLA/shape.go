@@ -44,7 +44,7 @@ func (A *Tensor) Partial(slice string) *Tensor {
 	}
 
 	// Create a new tensor to store the partial data with the computed shape.
-	partialTensor := Zero_Tensor(partialShape)
+	partialTensor := Zero_Tensor(partialShape, false)
 
 	// Initialize a slice to store the current multi-dimensional index being processed.
 	tempIndex := make([]int, len(partialShape))
@@ -96,7 +96,7 @@ func (A *Tensor) Reshape(shape []int) *Tensor {
 		panic("Within Reshape(): Cannot reshape tensor to shape with different number of elements")
 	}
 	// Create a new tensor to store the reshaped data with the shape param
-	reshapedTensor := Zero_Tensor(shape)
+	reshapedTensor := Zero_Tensor(shape, false)
 	for i := 0; i < len(A.data); i++ {
 		reshapedTensor.data[i] = A.data[i] // copy data from A to reshapedTensor
 	}
@@ -274,7 +274,7 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	newShape[len(A.Shape)] = num_elements // Add the new dimension at the end
 
 	// Create a new tensor with the extended shape and zeroed data
-	extendedTensor := Zero_Tensor(newShape)
+	extendedTensor := Zero_Tensor(newShape, false)
 
 	// Fill the extended tensor with data from the original tensor
 	// Initialize a slice to store the current multi-dimensional index for the new tensor
@@ -329,7 +329,7 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 	newShape[axis] = num_elements + A.Shape[axis] // <--- Add the new dimension to axis
 
 	// Create a new tensor with the extended shape and zeroed data
-	extendedTensor := Zero_Tensor(newShape)
+	extendedTensor := Zero_Tensor(newShape, false)
 
 	// Next is to fill the extended tensor with data from the original tensor. First,
 	// Initialize a slice to store the current multi-dimensional index for the new tensor

@@ -24,28 +24,40 @@ func InitializeData(shape []int, initializer TensorInitializer) *Tensor {
 
 //=============================================================================================================Tensors of Constant Values
 
-// ConstInitializer is used to set a constant value for an element
+// This is a struct that implements the TensorInitializer interface. It is used to initialize a tensor with a constant value
 type ConstInitializer struct {
 	value float64
 }
 
-// ValueAt returns the constant value
+// this is a method of ConstInitializer. It returns the val at an index of the tensor
 func (ci *ConstInitializer) ValueAt(index int) float64 {
 	return ci.value
 }
 
-// Const_Tensor creates a tensor of a given shape with a constant value
-func Const_Tensor(shape []int, constant float64) *Tensor {
+// This is a method of ConstInitializer. It returns a tensor of the specified shape filled w/ the constant value
+func (ci *ConstInitializer) Execute(shape []int) *Tensor {
+	return InitializeData(shape, ci)
+}
+
+func Const_Tensor(shape []int, constant float64, batching bool) *Tensor {
+	// Create a new ConstInitializer with the specified constant value
 	initializer := &ConstInitializer{value: constant}
-	return InitializeData(shape, initializer)
+	if !batching {
+		// Perform single initialization
+		return InitializeData(shape, initializer)
+	} else {
+		// Perform batched operation
+		return Batched_Initializer_Operation(initializer, shape)
+	}
 }
 
-func Zero_Tensor(shape []int) *Tensor {
-	return Const_Tensor(shape, 0) // <--- returns *Tensor from Const_Tensor() call
+// The Zero_Tensor() and Ones_Tensor() functions are wrappers for the Const_Tensor() function
+func Zero_Tensor(shape []int, batching bool) *Tensor {
+	return Const_Tensor(shape, 0, batching) // <--- returns *Tensor from Const_Tensor() call
 }
 
-func Ones_Tensor(shape []int) *Tensor {
-	return Const_Tensor(shape, 1) // <--- returns *Tensor from Const_Tensor() call
+func Ones_Tensor(shape []int, batching bool) *Tensor {
+	return Const_Tensor(shape, 1, batching) // <--- returns *Tensor from Const_Tensor() call
 }
 
 //=============================================================================================================Range Tensor
@@ -53,13 +65,24 @@ func Ones_Tensor(shape []int) *Tensor {
 // RangeInitializer sets a value equal to the index for each element
 type RangeInitializer struct{}
 
+// This is a method of RangeInitializer. It returns the val at an index of the tensor
 func (ri *RangeInitializer) ValueAt(index int) float64 {
 	return float64(index)
 }
 
-func Range_Tensor(shape []int) *Tensor {
-	initializer := &RangeInitializer{}
-	return InitializeData(shape, initializer) // <--- pass initializer pointer to InitializeData()
+// This is a method of RangeInitializer. It returns a tensor of the specified shape filled w/ the constant value
+func (ri *RangeInitializer) Execute(shape []int) *Tensor {
+	return InitializeData(shape, ri)
+}
+
+func Range_Tensor(shape []int, batching bool) *Tensor {
+	if !batching {
+		// Perform single initialization
+		return InitializeData(shape, &RangeInitializer{})
+	} else {
+		// Perform batched operation
+		return Batched_Initializer_Operation(&RangeInitializer{}, shape)
+	}
 }
 
 //=============================================================================================================Copy a Tensor
@@ -67,7 +90,7 @@ func Range_Tensor(shape []int) *Tensor {
 // copy_tensor = tensor.Copy() creates a copy of tensor
 func (A *Tensor) Copy() *Tensor {
 	// Create a new tensor to store the copy.
-	B := Zero_Tensor(A.Shape)
+	B := Zero_Tensor(A.Shape, false)
 	copy(B.data, A.data) // <--- copy() is a built-in function
 	return B
 }

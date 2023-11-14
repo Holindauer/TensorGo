@@ -111,11 +111,11 @@ func Unit(A *Tensor) *Tensor {
 	norm := Norm(A) // compute norm of A
 
 	if norm == 0 {
-		return Zero_Tensor(A.Shape)
+		return Zero_Tensor(A.Shape, false)
 	}
 
 	// create a new tensor to store the unit vector
-	B := Zero_Tensor(A.Shape)
+	B := Zero_Tensor(A.Shape, false)
 
 	// compute the unit vector
 	for i := 0; i < len(A.data); i++ {
@@ -162,7 +162,7 @@ func Outer_Product(t1 *Tensor, t2 *Tensor) *Tensor {
 	}
 
 	// create a new tensor to store the result
-	C := Zero_Tensor([]int{len(t1.data), len(t2.data)})
+	C := Zero_Tensor([]int{len(t1.data), len(t2.data)}, false)
 
 	// compute the outer product
 	for i := 0; i < len(t1.data); i++ {

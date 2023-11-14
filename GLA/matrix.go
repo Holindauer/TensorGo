@@ -20,7 +20,7 @@ func Matmul(A *Tensor, B *Tensor) *Tensor {
 		panic("Within Matmul(): 2D Tensors must be compatible for matmul")
 	}
 
-	C := Zero_Tensor([]int{A.Shape[0], B.Shape[1]}) // <-- returns pointer to Tensor struct
+	C := Zero_Tensor([]int{A.Shape[0], B.Shape[1]}, false) // <-- returns pointer to Tensor struct
 
 	numGoroutines := 4
 	chunkSize := C.Shape[0] / numGoroutines
