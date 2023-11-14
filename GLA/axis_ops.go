@@ -74,33 +74,6 @@ func (A *Tensor) AxisOperation(axis int, op Operation) *Tensor {
 
 // ============================================================================================================ Summation on an Axis
 
-// This interface is used to generalize batching within any Tensor Operation. It is specific to operations that take in
-// a single Tensor Argument and return a single Tensor.
-type Batch_Tensor_Tensor_Interface interface {
-	Execute(tensor *Tensor) *Tensor // Execute the operation and return a tensor.
-}
-
-func Batch_Tensor_Tensor_Operation(op Batch_Tensor_Tensor_Interface, A *Tensor) *Tensor {
-
-	//define the above code as an anon func
-	eachElementOp := func(example int) *Tensor {
-		Batched_Output := A.Remove_Dim(example, 0)                            // <--- retrieve the first element from the 0'th dim of the batch tensor
-		Output := op.Execute(Batched_Output).Add_Singleton()                  // <--- execute the operation on the first element
-		singletonReordering := Indicies_First_Last_Swapped(len(Output.Shape)) // <--- swap the 0'th and len(A.Shape) - 1'th indicies
-		return Output.Transpose(singletonReordering)                          // <--- reorder conitguous memory
-	}
-
-	// Start Batched Output Process by executing the operation on the first element
-	Batched_Output := eachElementOp(0)
-
-	for i := 1; i < A.Shape[0]; i++ { // <--- iterate through the remaining elements of the batch tensor
-		Output := eachElementOp(i) // <--- execute the operation on the current element
-		Batched_Output = Batched_Output.Concat(Output, 0)
-	}
-
-	return Batched_Output
-}
-
 // Interface for summations on a Tensor along a specified axis (using the AxisOperation() function)
 type SumOperation struct{}
 

@@ -22,23 +22,23 @@
 package main
 
 import (
-	"fmt"
-
 	. "github.com/Holindauer/Go-LinAlg.git/GLA"
 )
 
 func main() {
 	// Test ArgMax_Axis()
-	A := Range_Tensor([]int{1, 3, 3})
-	C := A.Concat(A, 0)
-
-	C = C.Concat(A, 0)
-	fmt.Println("Input in main: ", C.Shape)
-	fmt.Println()
+	A := Ones_Tensor([]int{3, 3, 3})
 
 	// Test batched version of Sum_Axis()
-	Sum_C := C.Sum_Axis(0, true)
+	Sum := A.Sum_Axis(0, true)
 
-	Display_Matrix(Sum_C)
+	Mean := A.Mean_Axis(0, true)
+	Var := A.Var_Axis(0, true)
+	Std := A.Std(0, true)
+
+	Display_Matrix(Sum)
+	Display_Matrix(Mean)
+	Display_Matrix(Var)
+	Display_Matrix(Std)
 
 }
