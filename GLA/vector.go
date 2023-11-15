@@ -17,7 +17,7 @@ func Check_Vector_Compatibility(t1 *Tensor, t2 *Tensor) bool {
 	}
 
 	// check if vectors are of same length
-	if len(t1.data) != len(t2.data) {
+	if len(t1.Data) != len(t2.Data) {
 		return false
 	}
 
@@ -48,7 +48,7 @@ func dot(t1 *Tensor, t2 *Tensor) float64 {
 	}
 
 	numGoroutines := 4 // Adjust this value to control the number of goroutines
-	chunkSize := len(t1.data) / numGoroutines
+	chunkSize := len(t1.Data) / numGoroutines
 	results := make(chan float64, numGoroutines) // <-- Create a buffered channel to store the results
 
 	var wg sync.WaitGroup
@@ -60,7 +60,7 @@ func dot(t1 *Tensor, t2 *Tensor) float64 {
 		end := start + chunkSize
 
 		if i == numGoroutines-1 {
-			end = len(t1.data) // Ensure the last chunk includes any remaining elements
+			end = len(t1.Data) // Ensure the last chunk includes any remaining elements
 		}
 		go computeDot(t1, t2, start, end, results, &wg)
 	}
@@ -81,7 +81,7 @@ func computeDot(t1 *Tensor, t2 *Tensor, start int, end int, results chan<- float
 	defer wg.Done() // Decrement the counter when the goroutine completes
 	var sum float64
 	for i := start; i < end; i++ {
-		sum += t1.data[i] * t2.data[i] // <-- Compute the dot product for this chunk
+		sum += t1.Data[i] * t2.Data[i] // <-- Compute the dot product for this chunk
 	}
 	results <- sum // <-- Write the result to the channel
 }
@@ -118,8 +118,8 @@ func Unit(A *Tensor) *Tensor {
 	B := Zero_Tensor(A.Shape, false)
 
 	// compute the unit vector
-	for i := 0; i < len(A.data); i++ {
-		B.data[i] = A.data[i] / norm
+	for i := 0; i < len(A.Data); i++ {
+		B.Data[i] = A.Data[i] / norm
 	}
 
 	return B
@@ -162,12 +162,12 @@ func Outer_Product(t1 *Tensor, t2 *Tensor) *Tensor {
 	}
 
 	// create a new tensor to store the result
-	C := Zero_Tensor([]int{len(t1.data), len(t2.data)}, false)
+	C := Zero_Tensor([]int{len(t1.Data), len(t2.Data)}, false)
 
 	// compute the outer product
-	for i := 0; i < len(t1.data); i++ {
-		for j := 0; j < len(t2.data); j++ {
-			C.data[i*len(t2.data)+j] = t1.data[i] * t2.data[j] // Cij = ai * bj
+	for i := 0; i < len(t1.Data); i++ {
+		for j := 0; j < len(t2.Data); j++ {
+			C.Data[i*len(t2.Data)+j] = t1.Data[i] * t2.Data[j] // Cij = ai * bj
 		}
 	}
 

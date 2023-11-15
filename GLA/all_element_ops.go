@@ -31,7 +31,7 @@ func (t *Tensor) AllOperation(op AllOperation) float64 {
 	var mutex = &sync.Mutex{}
 
 	numGoroutines := 4
-	chunkSize := len(t.data) / numGoroutines
+	chunkSize := len(t.Data) / numGoroutines
 	results := make([]float64, numGoroutines)
 
 	for i := 0; i < numGoroutines; i++ {
@@ -41,7 +41,7 @@ func (t *Tensor) AllOperation(op AllOperation) float64 {
 		end := start + chunkSize
 
 		if i == numGoroutines-1 {
-			end = len(t.data) // Ensure the last chunk includes any remaining elements
+			end = len(t.Data) // Ensure the last chunk includes any remaining elements
 		}
 
 		go func(i int, start, end int) {
@@ -68,7 +68,7 @@ type SumAllOperation struct{}
 func (s SumAllOperation) Apply(A *Tensor, start, end int) float64 {
 	var sum float64
 	for i := start; i < end; i++ { // sum the elements in the goroutine chunk
-		sum += A.data[i]
+		sum += A.Data[i]
 	}
 	return sum
 }
@@ -123,7 +123,7 @@ type VarAllOperation struct {
 func (v VarAllOperation) Apply(t *Tensor, start, end int) float64 {
 	var variance float64
 	for i := start; i < end; i++ {
-		diff := t.data[i] - v.mean // <--- var definition: sum((x - mean)^2) / n
+		diff := t.Data[i] - v.mean // <--- var definition: sum((x - mean)^2) / n
 		variance += diff * diff    // <--- Appy() performs: (x - mean)^2 for each x
 	}
 	return variance
@@ -169,8 +169,8 @@ func Add(A *Tensor, B *Tensor) *Tensor {
 	C := Zero_Tensor(A.Shape, false)
 
 	// Perform the elementwise addition
-	for i := 0; i < len(A.data); i++ {
-		C.data[i] = A.data[i] + B.data[i]
+	for i := 0; i < len(A.Data); i++ {
+		C.Data[i] = A.Data[i] + B.Data[i]
 	}
 
 	return C // <-- Pointer to the new tensor
@@ -191,8 +191,8 @@ func Subtract(A *Tensor, B *Tensor) *Tensor {
 	C := Zero_Tensor(A.Shape, false)
 
 	// Perform the elementwise subtraction
-	for i := 0; i < len(A.data); i++ {
-		C.data[i] = A.data[i] - B.data[i]
+	for i := 0; i < len(A.Data); i++ {
+		C.Data[i] = A.Data[i] - B.Data[i]
 	}
 
 	return C // <-- Pointer to the new tensor
@@ -204,8 +204,8 @@ func Subtract(A *Tensor, B *Tensor) *Tensor {
 // It returns a pointer to the same tensor
 func (A *Tensor) Scalar_Mult_(scalar float64) *Tensor {
 
-	for i := 0; i < len(A.data); i++ {
-		A.data[i] *= scalar
+	for i := 0; i < len(A.Data); i++ {
+		A.Data[i] *= scalar
 	}
 
 	return A // <-- Pointer to the same tensor

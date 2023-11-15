@@ -81,19 +81,19 @@ func RREF(Ab *Tensor) {
 	for k := Ab.Shape[0] - 1; k >= 0; k-- { // <--- decrement through rows
 
 		// Make the diagonal element 1
-		f := Ab.data[k*Ab.Shape[1]+k]
+		f := Ab.Data[k*Ab.Shape[1]+k]
 		if f == 0 {
 			panic("RREF() --- No unique solution")
 		}
 		for j := k; j < Ab.Shape[0]+1; j++ {
-			Ab.data[k*Ab.Shape[1]+j] = Ab.data[k*Ab.Shape[1]+j] / f // <--- Ab[k, j] = Ab[k, j] / f
+			Ab.Data[k*Ab.Shape[1]+j] = Ab.Data[k*Ab.Shape[1]+j] / f // <--- Ab[k, j] = Ab[k, j] / f
 		}
 
 		// Make all elements above the current one 0
 		for i := 0; i < k; i++ {
-			f := Ab.data[i*Ab.Shape[1]+k]
+			f := Ab.Data[i*Ab.Shape[1]+k]
 			for j := k; j < Ab.Shape[0]+1; j++ {
-				Ab.data[i*Ab.Shape[1]+j] = Ab.data[i*Ab.Shape[1]+j] - Ab.data[k*Ab.Shape[1]+j]*f // <--- Ab[i, j] = Ab[i, j] - Ab[k, j] * f
+				Ab.Data[i*Ab.Shape[1]+j] = Ab.Data[i*Ab.Shape[1]+j] - Ab.Data[k*Ab.Shape[1]+j]*f // <--- Ab[i, j] = Ab[i, j] - Ab[k, j] * f
 			}
 		}
 	}
@@ -106,18 +106,18 @@ func Forward_Elimination(Ab *Tensor) {
 
 		// Find the k-th pivot
 		i_max := Find_Pivot(Ab, k) // <--- find the row with the abs maximum element in column k
-		if Ab.data[i_max*Ab.Shape[1]+k] == 0 {
+		if Ab.Data[i_max*Ab.Shape[1]+k] == 0 {
 			panic("Forward_Elimination() within Gaussian_Elimination() --- No unique solution")
 		}
 		Ab.Swap_Rows(k, i_max) // <--- swap the k-th row with the row with the max element in column k
 
 		// Make all rows below this one 0 in current column
 		for i := k + 1; i < Ab.Shape[0]; i++ {
-			f := Ab.data[i*Ab.Shape[1]+k] / Ab.data[k*Ab.Shape[1]+k] // <--- f = Ab[i, k] / Ab[k, k]
+			f := Ab.Data[i*Ab.Shape[1]+k] / Ab.Data[k*Ab.Shape[1]+k] // <--- f = Ab[i, k] / Ab[k, k]
 
 			// Subtract (f * k-th row) from i-th row
 			for j := k; j < Ab.Shape[0]+1; j++ {
-				Ab.data[i*Ab.Shape[1]+j] = Ab.data[i*Ab.Shape[1]+j] - Ab.data[k*Ab.Shape[1]+j]*f
+				Ab.Data[i*Ab.Shape[1]+j] = Ab.Data[i*Ab.Shape[1]+j] - Ab.Data[k*Ab.Shape[1]+j]*f
 			}
 		}
 	}
@@ -132,9 +132,9 @@ func Back_Substitution(Ab *Tensor, A *Tensor) *Tensor {
 	for i := Ab.Shape[0] - 1; i >= 0; i-- { // <--- decrement through rows
 		sum := 0.0
 		for j := i + 1; j < Ab.Shape[0]; j++ {
-			sum += Ab.data[i*Ab.Shape[1]+j] * x.data[j]
+			sum += Ab.Data[i*Ab.Shape[1]+j] * x.Data[j]
 		}
-		x.data[i] = (Ab.data[i*Ab.Shape[1]+A.Shape[0]] - sum) / Ab.data[i*Ab.Shape[1]+i] // <--- x[i] = (Ab[i, n] - sum) / Ab[i, i]
+		x.Data[i] = (Ab.Data[i*Ab.Shape[1]+A.Shape[0]] - sum) / Ab.Data[i*Ab.Shape[1]+i] // <--- x[i] = (Ab[i, n] - sum) / Ab[i, i]
 	}
 	return x
 }
@@ -148,9 +148,9 @@ func Find_Pivot(A *Tensor, k int) int {
 	i_max := k
 	max_val := 0.0
 	for i := k; i < A.Shape[0]; i++ {
-		if math.Abs(A.data[i*A.Shape[1]+k]) > max_val {
+		if math.Abs(A.Data[i*A.Shape[1]+k]) > max_val {
 			i_max = i
-			max_val = math.Abs(A.data[i*A.Shape[1]+k])
+			max_val = math.Abs(A.Data[i*A.Shape[1]+k])
 		}
 	}
 	return i_max
@@ -173,7 +173,7 @@ func (A *Tensor) Get_Row(row int) *Tensor {
 
 	// Copy the row into the new Tensor
 	for i := 0; i < A.Shape[1]; i++ {
-		B.data[i] = A.data[row*A.Shape[1]+i]
+		B.Data[i] = A.Data[row*A.Shape[1]+i]
 	}
 
 	return B
@@ -189,6 +189,6 @@ func (A *Tensor) Set_Row(row int, B *Tensor) {
 
 	// Copy the row into the new Tensor
 	for i := 0; i < A.Shape[1]; i++ {
-		A.data[row*A.Shape[1]+i] = B.data[i]
+		A.Data[row*A.Shape[1]+i] = B.Data[i]
 	}
 }

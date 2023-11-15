@@ -5,7 +5,7 @@ package GLA
 
 type Tensor struct {
 	Shape []int
-	data  []float64 // <--- this 1D slice to store flattened tensor
+	Data  []float64 // <--- this 1D slice to store flattened tensor
 }
 
 //=============================================================================================================Accesing Data from a Tensor
@@ -21,7 +21,7 @@ func (t *Tensor) Retrieve(indices []int) float64 {
 	}
 
 	flattened_index := Index(indices, t.Shape)
-	return t.data[flattened_index]
+	return t.Data[flattened_index]
 }
 
 // The general algorithm for computing the index of a flattened tensor from the multi dimensional indices:

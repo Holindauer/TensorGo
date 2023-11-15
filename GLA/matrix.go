@@ -59,13 +59,13 @@ func computeRow(A *Tensor, B *Tensor, C *Tensor, start int, end int, wg *sync.Wa
 				A_idx := Index([]int{row, k}, A.Shape)
 				B_idx := Index([]int{k, col}, B.Shape)
 
-				sum += A.data[A_idx] * B.data[B_idx]
+				sum += A.Data[A_idx] * B.Data[B_idx]
 			}
 			// compute flat index of C
 			C_idx := Index([]int{row, col}, C.Shape)
 
 			// write to C.data slice directly
-			C.data[C_idx] = sum
+			C.Data[C_idx] = sum
 		}
 	}
 }
@@ -76,14 +76,14 @@ func Display_Matrix(t *Tensor) {
 		// Handling 2D matrix
 		for i := 0; i < t.Shape[0]; i++ {
 			for j := 0; j < t.Shape[1]; j++ {
-				fmt.Printf("%v ", t.data[i*t.Shape[1]+j])
+				fmt.Printf("%v ", t.Data[i*t.Shape[1]+j])
 			}
 			fmt.Println()
 		}
 	} else if len(t.Shape) == 1 {
 		// Handling vector
 		for i := 0; i < t.Shape[0]; i++ {
-			fmt.Printf("%v ", t.data[i])
+			fmt.Printf("%v ", t.Data[i])
 		}
 		fmt.Println()
 	} else {

@@ -22,23 +22,20 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 
 	. "github.com/Holindauer/Go-LinAlg.git/GLA"
 )
 
 func main() {
+	// Test Case
 
-	A := Range_Tensor([]int{3, 3, 3}, false)
+	A := Range_Tensor([]int{3, 2, 2}, true)
+	//fmt.Println("non batched 2x2 Range Tensor")
+	//fmt.Println(A.Data)
+	//Display_Matrix(A)
 
-	fmt.Println(A.Shape)
-
-	fmt.Println(A.Sum_All())
-
-	A = Range_Tensor([]int{3, 3, 3}, true)
-	fmt.Println(A.Sum_All())
-
-	A = Range_Tensor([]int{3, 3}, false)
-
-	fmt.Println(A.Sum_All() * 3)
+	Sum := A.Sum_Axis(1, true)
+	//	fmt.Println("Sum along axis 0", Sum.Shape)
+	Display_Matrix(Sum)
 }

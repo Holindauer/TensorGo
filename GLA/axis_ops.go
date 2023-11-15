@@ -3,6 +3,8 @@ package GLA
 // This source file contians Tensor operations performed over a specified axis
 
 import (
+	//"fmt"
+	//	"fmt"
 	"math"
 )
 
@@ -45,7 +47,7 @@ func (A *Tensor) AxisOperation(axis int, op Operation) *Tensor {
 	indices := make([]int, len(A.Shape)) // <--- multi dim indexing for iterating through tensor
 
 	// Perform the operation along the specified axis.
-	for i := 0; i < len(A.data); i++ {
+	for i := 0; i < len(A.Data); i++ {
 		// Concatenate the indices before and after the specified axis to form the reduced-dimension indices.
 		concatIndices := append(indices[:axis], indices[axis+1:]...)
 
@@ -53,7 +55,7 @@ func (A *Tensor) AxisOperation(axis int, op Operation) *Tensor {
 		resultIndex := Index(concatIndices, newShape)
 
 		// Apply the operation to the current element in the tensor and update the result tensor.
-		newData[resultIndex] = op.Apply(newData[resultIndex], A.data[i])
+		newData[resultIndex] = op.Apply(newData[resultIndex], A.Data[i])
 
 		// Increment the multi-dimensional indices, like an odometer with each wheel representing a dimension's index.
 		// For ex: in a 3x3 matrix this would be [0,0] -> [0,1] -> [0,2] -> [1,0] -> [1,1] -> [1,2] -> [2,0] -> [2,1] -> [2,2]
@@ -69,7 +71,7 @@ func (A *Tensor) AxisOperation(axis int, op Operation) *Tensor {
 		}
 	}
 
-	return &Tensor{Shape: newShape, data: newData}
+	return &Tensor{Shape: newShape, Data: newData}
 }
 
 // ============================================================================================================ Summation on an Axis
@@ -106,8 +108,8 @@ func (A *Tensor) Sum_Axis(axis int, batching bool) *Tensor {
 func (A *Tensor) Mean_Axis(axis int, batching bool) *Tensor {
 	sumTensor := A.Sum_Axis(axis, batching) // sum along axis
 	count := A.Shape[axis]
-	for i := range sumTensor.data {
-		sumTensor.data[i] /= float64(count)
+	for i := range sumTensor.Data {
+		sumTensor.Data[i] /= float64(count)
 	}
 	return sumTensor
 }
@@ -126,7 +128,7 @@ func (v VarOperation) Apply(a, b float64) float64 { // apply variance calculatio
 }
 func (A *Tensor) Var_Axis(axis int, batching bool) *Tensor {
 	meanTensor := A.Mean_Axis(axis, batching)       // mean along axis
-	varOp := VarOperation{mean: meanTensor.data[0]} // pass the mean to the operation
+	varOp := VarOperation{mean: meanTensor.Data[0]} // pass the mean to the operation
 	return A.AxisOperation(axis, varOp)             // variance along an axis
 }
 
@@ -135,8 +137,8 @@ func (A *Tensor) Var_Axis(axis int, batching bool) *Tensor {
 // Std() calculates the standard deviation of elements in a tensor along a specified axis.
 func (A *Tensor) Std(axis int, batching bool) *Tensor {
 	varTensor := A.Var_Axis(axis, batching)
-	for i := range varTensor.data {
-		varTensor.data[i] = math.Sqrt(varTensor.data[i])
+	for i := range varTensor.Data {
+		varTensor.Data[i] = math.Sqrt(varTensor.Data[i])
 	}
 	return varTensor
 }

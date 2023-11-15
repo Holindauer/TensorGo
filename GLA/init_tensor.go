@@ -1,5 +1,7 @@
 package GLA
 
+//import "fmt"
+
 // This source file contains functions for initializing tensors
 
 // TensorInitializer is an interface for initializing tensor data at each element
@@ -13,10 +15,10 @@ func InitializeData(shape []int, initializer TensorInitializer) *Tensor {
 	A := new(Tensor)
 	A.Shape = shape
 	num_elements := Product(shape) // <--- Product() is a function from utils.go
-	A.data = make([]float64, num_elements)
+	A.Data = make([]float64, num_elements)
 
-	for i := range A.data {
-		A.data[i] = initializer.ValueAt(i) // <--- ValueAt() is a method of TensorInitializer
+	for i := range A.Data {
+		A.Data[i] = initializer.ValueAt(i) // <--- ValueAt() is a method of TensorInitializer
 	}
 
 	return A
@@ -91,7 +93,7 @@ func Range_Tensor(shape []int, batching bool) *Tensor {
 func (A *Tensor) Copy() *Tensor {
 	// Create a new tensor to store the copy.
 	B := Zero_Tensor(A.Shape, false)
-	copy(B.data, A.data) // <--- copy() is a built-in function
+	copy(B.Data, A.Data) // <--- copy() is a built-in function
 	return B
 }
 

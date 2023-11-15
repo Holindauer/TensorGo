@@ -64,7 +64,7 @@ func (A *Tensor) Partial(slice string) *Tensor {
 			// Convert the multi-dimensional indices to flattened indices and use them to copy the data.
 			srcFlattenedIndex := Index(srcIndex, A.Shape)
 			dstFlattenedIndex := Index(tempIndex, partialTensor.Shape)
-			partialTensor.data[dstFlattenedIndex] = A.data[srcFlattenedIndex]
+			partialTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 
 			return
 		}
@@ -92,13 +92,13 @@ func (A *Tensor) Reshape(shape []int) *Tensor {
 	for _, v := range shape { // find num elements of shape param
 		numElements *= v
 	}
-	if numElements != len(A.data) {
+	if numElements != len(A.Data) {
 		panic("Within Reshape(): Cannot reshape tensor to shape with different number of elements")
 	}
 	// Create a new tensor to store the reshaped data with the shape param
 	reshapedTensor := Zero_Tensor(shape, false)
-	for i := 0; i < len(A.data); i++ {
-		reshapedTensor.data[i] = A.data[i] // copy data from A to reshapedTensor
+	for i := 0; i < len(A.Data); i++ {
+		reshapedTensor.Data[i] = A.Data[i] // copy data from A to reshapedTensor
 	}
 	return reshapedTensor
 }
@@ -130,11 +130,11 @@ func (A *Tensor) Transpose(axes []int) *Tensor {
 	}
 
 	// Allocate the new tensor
-	newData := make([]float64, len(A.data))
-	B := &Tensor{Shape: newShape, data: newData} // <-- B is a pointer to a new tensor
+	newData := make([]float64, len(A.Data))
+	B := &Tensor{Shape: newShape, Data: newData} // <-- B is a pointer to a new tensor
 
 	// Reindex and copy data
-	for i := range A.data {
+	for i := range A.Data {
 		// Get the multi-dimensional indices for the current element
 		originalIndices := UnravelIndex(i, A.Shape)
 
@@ -148,7 +148,7 @@ func (A *Tensor) Transpose(axes []int) *Tensor {
 		newIndex := Index(newIndices, newShape)
 
 		// Assign the i'th value of original tensor to the newIndex'th val of new tensor
-		B.data[newIndex] = A.data[i]
+		B.Data[newIndex] = A.Data[i]
 	}
 
 	return B
@@ -206,10 +206,10 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 		}
 
 		// concatenate data contiguously into new slice
-		concatData := append(A.data, B.data...)
+		concatData := append(A.Data, B.Data...)
 
 		// create new tensor to store concatenated data for return
-		concatTensor = &Tensor{Shape: concatShape, data: concatData}
+		concatTensor = &Tensor{Shape: concatShape, Data: concatData}
 	} else if axis_cat != 0 {
 
 		// determine the reordering of the axes for transpose to make axis_cat the 0'th axis the slice
@@ -233,7 +233,7 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 		B_T := B.Transpose(axes_reordering)
 
 		// concatenate data contiguously into new slice
-		concatData_Transposed := append(A_T.data, B_T.data...)
+		concatData_Transposed := append(A_T.Data, B_T.Data...)
 
 		// We now have a slice of contigous data that is the concatenation of A_T and B_T, in order to use
 		// this data to create a new tensor, we must first determine the shape of the new tensor in this
@@ -248,7 +248,7 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 		}
 
 		// create new tensor to store the transposed concatenated data
-		concatTensor_Transposed := &Tensor{Shape: concatShape_Transposed, data: concatData_Transposed}
+		concatTensor_Transposed := &Tensor{Shape: concatShape_Transposed, Data: concatData_Transposed}
 
 		// transpose the concatenated tensor back to the original ordering of axes. Because we only swapped
 		// two axes, we can just reuse the same axe_reordering array from the originbal transpose.
@@ -289,7 +289,7 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 			for i := 0; i < num_elements; i++ {
 				tempIndex[len(tempIndex)-1] = i
 				dstFlattenedIndex := Index(tempIndex, newShape)
-				extendedTensor.data[dstFlattenedIndex] = A.data[srcFlattenedIndex]
+				extendedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 			}
 			return
 		}
@@ -342,7 +342,7 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 			// As the recursion unwinds, this base case is reached where we copy data from the original tensor in the appropriate idx
 			srcFlattenedIndex := Index(tempIndex, A.Shape)  // <---  Index() call for og vs dest differ by shape provided as arg
 			dstFlattenedIndex := Index(tempIndex, newShape) // <---
-			extendedTensor.data[dstFlattenedIndex] = A.data[srcFlattenedIndex]
+			extendedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 			return
 		}
 
