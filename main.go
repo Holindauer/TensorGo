@@ -30,12 +30,8 @@ import (
 func main() {
 	// Test Case
 
-	A := Range_Tensor([]int{3, 2, 2}, true)
-	//fmt.Println("non batched 2x2 Range Tensor")
-	//fmt.Println(A.Data)
-	//Display_Matrix(A)
+	A := Range_Tensor([]int{4, 5, 5}, true)
 
-	Sum := A.Sum_Axis(1, true)
-	//	fmt.Println("Sum along axis 0", Sum.Shape)
-	Display_Matrix(Sum)
+	Display_Matrix(A, true)
+
 }

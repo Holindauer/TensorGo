@@ -62,6 +62,27 @@ func Batch_Tensor_Tensor_Operation(op Batch_Tensor_Tensor_Interface, A *Tensor) 
 	return Batched_Output
 }
 
+// --------------------------------------------------------------------------------------------------Single Tensor Input --- Void Output
+
+type Batch_Tensor_Void_Interface interface {
+	Execute(tensor *Tensor)
+}
+
+func Batch_Tensor_Void_Operation(op Batch_Tensor_Void_Interface, A *Tensor) {
+
+	//define the above code as an anon func
+	eachElementOp := func(example int) {
+		Batched_Output := A.Remove_Dim(0, example) // <--- retrieve the first element from the 0'th dim of the batch tensor
+		op.Execute(Batched_Output)
+	}
+
+	// Start Batched Output Process by executing the operation on the first element
+	eachElementOp(0)
+	for i := 1; i < A.Shape[0]; i++ { // <--- iterate through the remaining elements of the batch tensor
+		eachElementOp(i) // <--- execute the operation on the current element
+	}
+}
+
 //--------------------------------------------------------------------------------------------------Double Tensor Input --- Single Tensor Output   // Eventually merge all batch functions into the same func
 
 type Batch_TwoTensor_Tensor_Interface interface {

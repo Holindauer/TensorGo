@@ -7,6 +7,8 @@ import (
 	"sync"
 )
 
+//-------------------------------------------------------------------------------------------------------------- Matmul()
+
 // This function computes the dot product of two vectors
 func Matmul(A *Tensor, B *Tensor) *Tensor {
 
@@ -70,26 +72,42 @@ func computeRow(A *Tensor, B *Tensor, C *Tensor, start int, end int, wg *sync.Wa
 	}
 }
 
-// this function is used to display a 2D tensor as a matrix
-func Display_Matrix(t *Tensor) {
-	if len(t.Shape) == 2 {
+//-------------------------------------------------------------------------------------------------------------- Display_Matrix()
+
+type Batched_Display_Matrix struct{}
+
+func (op Batched_Display_Matrix) Execute(A *Tensor) {
+	fmt.Println()
+	if len(A.Shape) == 2 {
 		// Handling 2D matrix
-		for i := 0; i < t.Shape[0]; i++ {
-			for j := 0; j < t.Shape[1]; j++ {
-				fmt.Printf("%v ", t.Data[i*t.Shape[1]+j])
+		for i := 0; i < A.Shape[0]; i++ {
+			for j := 0; j < A.Shape[1]; j++ {
+				fmt.Printf("%v ", A.Data[i*A.Shape[1]+j])
 			}
 			fmt.Println()
 		}
-	} else if len(t.Shape) == 1 {
+	} else if len(A.Shape) == 1 {
 		// Handling vector
-		for i := 0; i < t.Shape[0]; i++ {
-			fmt.Printf("%v ", t.Data[i])
+		for i := 0; i < A.Shape[0]; i++ {
+			fmt.Printf("%v ", A.Data[i])
 		}
 		fmt.Println()
 	} else {
 		fmt.Println("Within Display_Matrix(): Tensor must be 1D or 2D to display as matrix or vector")
 	}
 }
+
+// this function is used to display a 2D tensor as a matrix
+func Display_Matrix(A *Tensor, batching bool) {
+	if !batching {
+		Batched_Display_Matrix{}.Execute(A)
+	} else {
+		Batch_Tensor_Void_Operation(Batched_Display_Matrix{}, A)
+	}
+
+}
+
+//-------------------------------------------------------------------------------------------------------------- Augment_Matrix()
 
 // This fucntion creates an augmented matrix fromt two matrix (2D) Tensors for use in the Gaussian_Elimination function.
 // Put simply, this fucniton checks that the two matricies are compatible for contatination alogn the 1'th axis, are 2
