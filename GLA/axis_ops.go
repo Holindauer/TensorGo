@@ -4,7 +4,6 @@ package GLA
 
 import (
 	//"fmt"
-	//	"fmt"
 	"math"
 )
 

@@ -24,14 +24,20 @@ package main
 import (
 	//"fmt"
 
+	"fmt"
+
 	. "github.com/Holindauer/Go-LinAlg.git/GLA"
 )
 
 func main() {
 	// Test Case
 
-	A := Range_Tensor([]int{4, 5, 5}, true)
+	A := Range_Tensor([]int{4, 3, 3}, true)
 
-	Display_Matrix(A, true)
+	// Test Batched Matmul
+
+	B := Matmul(A, A, true)
+
+	fmt.Println("B.Shape: ", B.Shape)
 
 }

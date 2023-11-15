@@ -9,8 +9,11 @@ import (
 
 //-------------------------------------------------------------------------------------------------------------- Matmul()
 
-// This function computes the dot product of two vectors
-func Matmul(A *Tensor, B *Tensor) *Tensor {
+// This struct is used to implement the Matmul() function
+type Batched_Matmul struct{}
+
+// Definition of the Execute Method on Batched_Matmul struct
+func (op Batched_Matmul) Execute(A, B *Tensor) *Tensor {
 
 	// check if tensor shapes are compatible for matmul
 	if len(A.Shape) != 2 || len(B.Shape) != 2 {
@@ -69,6 +72,15 @@ func computeRow(A *Tensor, B *Tensor, C *Tensor, start int, end int, wg *sync.Wa
 			// write to C.data slice directly
 			C.Data[C_idx] = sum
 		}
+	}
+}
+
+// This function computes the dot product of two vectors w/ optional batching
+func Matmul(A *Tensor, B *Tensor, batching bool) *Tensor {
+	if !batching {
+		return Batched_Matmul{}.Execute(A, B)
+	} else {
+		return Batch_TwoTensor_Tensor_Operation(Batched_Matmul{}, A, B)
 	}
 }
 
