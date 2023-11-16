@@ -24,20 +24,30 @@ package main
 import (
 	//"fmt"
 
-	"fmt"
-
 	. "github.com/Holindauer/Go-LinAlg.git/GLA"
 )
 
 func main() {
 	// Test Case
 
-	A := Range_Tensor([]int{4, 3, 3}, true)
+	A := Range_Tensor([]int{3, 3, 3}, true)
+	A.Data = []float64{2, 4, -2, 4, 9, -3, -2, -3, 7, 2, 4, -2, 4, 9, -3, -2, -3, 7, 2, 4, -2, 4, 9, -3, -2, -3, 7}
 
-	// Test Batched Matmul
+	x := Range_Tensor([]int{3, 3, 1}, true)
+	x.Data = []float64{-1, 2, 2, -1, 2, 2, -1, 2, 2}
 
-	B := Matmul(A, A, true)
+	Display_Matrix(A, true)
+	Display_Matrix(x, true)
 
-	fmt.Println("B.Shape: ", B.Shape)
+	b := MatMul(A, x, true)
+	Display_Matrix(b, true)
+
+	// Test Batched Gaussian Elimination
+	x = Gaussian_Elimination(A, b, true)
+
+	Display_Matrix(x, true)
+
+	x = Gauss_Jordan_Elimination(A, b, true)
+	Display_Matrix(x, true)
 
 }

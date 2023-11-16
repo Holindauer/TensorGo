@@ -39,3 +39,17 @@ func Indicies_First_Last_Swapped(n int) []int {
 	indicies[n-1] = 0
 	return indicies
 }
+
+// This checks whether the dimmensions of two individual Tensors are compatible for matrix multiplication
+func Check_MatMul_Compatibility(A *Tensor, B *Tensor) {
+
+	// check if tensor shapes are compatible for matmul
+	if len(A.Shape) != 2 || len(B.Shape) != 2 {
+		panic("Within Matmul(): Tensors must both be 2D to compute matmul")
+	}
+
+	// check if mxn and nxp
+	if A.Shape[1] != B.Shape[0] {
+		panic("Within Matmul(): 2D Tensors must be compatible for matmul")
+	}
+}

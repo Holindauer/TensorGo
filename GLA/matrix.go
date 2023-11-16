@@ -4,83 +4,54 @@ package GLA
 
 import (
 	"fmt"
-	"sync"
 )
 
 //-------------------------------------------------------------------------------------------------------------- Matmul()
 
-// This struct is used to implement the Matmul() function
 type Batched_Matmul struct{}
 
-// Definition of the Execute Method on Batched_Matmul struct
-func (op Batched_Matmul) Execute(A, B *Tensor) *Tensor {
+// This method of the Batch_Matmul struct computes the matrix multiplication of two 2D tensors
+func (op Batched_Matmul) Execute(A *Tensor, B *Tensor) *Tensor {
 
-	// check if tensor shapes are compatible for matmul
-	if len(A.Shape) != 2 || len(B.Shape) != 2 {
-		panic("Within Matmul(): Tensors must both be 2D to compute matmul")
+	// Address Matrix Vector Multiplication
+	if len(B.Shape) == 1 {
+		B = B.Add_Singleton()
 	}
 
-	// check if mxn and nxp
-	if A.Shape[1] != B.Shape[0] {
-		panic("Within Matmul(): 2D Tensors must be compatible for matmul")
-	}
+	// Check that the two Tensors are compatible for matrix multiplication
+	Check_MatMul_Compatibility(A, B)
 
 	C := Zero_Tensor([]int{A.Shape[0], B.Shape[1]}, false) // <-- returns pointer to Tensor struct
+	var sum float64
 
-	numGoroutines := 4
-	chunkSize := C.Shape[0] / numGoroutines
+	for row := 0; row < C.Shape[0]; row++ { // <-- iterate through rows of C
 
-	// because each index of C is indepentent of the other, we will write directly to the
-	// C.data slice within the C tensor, and there is no need for a mutex.
+		for col := 0; col < C.Shape[1]; col++ { // <-- iterate through columns of C
+			sum = 0                           // <-- reset sum
+			for k := 0; k < A.Shape[1]; k++ { // compute dot product of row of A and column of B
+				sum += A.Retrieve([]int{row, k}) * B.Retrieve([]int{k, col})
+			}
 
-	var wg sync.WaitGroup
-
-	for i := 0; i < numGoroutines; i++ {
-
-		wg.Add(1) // Increment the WaitGroup counter
-
-		start := i * chunkSize //  compute bounds of the chunk
-		end := start + chunkSize
-
-		if i == numGoroutines-1 {
-			end = C.Shape[0] // Ensure the last chunk includes any remaining elements
+			// write to C.data slice
+			C.Data[Index([]int{row, col}, C.Shape)] = sum
 		}
-
-		go computeRow(A, B, C, start, end, &wg)
 	}
+
 	return C
 }
 
-// This is a helper function for Matmul() above. It computes the dot product of a chunk of the vectors
-func computeRow(A *Tensor, B *Tensor, C *Tensor, start int, end int, wg *sync.WaitGroup) {
-	defer wg.Done()
+// This function computes the dot product of two vectors
+func MatMul(A *Tensor, B *Tensor, batching bool) *Tensor {
 
-	for row := start; row < end; row++ { // <-- iterate through rows of C
+	// define Batched_Matmul struct
+	batched_matmul := Batched_Matmul{}
 
-		for col := 0; col < C.Shape[1]; col++ { // <-- iterate through columns of C
-
-			var sum float64
-			for k := 0; k < A.Shape[1]; k++ { // compute dot product of row of A and column of B
-				A_idx := Index([]int{row, k}, A.Shape)
-				B_idx := Index([]int{k, col}, B.Shape)
-
-				sum += A.Data[A_idx] * B.Data[B_idx]
-			}
-			// compute flat index of C
-			C_idx := Index([]int{row, col}, C.Shape)
-
-			// write to C.data slice directly
-			C.Data[C_idx] = sum
-		}
-	}
-}
-
-// This function computes the dot product of two vectors w/ optional batching
-func Matmul(A *Tensor, B *Tensor, batching bool) *Tensor {
 	if !batching {
-		return Batched_Matmul{}.Execute(A, B)
+		// Perform single operation
+		return batched_matmul.Execute(A, B)
 	} else {
-		return Batch_TwoTensor_Tensor_Operation(Batched_Matmul{}, A, B)
+		// Perform batched operation
+		return Batch_TwoTensor_Tensor_Operation(batched_matmul, A, B)
 	}
 }
 
@@ -88,6 +59,7 @@ func Matmul(A *Tensor, B *Tensor, batching bool) *Tensor {
 
 type Batched_Display_Matrix struct{}
 
+// This method of the Batched_Display_Matrix struct displays a 2D tensor as a matrix
 func (op Batched_Display_Matrix) Execute(A *Tensor) {
 	fmt.Println()
 	if len(A.Shape) == 2 {

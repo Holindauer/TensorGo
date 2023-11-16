@@ -40,11 +40,9 @@ func Gaussian_Elimination(A *Tensor, b *Tensor, batching bool) *Tensor {
 
 // --- ---------------------------------------------------------------------------------------------Gauss Jordan Elimination
 
-// This function performs Gauss Jordan Elimination on a system of linear equations. Which means that in addition to forward Propagation,
-// The function also reduces the matrix to reduced row echelon form (RREF). It takes two parameters: A and b, where A is an n x n matrix
-// and b is an n x 1 column vector. It returns a column vector x that is the solution to the system of linear equations.
-func Gauss_Jordan_Elimination(A *Tensor, b *Tensor) *Tensor {
+type GaussJordanElimination struct{}
 
+func (gje GaussJordanElimination) Execute(A, b *Tensor) *Tensor {
 	if len(b.Shape) == 1 {
 		b = b.Add_Singleton() // <--- Augment_Matrix() requires a 2D Tensor
 	}
@@ -55,6 +53,23 @@ func Gauss_Jordan_Elimination(A *Tensor, b *Tensor) *Tensor {
 	RREF(Ab) // <--- convert to reduced row echelon form
 
 	return Ab.Remove_Dim(1, 3) // <--- Remove all columns except the last one (whihc is the solution in the augmented matrix)
+}
+
+// This function performs Gauss Jordan Elimination on a system of linear equations. Which means that in addition to forward Propagation,
+// The function also reduces the matrix to reduced row echelon form (RREF). It takes two parameters: A and b, where A is an n x n matrix
+// and b is an n x 1 column vector. It returns a column vector x that is the solution to the system of linear equations.
+func Gauss_Jordan_Elimination(A *Tensor, b *Tensor, batching bool) *Tensor {
+
+	GJE := GaussJordanElimination{} // create instance of GaussJordanElimination struct
+	var Output *Tensor
+
+	if batching == false {
+		Output = GaussJordanElimination{}.Execute(A, b) // single processing
+	} else {
+		Output = Batch_TwoTensor_Tensor_Operation(GJE, A, b) // batched processing
+	}
+	return Output
+
 }
 
 // The below function currently does not work and needs to be looked at in more detail

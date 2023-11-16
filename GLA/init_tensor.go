@@ -130,5 +130,5 @@ func Gramien_Matrix(A *Tensor) *Tensor {
 		panic("Within Gramien_Matrix(): Tensor must be 2D")
 	}
 
-	return Matmul(A, A.Transpose([]int{1, 0}), false)
+	return MatMul(A, A.Transpose([]int{1, 0}), false)
 }
