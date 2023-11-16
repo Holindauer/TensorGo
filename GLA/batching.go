@@ -43,6 +43,11 @@ type Batch_Tensor_Void_Interface interface {
 	Execute(tensor *Tensor)
 }
 
+// NOTE: At the moment, the only function that uses this interface is Display_Matrix(). I don' think this requires
+//       concurrency. If Tensor to Void dunctions are added that would benefit from concurrency, the probably what
+//       should be done would be to add a boolean parameter to this function that indicates whether or not to use
+//       concurrency.
+
 func Batch_Tensor_Void_Operation(op Batch_Tensor_Void_Interface, A *Tensor) {
 
 	//define the above code as an anon func
@@ -64,50 +69,105 @@ type Batch_Tensor_Tensor_Interface interface {
 	Execute(tensor *Tensor) *Tensor // Execute the operation and return a tensor.
 }
 
+// This function concurrently processes each element of a batch tensor and returns a batch tensor of the same shape.
+// The operation is defined by the op parameter, which is an instance of a struct that implements the Batch_Tensor_Tensor_Interface
+// interface. The function returns a pointer to the batched output tensor.
 func Batch_Tensor_Tensor_Operation(op Batch_Tensor_Tensor_Interface, A *Tensor) *Tensor {
+	type result struct {
+		index  int
+		tensor *Tensor
+	}
 
-	//define the above code as an anon func
+	results := make(chan result, A.Shape[0]) // Channel to collect results
+	orderMap := make(map[int]*Tensor)        // Map to track order of batch in results
+
+	// Define the eachElementOp function
 	eachElementOp := func(example int) *Tensor {
-		Batched_Output := A.Remove_Dim(0, example) // <--- retrieve the first element from the 0'th dim of the batch tensor
+		Batched_Output := A.Remove_Dim(0, example) // Retrieve the element from the batch tensor
 		Output := op.Execute(Batched_Output)
-		Output.Shape = append([]int{1}, Output.Shape...) // <--- add a singleton dimension to the front of the shape
+		Output.Shape = append([]int{1}, Output.Shape...) // Add a singleton dimension to the front of the shape
 		return Output
 	}
 
-	// Start Batched Output Process by executing the operation on the first element
-	Batched_Output := eachElementOp(0)
+	// Launch a goroutine for each element in the batch
+	for i := 0; i < A.Shape[0]; i++ {
+		go func(index int) {
+			output := eachElementOp(index)
+			results <- result{index: index, tensor: output}
+		}(i)
+	}
 
-	for i := 1; i < A.Shape[0]; i++ { // <--- iterate through the remaining elements of the batch tensor
-		Output := eachElementOp(i) // <--- execute the operation on the current element
-		Batched_Output = Batched_Output.Concat(Output, 0)
+	// Collect results from the channel
+	for i := 0; i < A.Shape[0]; i++ {
+		res := <-results
+		orderMap[res.index] = res.tensor
+	}
+	close(results)
+
+	// Start collecting the results into a batched tensor by retrieving the first element
+	Batched_Output := orderMap[0]
+
+	// Concatenate in the correct order
+	for i := 1; i < A.Shape[0]; i++ {
+		Batched_Output = Batched_Output.Concat(orderMap[i], 0)
 	}
 
 	return Batched_Output
 }
 
-//--------------------------------------------------------------------------------------------------Double Tensor Input --- Single Tensor Output   // Eventually merge all batch functions into the same func
+//--------------------------------------------------------------------------------------------------Double Tensor Input --- Single Tensor Output
 
 type Batch_TwoTensor_Tensor_Interface interface {
 	Execute(tensor1, tensor2 *Tensor) *Tensor // Execute the operation and return a tensor.
 }
 
+// This function concurrently processes each element of a batch tensor and returns a batch tensor of the same shape.
+// The operation is defined by the op parameter, which is an instance of a struct that implements the Batch_TwoTensor_Tensor_Interface
+// interface. The function returns a pointer to the batched output tensor.
 func Batch_TwoTensor_Tensor_Operation(op Batch_TwoTensor_Tensor_Interface, A, B *Tensor) *Tensor {
+	type result struct {
+		index  int
+		tensor *Tensor
+	}
 
-	//define the above code as an anon func
+	if A.Shape[0] != B.Shape[0] {
+		panic("Tensors A and B must have the same batch size")
+	}
+
+	results := make(chan result, A.Shape[0]) // Channel to collect results
+	orderMap := make(map[int]*Tensor)        // Map to track order
+
+	// Define the eachElementOp function
 	eachElementOp := func(example int) *Tensor {
-		tensor1 := A.Remove_Dim(0, example) // <--- retrieve elements
+		tensor1 := A.Remove_Dim(0, example) // Retrieve elements
 		tensor2 := B.Remove_Dim(0, example)
 
-		Output := op.Execute(tensor1, tensor2)           // <--- execute the operation on the current element
-		Output.Shape = append([]int{1}, Output.Shape...) // <--- add a singleton dimension to the front of the shape
+		Output := op.Execute(tensor1, tensor2)           // Execute the operation on the current element
+		Output.Shape = append([]int{1}, Output.Shape...) // Add a singleton dimension to the front of the shape
 		return Output
 	}
 
-	// Start Batched Output Process by executing the operation on the first element
-	Batched_Output := eachElementOp(0)
-	for i := 1; i < A.Shape[0]; i++ { // <--- iterate through the remaining elements of the batch tensor
-		Output := eachElementOp(i) // <--- execute the operation on the current element
-		Batched_Output = Batched_Output.Concat(Output, 0)
+	// Launch a goroutine for each element in the batch
+	for i := 0; i < A.Shape[0]; i++ {
+		go func(index int) {
+			output := eachElementOp(index)
+			results <- result{index: index, tensor: output}
+		}(i)
+	}
+
+	// Collect results from the channel
+	for i := 0; i < A.Shape[0]; i++ {
+		res := <-results
+		orderMap[res.index] = res.tensor
+	}
+	close(results)
+
+	// Start Batched Output Process by getting the first element
+	Batched_Output := orderMap[0]
+
+	// Concatenate in the correct order
+	for i := 1; i < A.Shape[0]; i++ {
+		Batched_Output = Batched_Output.Concat(orderMap[i], 0)
 	}
 
 	return Batched_Output
