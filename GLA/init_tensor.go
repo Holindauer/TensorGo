@@ -1,10 +1,8 @@
 package GLA
 
-//import "fmt"
-
 // This source file contains functions for initializing tensors
 
-// TensorInitializer is an interface for initializing tensor data at each element
+// This interface initializes each element of the tensor.Data member
 type TensorInitializer interface {
 	ValueAt(index int) float64
 }
@@ -18,48 +16,39 @@ func InitializeData(shape []int, initializer TensorInitializer) *Tensor {
 	A.Data = make([]float64, num_elements)
 
 	for i := range A.Data {
-		A.Data[i] = initializer.ValueAt(i) // <--- ValueAt() is a method of TensorInitializer
+		A.Data[i] = initializer.ValueAt(i) // set each element
 	}
-
 	return A
 }
 
 //=============================================================================================================Tensors of Constant Values
 
-// This is a struct that implements the TensorInitializer interface. It is used to initialize a tensor with a constant value
-type ConstInitializer struct {
-	value float64
-}
+type ConstInitializer struct{ value float64 }
 
-// this is a method of ConstInitializer. It returns the val at an index of the tensor
-func (ci *ConstInitializer) ValueAt(index int) float64 {
+func (ci *ConstInitializer) ValueAt(index int) float64 { // <-- sets each element
 	return ci.value
 }
 
-// This is a method of ConstInitializer. It returns a tensor of the specified shape filled w/ the constant value
-func (ci *ConstInitializer) Execute(shape []int) *Tensor {
+func (ci *ConstInitializer) Execute(shape []int) *Tensor { // <--- Execute() from Batched_Initializer_Operation() in batching.go
 	return InitializeData(shape, ci)
 }
 
 func Const_Tensor(shape []int, constant float64, batching bool) *Tensor {
-	// Create a new ConstInitializer with the specified constant value
-	initializer := &ConstInitializer{value: constant}
+
+	initializer := &ConstInitializer{value: constant} // <-- set cont val in initializer
 	if !batching {
-		// Perform single initialization
-		return InitializeData(shape, initializer)
+		return InitializeData(shape, initializer) // single op
 	} else {
-		// Perform batched operation
-		return Batched_Initializer_Operation(initializer, shape)
+		return Batched_Initializer_Operation(initializer, shape) // single op
 	}
 }
 
-// The Zero_Tensor() and Ones_Tensor() functions are wrappers for the Const_Tensor() function
 func Zero_Tensor(shape []int, batching bool) *Tensor {
-	return Const_Tensor(shape, 0, batching) // <--- returns *Tensor from Const_Tensor() call
+	return Const_Tensor(shape, 0, batching)
 }
 
 func Ones_Tensor(shape []int, batching bool) *Tensor {
-	return Const_Tensor(shape, 1, batching) // <--- returns *Tensor from Const_Tensor() call
+	return Const_Tensor(shape, 1, batching)
 }
 
 //=============================================================================================================Range Tensor
@@ -72,18 +61,44 @@ func (ri *RangeInitializer) ValueAt(index int) float64 {
 	return float64(index)
 }
 
-// This is a method of RangeInitializer. It returns a tensor of the specified shape filled w/ the constant value
-func (ri *RangeInitializer) Execute(shape []int) *Tensor {
+func (ri *RangeInitializer) Execute(shape []int) *Tensor { // <--- Execute() from Batched_Initializer_Operation() in batching.go
 	return InitializeData(shape, ri)
 }
 
+// populates a tensor's contiguous mem with values from 0 to n-1
 func Range_Tensor(shape []int, batching bool) *Tensor {
 	if !batching {
-		// Perform single initialization
-		return InitializeData(shape, &RangeInitializer{})
+		return InitializeData(shape, &RangeInitializer{}) // single op
 	} else {
-		// Perform batched operation
-		return Batched_Initializer_Operation(&RangeInitializer{}, shape)
+		return Batched_Initializer_Operation(&RangeInitializer{}, shape) // batched op
+	}
+}
+
+//=============================================================================================================Random Tensors
+
+type RandomInitializer struct {
+	min    float64
+	max    float64
+	random *Random
+}
+
+func (ri *RandomInitializer) ValueAt(index int) float64 { // <-- sets each element
+	return ri.random.RandInRangeFloat(ri.min, ri.max)
+}
+
+func (ri *RandomInitializer) Execute(shape []int) *Tensor { // <--- Execute() from Batched_Initializer_Operation() in batching.go
+	return InitializeData(shape, ri)
+}
+
+func RandFloat_Tensor(shape []int, lower float64, upper float64, batching bool) *Tensor {
+
+	random := NewRandom() // <--- NewRandom() is a function from utils.go
+	ri := &RandomInitializer{min: lower, max: upper, random: random}
+
+	if !batching {
+		return InitializeData(shape, ri) // single init
+	} else {
+		return Batched_Initializer_Operation(ri, shape) // batched init
 	}
 }
 
@@ -91,20 +106,18 @@ func Range_Tensor(shape []int, batching bool) *Tensor {
 
 // copy_tensor = tensor.Copy() creates a copy of tensor
 func (A *Tensor) Copy() *Tensor {
-	// Create a new tensor to store the copy.
 	B := Zero_Tensor(A.Shape, false)
-	copy(B.Data, A.Data) // <--- copy() is a built-in function
+	copy(B.Data, A.Data) // <--- built in func
 	return B
 }
 
 //=============================================================================================================Identity Square Matrix
 
-// IdentityInitializer creates an identity matrix
 type IdentityInitializer struct {
 	size int
 }
 
-func (ii *IdentityInitializer) ValueAt(index int) float64 {
+func (ii *IdentityInitializer) ValueAt(index int) float64 { // <-- sets each element
 	// Determine the row and column from the index
 	row := index / ii.size
 	col := index % ii.size
@@ -114,21 +127,41 @@ func (ii *IdentityInitializer) ValueAt(index int) float64 {
 	return 0
 }
 
+func (ii *IdentityInitializer) Execute(shape []int) *Tensor { // <--- Execute() from Batched_Initializer_Operation() in batching.go
+	return InitializeData(shape, ii)
+}
+
 // Creates Identity Matrix (Only Square Matrices)
-func Eye(size int) *Tensor {
+func Eye(shape []int, batching bool) *Tensor {
+
+	size := shape[len(shape)-1] // <-- get last elem of shape to avoid getting batch size as mat size
 	initializer := &IdentityInitializer{size: size}
-	return InitializeData([]int{size, size}, initializer)
+
+	if !batching {
+		return InitializeData(shape, initializer) // single tensor init
+	} else {
+		return Batched_Initializer_Operation(initializer, shape) // batched tensor init
+	}
 }
 
 //=============================================================================================================Gramien Matrix
 
-// Gramien_Matrix(A) returns A^T * A for a 2D tensor A
-// The Gramien Matrix is always symmetric
-func Gramien_Matrix(A *Tensor) *Tensor {
-	// Check that A 2D
+type GramienInitializer struct{}
+
+func (gi *GramienInitializer) Execute(A *Tensor) *Tensor { // <--- Execute() from Batch_Tensor_Tensor_Interface() in batching.go
 	if len(A.Shape) != 2 {
 		panic("Within Gramien_Matrix(): Tensor must be 2D")
 	}
+	return MatMul(A, A.Transpose([]int{1, 0}), false) // <--- A @ A.T
+}
 
-	return MatMul(A, A.Transpose([]int{1, 0}), false)
+// Gramien_Matrix(A) returns A * A.T for a square matrix.
+func Gramien_Matrix(A *Tensor, batching bool) *Tensor {
+
+	GI := &GramienInitializer{}
+	if !batching {
+		return GI.Execute(A) // single op
+	} else {
+		return Batch_Tensor_Tensor_Operation(GI, A) // batched op
+	}
 }

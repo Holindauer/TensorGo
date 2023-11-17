@@ -2,6 +2,28 @@ package GLA
 
 // utils.go contains helper functions for this projects
 
+import (
+	"math/rand"
+	"time"
+)
+
+type Random struct {
+	rnd *rand.Rand
+}
+
+func NewRandom() *Random {
+	source := rand.NewSource(time.Now().UnixNano())
+	return &Random{rnd: rand.New(source)}
+}
+
+func (r *Random) RandInRangeInt(min, max int) int {
+	return min + r.rnd.Intn(max-min)
+}
+
+func (r *Random) RandInRangeFloat(min, max float64) float64 {
+	return min + r.rnd.Float64()*(max-min)
+}
+
 // Helper function for computing the product of elements in a slice
 func Product(shape []int) int {
 	product := 1

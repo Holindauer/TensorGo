@@ -22,7 +22,8 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
+	"time"
 
 	. "github.com/Holindauer/Go-LinAlg.git/GLA"
 )
@@ -30,24 +31,16 @@ import (
 func main() {
 	// Test Case
 
-	A := Range_Tensor([]int{3, 3, 3}, true)
-	A.Data = []float64{2, 4, -2, 4, 9, -3, -2, -3, 7, 2, 4, -2, 4, 9, -3, -2, -3, 7, 2, 4, -2, 4, 9, -3, -2, -3, 7}
+	A := Range_Tensor([]int{1000, 100, 100}, true)
 
-	x := Range_Tensor([]int{3, 3, 1}, true)
-	x.Data = []float64{-1, 2, 2, -1, 2, 2, -1, 2, 2}
+	startTime := time.Now() // Start timing
 
-	Display_Matrix(A, true)
-	Display_Matrix(x, true)
+	B := MatMul(A, A, true)
 
-	b := MatMul(A, x, true)
-	Display_Matrix(b, true)
+	duration := time.Since(startTime) // Calculate duration
 
-	// Test Batched Gaussian Elimination
-	x = Gaussian_Elimination(A, b, true)
+	fmt.Println("Time taken:", duration)
 
-	Display_Matrix(x, true)
-
-	x = Gauss_Jordan_Elimination(A, b, true)
-	Display_Matrix(x, true)
+	fmt.Println(B.Shape)
 
 }
