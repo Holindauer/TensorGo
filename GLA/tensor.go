@@ -4,8 +4,9 @@ package GLA
 // related to instantiating and retrieving data from them
 
 type Tensor struct {
-	Shape []int
-	Data  []float64 // <--- this 1D slice to store flattened tensor
+	Shape   []int
+	Data    []float64 // <--- this 1D slice to store flattened tensor
+	batched bool      // <--- optional boolean to indicate if the tensor is batched
 }
 
 //=============================================================================================================Accesing Data from a Tensor
@@ -20,8 +21,7 @@ func (t *Tensor) Retrieve(indices []int) float64 {
 		}
 	}
 
-	flattened_index := Index(indices, t.Shape)
-	return t.Data[flattened_index]
+	return t.Data[Index(indices, t.Shape)]
 }
 
 // The general algorithm for computing the index of a flattened tensor from the multi dimensional indices:
@@ -38,7 +38,7 @@ func Index(indices []int, dims []int) int {
 	strides := make([]int, len(dims)) // create a slice of ints to store the strides
 	strides[len(dims)-1] = 1          // stride for the last dimension is always 1
 
-	for i := len(dims) - 2; i >= 0; i-- { // iterate backwards through the dimensions
+	for i := len(dims) - 2; i >= 0; i-- { // decrement through the dimensions
 		strides[i] = strides[i+1] * dims[i+1] // multiply the stride of the current dimension by the size of the next dimension
 		// this is because if you move one element up in dim i, then you must skip the entire
 		// next dimension of the flattened tensor to get there
@@ -74,4 +74,10 @@ func UnravelIndex(index int, shape []int) []int {
 
 	// Return the calculated multi-dimensional indices.
 	return indices
+}
+
+// This func is used to access a single element from a batched tensor
+// NOTE: Partial() can be used to access multiple contiguous batch elements
+func (A *Tensor) Access(batch_element int) *Tensor {
+	return A.Remove_Dim(0, batch_element)
 }

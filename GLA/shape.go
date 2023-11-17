@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+//=====================================================================================================================Partial()
+
 // The Partial function is used to retrieve a section out of a Tensor using Python-like slice notation.
 // It accepts a Tensor and a string, then returns a pointer to a new tensor.
 // Example:
@@ -83,6 +85,8 @@ func (A *Tensor) Partial(slice string) *Tensor {
 	return partialTensor
 }
 
+//=====================================================================================================================Reshape()
+
 // Reshape()  takes a tensors and a new shape for that tensors, and returns a pointer to a
 // new tensors that has the same data as the original tensor, but with the new shape. Reshape
 // can be done in this way becauase data for Tensors in stored contigously in memory.
@@ -102,6 +106,8 @@ func (A *Tensor) Reshape(shape []int) *Tensor {
 	}
 	return reshapedTensor
 }
+
+//=====================================================================================================================Transpose()
 
 // Transpose returns a new tensor with the axes transposed according to the given specification
 // This function is modeled after the NumPy transpose function. It accepts a tensor and an array
@@ -154,6 +160,8 @@ func (A *Tensor) Transpose(axes []int) *Tensor {
 	return B
 }
 
+//=====================================================================================================================Concat()
+
 // The idea behind this algorithm stems from an understanding of how Tensor data is stored in memory.
 // Tensors of n dimmension are stored contiguously in memory as a 1D array. The multi-dimensionality
 // of the tensor is simulated by indexing the 1D array using a strided index. This means that if you
@@ -172,28 +180,10 @@ func (A *Tensor) Transpose(axes []int) *Tensor {
 // original ordering of dimmensions.
 func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 
-	// Ensure that the number of dimensions of the tensors are the same
-	if len(A.Shape) != len(B.Shape) {
-		panic("Within Concat(): The number of dimensions of the tensors must be the same.")
-	}
+	Check_Concat_Requirements(A, B, axis_cat)
 
-	// Check that axis_cat is within the valid range
-	if axis_cat < 0 || axis_cat >= len(A.Shape) {
-		panic("Within Concat(): axis_cat is out of bounds for the shape of the tensors.")
-	}
-
-	// Ensure that the shape of the tensors are the same except for the axis of concatenation
-	for i := 0; i < len(A.Shape); i++ {
-		if i != axis_cat && A.Shape[i] != B.Shape[i] {
-			panic("Within Concat(): The shapes of the tensors must be the same except for the axis of concatenation.")
-		}
-	}
-
-	// Define the concatTensor variable outside of the if-else blocks to use it in the entire function scope
 	var concatTensor *Tensor
-
-	// conditional to check if the axis of concat is 0 or not
-	if axis_cat == 0 {
+	if axis_cat == 0 { // handle axis of concatenation at 0'th axis
 
 		// Determine the shape of the concatenated tensor
 		concatShape := make([]int, len(A.Shape))
@@ -258,6 +248,27 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 	return concatTensor
 }
 
+func Check_Concat_Requirements(A *Tensor, B *Tensor, axis_cat int) {
+	// Ensure that the number of dimensions of the tensors are the same
+	if len(A.Shape) != len(B.Shape) {
+		panic("Within Concat(): The number of dimensions of the tensors must be the same.")
+	}
+
+	// Check that axis_cat is within the valid range
+	if axis_cat < 0 || axis_cat >= len(A.Shape) {
+		panic("Within Concat(): axis_cat is out of bounds for the shape of the tensors.")
+	}
+
+	// Ensure that the shape of the tensors are the same except for the axis of concatenation
+	for i := 0; i < len(A.Shape); i++ {
+		if i != axis_cat && A.Shape[i] != B.Shape[i] {
+			panic("Within Concat(): The shapes of the tensors must be the same except for the axis of concatenation.")
+		}
+	}
+}
+
+//=====================================================================================================================Extend_Shape()
+
 // The Extend() method is used to add a new dimmension to the tensor. The new dimmension each element
 // across the new dimmension contains a state of the pre extended tensor with all other dimmension elements
 // copied into it. The new dimmension is added to the end of the shape of the tensor. The Extend() method
@@ -308,20 +319,15 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	return extendedTensor
 }
 
+//=====================================================================================================================Extend_Dim()
+
 // The Extend_Dim() method is used to add new dimmensions to an already existing axis within a tensor.
 // The new data will be initialized to zero. The integer argument axis specifies the axis to be extended,
 // and the integer argument num_elements specifies the number of zeroed elements to be added to the axis.
 // The Extend_Dim() method returns a pointer to a new tensor with the extended shape and zeroed data.
 func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
-	// Check that the axis is valid
-	if axis < 0 || axis >= len(A.Shape) {
-		panic("Within Extend_Dim(): The axis is out of bounds for the shape of the tensor.")
-	}
 
-	// Check that the number of elements is valid
-	if num_elements < 1 {
-		panic("Within Extend_Dim(): The number of elements must be positive and greater than 0.")
-	}
+	Check_Extend_Dim_Requirements(A, axis, num_elements)
 
 	// Create a new shape with extended dimmension
 	newShape := make([]int, len(A.Shape))
@@ -361,6 +367,17 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 	return extendedTensor
 }
 
+func Check_Extend_Dim_Requirements(A *Tensor, axis int, num_elements int) {
+	if axis < 0 || axis >= len(A.Shape) {
+		panic("Within Extend_Dim(): The axis is out of bounds for the shape of the tensor.")
+	}
+	if num_elements < 1 {
+		panic("Within Extend_Dim(): The number of elements must be positive and greater than 0.")
+	}
+}
+
+//=====================================================================================================================Remove_Dim()
+
 // This function uses the Partial() method to take remove remove an axis from a tensor by taking the Partial
 // with all dims kept the same, except for one becoming a singleton dimmension. This requires  an argument of
 // the axis in which to remove the dim as well as which index of that axis to keep. Remove_Dim() first checks.
@@ -389,6 +406,8 @@ func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tens
 	return A_Partial
 }
 
+//=====================================================================================================================Remove_Singleton()
+
 // This function is used to remove a singleton dimmension from a Tensor, It will remove all singleton dimmensions
 // it finds. Which essentially just means that it adjusts the shape slice of the tensor to remove elements of val 1
 func (A *Tensor) Remove_Singleton() *Tensor {
@@ -410,6 +429,8 @@ func (A *Tensor) Remove_Singleton() *Tensor {
 	return newTensor
 
 }
+
+//=====================================================================================================================Add_Singleton()
 
 // This function is used to add a singleton dimmension to a Tensor, this menas that a 1 is simply appended to the end
 // of the shape of the existing Tensor. A pointer to a new Tensor is return.
