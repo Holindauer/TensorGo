@@ -6,7 +6,7 @@ package GLA
 type Tensor struct {
 	Shape   []int
 	Data    []float64 // <--- this 1D slice to store flattened tensor
-	batched bool      // <--- optional boolean to indicate if the tensor is batched
+	Batched bool      // <--- optional boolean to indicate if the tensor is batched
 }
 
 //=============================================================================================================Accesing Data from a Tensor
@@ -78,6 +78,6 @@ func UnravelIndex(index int, shape []int) []int {
 
 // This func is used to access a single element from a batched tensor
 // NOTE: Partial() can be used to access multiple contiguous batch elements
-func (A *Tensor) Access(batch_element int) *Tensor {
+func (A *Tensor) Extract(batch_element int) *Tensor {
 	return A.Remove_Dim(0, batch_element)
 }

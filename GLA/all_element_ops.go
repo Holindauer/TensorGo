@@ -136,17 +136,17 @@ func (v VarAllOperation) CombineResults(results []float64) float64 {
 	return sum / float64(len(results))   // <-- return avg of sum
 }
 
-func (t *Tensor) Var_All() float64 {
-	mean := t.Mean_All()                 // <-- calculate mean
+func (A *Tensor) Var_All() float64 {
+	mean := A.Mean_All()                 // <-- calculate mean
 	varOp := VarAllOperation{mean: mean} // <-- pass mean to variance operation
-	return t.AllOperation(varOp)         // <-- apply variance operation to all elements
+	return A.AllOperation(varOp)         // <-- apply variance operation to all elements
 }
 
 //=========================================================================================================== Standard Deviation on All Elements
 
-func (t *Tensor) Std_All() float64 {
-	varOp := VarAllOperation{mean: t.Mean_All()} // <-- pass mean to variance operation
-	variance := t.AllOperation(varOp)            // <-- calculate variance of all elements
+func (A *Tensor) Std_All() float64 {
+	varOp := VarAllOperation{mean: A.Mean_All()} // <-- pass mean to variance operation
+	variance := A.AllOperation(varOp)            // <-- calculate variance of all elements
 	return math.Sqrt(variance)                   // <-- return sqrt(variance)
 }
 
@@ -160,20 +160,16 @@ func (t *Tensor) Std_All() float64 {
 // The tensors must have the same shape. It returns a pointer to a new tensor
 func Add(A *Tensor, B *Tensor) *Tensor {
 
-	// Check that the tensors have the same shape
 	if !Same_Shape(A, B) {
 		panic("Within Add(): Tensors must have the same shape")
 	}
 
-	// Create a new tensor to hold the result
 	C := Zero_Tensor(A.Shape, false)
-
-	// Perform the elementwise addition
 	for i := 0; i < len(A.Data); i++ {
-		C.Data[i] = A.Data[i] + B.Data[i]
+		C.Data[i] = A.Data[i] + B.Data[i] // add elements
 	}
 
-	return C // <-- Pointer to the new tensor
+	return C // <-- pointer
 }
 
 //=========================================================================================================== Elementwise Tensor Subtraction
@@ -184,18 +180,14 @@ func Subtract(A *Tensor, B *Tensor) *Tensor {
 
 	// Check that the tensors have the same shape
 	if !Same_Shape(A, B) {
-		panic("Wihtin Subtract(): Tensors must have the same shape")
+		panic("Within Subtract(): Tensors must have the same shape")
 	}
 
-	// Create a new tensor to hold the result
 	C := Zero_Tensor(A.Shape, false)
-
-	// Perform the elementwise subtraction
 	for i := 0; i < len(A.Data); i++ {
-		C.Data[i] = A.Data[i] - B.Data[i]
+		C.Data[i] = A.Data[i] - B.Data[i] // subtract elements
 	}
-
-	return C // <-- Pointer to the new tensor
+	return C
 }
 
 // =========================================================================================================== Elementwise Scalar Multiplication
@@ -203,10 +195,8 @@ func Subtract(A *Tensor, B *Tensor) *Tensor {
 // This funciton performs scalar multiplication on a tensor in place
 // It returns a pointer to the same tensor
 func (A *Tensor) Scalar_Mult_(scalar float64) *Tensor {
-
 	for i := 0; i < len(A.Data); i++ {
 		A.Data[i] *= scalar
 	}
-
-	return A // <-- Pointer to the same tensor
+	return A
 }

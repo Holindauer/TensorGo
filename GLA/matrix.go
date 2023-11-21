@@ -93,7 +93,7 @@ func Display_Matrix(A *Tensor, batching bool) {
 
 //-------------------------------------------------------------------------------------------------------------- Augment_Matrix()
 
-// This fucntion creates an augmented matrix fromt two matrix (2D) Tensors for use in the Gaussian_Elimination function.
+// This function creates an augmented matrix fromt two matrix (2D) Tensors for use in the Gaussian_Elimination function.
 // Put simply, this fucniton checks that the two matricies are compatible for contatination alogn the 1'th axis, are 2
 // dimensional, and then concatenates them along that 1'th axis.
 func Augment_Matrix(A *Tensor, B *Tensor) *Tensor {

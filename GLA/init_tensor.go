@@ -156,7 +156,7 @@ func (gi *GramienInitializer) Execute(A *Tensor) *Tensor { // <--- Execute() fro
 }
 
 // Gramien_Matrix(A) returns A * A.T for a square matrix.
-func Gramien_Matrix(A *Tensor, batching bool) *Tensor {
+func Gram(A *Tensor, batching bool) *Tensor {
 
 	GI := &GramienInitializer{}
 	if !batching {

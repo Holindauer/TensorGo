@@ -92,18 +92,11 @@ func (A *Tensor) Partial(slice string) *Tensor {
 // can be done in this way becauase data for Tensors in stored contigously in memory.
 func (A *Tensor) Reshape(shape []int) *Tensor {
 
-	numElements := 1
-	for _, v := range shape { // find num elements of shape param
-		numElements *= v
-	}
-	if numElements != len(A.Data) {
+	if Product(shape) != len(A.Data) {
 		panic("Within Reshape(): Cannot reshape tensor to shape with different number of elements")
 	}
-	// Create a new tensor to store the reshaped data with the shape param
-	reshapedTensor := Zero_Tensor(shape, false)
-	for i := 0; i < len(A.Data); i++ {
-		reshapedTensor.Data[i] = A.Data[i] // copy data from A to reshapedTensor
-	}
+	reshapedTensor := A.Copy()
+	reshapedTensor.Shape = shape
 	return reshapedTensor
 }
 
@@ -278,11 +271,9 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	if num_elements < 1 {
 		panic("Within Extend_Shape(): The number of elements must be positive.")
 	}
-
-	// Create a new shape with the additional dimension
-	newShape := make([]int, len(A.Shape)+1)
-	copy(newShape, A.Shape)               // Copy the original shape
-	newShape[len(A.Shape)] = num_elements // Add the new dimension at the end
+	newShape := make([]int, len(A.Shape)+1) // add dim
+	copy(newShape, A.Shape)
+	newShape[len(A.Shape)] = num_elements // set new dim num_elements
 
 	// Create a new tensor with the extended shape and zeroed data
 	extendedTensor := Zero_Tensor(newShape, false)
@@ -321,7 +312,7 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 
 //=====================================================================================================================Extend_Dim()
 
-// The Extend_Dim() method is used to add new dimmensions to an already existing axis within a tensor.
+// The Extend_Dim() method is used to add new elements to an already existing axis within a tensor.
 // The new data will be initialized to zero. The integer argument axis specifies the axis to be extended,
 // and the integer argument num_elements specifies the number of zeroed elements to be added to the axis.
 // The Extend_Dim() method returns a pointer to a new tensor with the extended shape and zeroed data.
@@ -401,7 +392,7 @@ func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tens
 	sliceString := strings.TrimRight(builder.String(), ",")
 
 	// Use the Partial() method to take a partial tensor
-	A_Partial := A.Partial(sliceString).Remove_Singleton()
+	A_Partial := A.Partial(sliceString).Remove_Singletons()
 
 	return A_Partial
 }
@@ -410,7 +401,7 @@ func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tens
 
 // This function is used to remove a singleton dimmension from a Tensor, It will remove all singleton dimmensions
 // it finds. Which essentially just means that it adjusts the shape slice of the tensor to remove elements of val 1
-func (A *Tensor) Remove_Singleton() *Tensor {
+func (A *Tensor) Remove_Singletons() *Tensor {
 
 	// initialize a slice to store the new shape of the tensor
 	squeezedShape := make([]int, 0)

@@ -26,29 +26,16 @@ func Check_Vector_Compatibility(t1 *Tensor, t2 *Tensor) bool {
 
 //---------------------------------------------------------------------------------------------------------------------------- dot()
 
-// // define a struct to hold the parameters and anon func for dot()
-// type dot_FuncHolder struct {
-// 	t1       *Tensor
-// 	t2       *Tensor
-// 	batching bool
-// 	dot_func func(t1 *Tensor, t2 *Tensor) float64
-// }
-
-// // setup the interface for dot()
-// func (dfh *dot_FuncHolder) Batch_Op() float64 {
-// 	return dfh.dot_func(dfh.t1, dfh.t2)
-// }
-
 // This function computes the dot product of two vectors
-func dot(t1 *Tensor, t2 *Tensor) float64 {
+func Dot(A *Tensor, B *Tensor) float64 {
 
 	// check if tensors are vectors
-	if Check_Vector_Compatibility(t1, t2) == false {
+	if Check_Vector_Compatibility(A, B) == false {
 		panic("Within dot(): Tensors must both be vectors to compute dot product")
 	}
 
 	numGoroutines := 4 // Adjust this value to control the number of goroutines
-	chunkSize := len(t1.Data) / numGoroutines
+	chunkSize := len(A.Data) / numGoroutines
 	results := make(chan float64, numGoroutines) // <-- Create a buffered channel to store the results
 
 	var wg sync.WaitGroup
@@ -60,9 +47,9 @@ func dot(t1 *Tensor, t2 *Tensor) float64 {
 		end := start + chunkSize
 
 		if i == numGoroutines-1 {
-			end = len(t1.Data) // Ensure the last chunk includes any remaining elements
+			end = len(A.Data) // Ensure the last chunk includes any remaining elements
 		}
-		go computeDot(t1, t2, start, end, results, &wg)
+		go computeDot(A, B, start, end, results, &wg)
 	}
 
 	wg.Wait() // Wait for all goroutines to finish
@@ -77,11 +64,11 @@ func dot(t1 *Tensor, t2 *Tensor) float64 {
 }
 
 // This is a helper function for dot() above. It computes the dot product of a chunk of the vectors
-func computeDot(t1 *Tensor, t2 *Tensor, start int, end int, results chan<- float64, wg *sync.WaitGroup) {
+func computeDot(A *Tensor, B *Tensor, start int, end int, results chan<- float64, wg *sync.WaitGroup) {
 	defer wg.Done() // Decrement the counter when the goroutine completes
 	var sum float64
 	for i := start; i < end; i++ {
-		sum += t1.Data[i] * t2.Data[i] // <-- Compute the dot product for this chunk
+		sum += A.Data[i] * B.Data[i] // <-- Compute the dot product for this chunk
 	}
 	results <- sum // <-- Write the result to the channel
 }
@@ -89,14 +76,14 @@ func computeDot(t1 *Tensor, t2 *Tensor, start int, end int, results chan<- float
 //---------------------------------------------------------------------------------------------------------------------------- Norm()
 
 // this function computes and returns the norm of a vector
-func Norm(t *Tensor) float64 {
+func Norm(A *Tensor) float64 {
 
 	// check if tensor is a vector
-	if len(t.Shape) != 1 {
+	if len(A.Shape) != 1 {
 		panic("Within Norm(): Tensor must be a vector to compute norm")
 	}
 
-	return math.Sqrt(dot(t, t))
+	return math.Sqrt(Dot(A, A))
 }
 
 // this function returns the unit vector of a vector
@@ -126,15 +113,15 @@ func Unit(A *Tensor) *Tensor {
 }
 
 // This function checks if two vectors are perpidicular
-func Check_Perpendicular(t1 *Tensor, t2 *Tensor) bool {
+func Check_Perpendicular(A *Tensor, B *Tensor) bool {
 
 	// check if tensors are vectors
-	if Check_Vector_Compatibility(t1, t2) == false {
+	if Check_Vector_Compatibility(A, B) == false {
 		panic("Within Check_Perpindicular(): Tensors must both be vectors to check if perpendicular")
 	}
 
 	// check if the dot product is zero
-	if dot(t1, t2) == 0 {
+	if Dot(A, B) == 0 {
 		return true
 	}
 
@@ -142,32 +129,32 @@ func Check_Perpendicular(t1 *Tensor, t2 *Tensor) bool {
 }
 
 // This function computes the cosine similarity of two vectors
-func Cosine_Similarity(t1 *Tensor, t2 *Tensor) float64 {
+func Cosine_Similarity(A *Tensor, B *Tensor) float64 {
 
 	// check if tensors are vectors
-	if Check_Vector_Compatibility(t1, t2) == false {
+	if Check_Vector_Compatibility(A, B) == false {
 		panic("Wihtin Cosine_Similarity(): Tensors must both be vectors to compute cosine similarity")
 	}
 
-	return dot(t1, t2) / (Norm(t1) * Norm(t2))
+	return Dot(A, B) / (Norm(A) * Norm(B))
 }
 
 // This function computes the outer product of two vectors
 // it returns a pointer to a new 2D tensor
-func Outer_Product(t1 *Tensor, t2 *Tensor) *Tensor {
+func Outer(A *Tensor, B *Tensor) *Tensor {
 
 	// check if tensors are vectors
-	if !(len(t1.Shape) == 1 && len(t2.Shape) == 1) {
+	if !(len(A.Shape) == 1 && len(B.Shape) == 1) {
 		panic("Within Outer_Product(): Tensors must both be vectors to compute outer product")
 	}
 
 	// create a new tensor to store the result
-	C := Zero_Tensor([]int{len(t1.Data), len(t2.Data)}, false)
+	C := Zero_Tensor([]int{len(A.Data), len(B.Data)}, false)
 
 	// compute the outer product
-	for i := 0; i < len(t1.Data); i++ {
-		for j := 0; j < len(t2.Data); j++ {
-			C.Data[i*len(t2.Data)+j] = t1.Data[i] * t2.Data[j] // Cij = ai * bj
+	for i := 0; i < len(A.Data); i++ {
+		for j := 0; j < len(B.Data); j++ {
+			C.Data[i*len(B.Data)+j] = A.Data[i] * B.Data[j] // Cij = ai * bj
 		}
 	}
 

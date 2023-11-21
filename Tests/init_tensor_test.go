@@ -98,7 +98,7 @@ func Test_Tensor_Init(t *testing.T) {
 
 	// Unbatched Gram Matrix Tensor Initialization (currently there is no batching option)
 	fmt.Println("Unbatched Gram Matrix Tensor Initialization:\n---------------------------------------------")
-	gram_matrix_tensor := Gramien_Matrix(Range_Tensor([]int{10, 10}, false), false)
+	gram_matrix_tensor := Gram(Range_Tensor([]int{10, 10}, false), false)
 
 	Display_Matrix(gram_matrix_tensor, false)
 	fmt.Println()
@@ -106,7 +106,7 @@ func Test_Tensor_Init(t *testing.T) {
 
 	// Batched Gram Matrix Tensor Initialization (currently there is no batching option)
 	fmt.Println("Batched Gram Matrix Tensor Initialization:\n---------------------------------------------")
-	batched_gram_matrix_tensor := Gramien_Matrix(Range_Tensor([]int{3, 10, 10}, true), true)
+	batched_gram_matrix_tensor := Gram(Range_Tensor([]int{3, 10, 10}, true), true)
 
 	Display_Matrix(batched_gram_matrix_tensor, true)
 	fmt.Println()
