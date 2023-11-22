@@ -124,7 +124,7 @@ func Test_Tensor_Init(t *testing.T) {
 	fmt.Println("Batched Random Tensor Initialization:\n-------------------------------------")
 	batched_random_tensor := RandFloat_Tensor([]int{3, 10, 10}, 0, 1, true)
 
-	fmt.Println("Expect Tensor Shape [10, 10, 10] --- Actual Shape: ", batched_random_tensor.Shape)
+	fmt.Println("Expect Tensor Shape [3, 10, 10] --- Actual Shape: ", batched_random_tensor.Shape)
 	fmt.Println()
 	Display_Matrix(batched_random_tensor, true)
 	fmt.Println()
