@@ -23,7 +23,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	. "github.com/Holindauer/Go-LinAlg.git/GLA"
 )
@@ -31,16 +30,13 @@ import (
 func main() {
 	// Test Case
 
-	A := Range_Tensor([]int{1000, 100, 100}, true)
+	A := Range_Tensor([]int{2, 2}, false)
+	Display_Matrix(A, false)
 
-	startTime := time.Now() // Start timing
+	Get_LinSys_Approximator()
 
-	B := MatMul(A, A, true)
-
-	duration := time.Since(startTime) // Calculate duration
-
-	fmt.Println("Time taken:", duration)
-
-	fmt.Println(B.Shape)
-
+	err := Train_LinSys_Approximator("dense", 5, 0.2)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 }

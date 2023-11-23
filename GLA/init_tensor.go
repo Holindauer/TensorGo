@@ -165,3 +165,26 @@ func Gram(A *Tensor, batching bool) *Tensor {
 		return Batch_Tensor_Tensor_Operation(GI, A) // batched op
 	}
 }
+
+//=============================================================================================================Sparse Matrix
+
+// type SparseInitializer struct{ percent_fill float64 }
+
+// func (si *SparseInitializer) Execute(A *Tensor) *Tensor { // <--- Execute() from Batch_Tensor_Tensor_Interface() in batching.go
+// 	// determine the number of elements to keep
+// 	numKeep := int(float64(Product(A.Shape)) * si.percent_fill)
+
+// 	// create a new tensor to hold the sparse matrix
+// 	B := A.Copy()
+
+// }
+
+// // Make_Sparse(A) returns a sparse matrix from a dense matrix given a percent fill
+// func Make_Sparse(A *Tensor, percent_fill float64, batching bool) *Tensor {
+// 	SI := &SparseInitializer{percent_fill: percent_fill}
+// 	if !batching {
+// 		return SI.Execute(A) // single op
+// 	} else {
+// 		return Batch_Tensor_Tensor_Operation(SI, A) // batched op
+// 	}
+// }

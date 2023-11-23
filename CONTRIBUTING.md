@@ -23,10 +23,12 @@ Code in this library should be as terse as possible while still being readable. 
 
 Continuous refactoring of code is appreciated. If you see a 5 functions that can be combined into 1, do it. As long as the Tests still pass, the change will be accepted.
 
+Changes made to make code better adhere to the style guide are always welcome!
+
 ## Comments
 Comments should be concise and to the point. For complex functions that are integral to the entire operation, such as Index(), longer explanations are acceptable, though they should be as consise as possible while still upholding clarity of communication. 
 
 Comments should not be used in situations where the code is obvious. Unnecessary clutter will not be accepted.
 
-## Reffering to Tensors
+## Refering to Tensors
 When reffering to Tensor arguments inside of a function, the convention is to use A, then B,C,D and so on for subsequent arguments.
