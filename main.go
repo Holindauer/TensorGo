@@ -28,15 +28,16 @@ import (
 )
 
 func main() {
-	// Test Case
 
-	A := Range_Tensor([]int{2, 2}, false)
-	Display_Matrix(A, false)
+	A := Range_Tensor([]int{9, 9}, false)
 
-	Get_LinSys_Approximator()
+	x := Range_Tensor([]int{9, 1}, false)
 
-	err := Train_LinSys_Approximator("dense", 5, 0.2)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	b := MatMul(A, x, false)
+
+	x_approximated := AI_LinSys_Approximator(A, b, false)
+
+	fmt.Println("x actual = ", x)
+	fmt.Println("x_approximated = ", x_approximated)
+
 }

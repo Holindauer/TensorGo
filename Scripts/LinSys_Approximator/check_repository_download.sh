@@ -3,10 +3,10 @@
 set -x  # Enable debugging
 
 # Define the GitHub repository URL
-REPO_URL="https://github.com/Holindauer/Linear-Systems-Regression.git"
+REPO_URL="https://github.com/Holindauer/Linear_Systems_Regression.git"
 
 # Define the absolute or corrected relative path
-LOCAL_PATH="$HOME/Projects/Go-LinAlg/Extensions/Linear-Systems-Regression"
+LOCAL_PATH="$HOME/Projects/Go-LinAlg/Extensions/Linear_Systems_Regression"
 
 echo "Checking if the repository is already downloaded..."
 

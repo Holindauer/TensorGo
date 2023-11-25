@@ -5,7 +5,7 @@
 echo "Running training process..."
 
 # Navigate to the directory where main.py is located
-cd Extensions/Linear-Systems-Regression || exit
+cd Extensions/Linear_Systems_Regression || exit
 
 # Default values for arguments that are not being directly set
 patience=30

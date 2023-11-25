@@ -7,6 +7,11 @@ import (
 	"path/filepath"
 )
 
+// This source file contains functions related to retrieving and using extensions to the library. Extensions are defined as anything that
+// must be downloaded from a remote repository in order to be used. Currently, the only extension is the Linear Systems Approximator.
+
+//----------------------------------------------------------------------------------------------Linear Systems Approximator
+
 func Get_LinSys_Approximator() {
 	fmt.Println("Downloading LinSys_Approximator...")
 
@@ -23,7 +28,7 @@ func Get_LinSys_Approximator() {
 	}
 }
 
-// Train_LinSys_Approximator runs the run_training.sh Bash script with specified arguments
+// This function trains the Linear Systems Approximator on a matrix of the specified type, size, and fill percentage.
 func Train_LinSys_Approximator(matrixType string, aSize int, fillPercentage float64) error {
 	fmt.Println("Training Linear Systems Approximator...")
 
@@ -36,11 +41,17 @@ func Train_LinSys_Approximator(matrixType string, aSize int, fillPercentage floa
 
 	// Prepare the command to execute the script with arguments
 	cmd := exec.Command("bash", scriptPath, matrixType, aSizeStr, fillPercentageStr)
-	output, err := cmd.CombinedOutput()
+
+	// Direct standard output and standard error to the respective os.Stdout and os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	// Run the command
+	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("error running training script: %v, output: %s", err, string(output))
+		fmt.Println("Error running training script:", err)
+		return err
 	}
 
-	fmt.Println("Training script output:", string(output))
 	return nil
 }

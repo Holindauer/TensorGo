@@ -1,5 +1,5 @@
 # Go-LinAlg
-Go-LinAlg (GLA) is an open source numerical computation and linear algebra library for the Go Programming Language. It is designed to be easy to use and as efficient as possible. Many of the Concepts and Functions in this library are based on the [NumPy](https://numpy.org/) library for Python.
+Go-LinAlg (GLA) is an open source numerical computation and linear algebra library for the Go Programming Language. It is designed to be easy to use and as efficient as possible. Many of the Concepts and Functions in this library are based on the NumPy library for Python.
 
 
 
@@ -9,7 +9,7 @@ Go-LinAlg (GLA) is an open source numerical computation and linear algebra libra
 
 Try out a Matrix Multiplication:
 
-    A := Range_Tensor([]int{4, 5, 12}, true) // batch of 4 tensors of shape [5, 12]
+    A := Range_Tensor([]int{4, 5, 5}, true) // batch of 4 tensors of shape [5, 5]
     AxA := MatMul(A, A, true)                // <--- batched matmul 
 # Setup
 -----------------------------------------------------------------------------------------------------

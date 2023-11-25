@@ -3,7 +3,14 @@ package GLA
 // This file contains algorithms for solving systems of linear equations
 
 import (
+	"bytes"
+	"encoding/json"
 	"math"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 // --------------------------------------------------------------------------------------------------Normal Gaussian Elimination
@@ -72,19 +79,94 @@ func Gauss_Jordan_Elimination(A *Tensor, b *Tensor, batching bool) *Tensor {
 
 }
 
-// The below function currently does not work and needs to be looked at in more detail
-// // This function computes the inverse of a square matrix by using Gauss Jordan Elimination. The 2D Tensor A is augmented with the identity
-// // matrix and is converted to reduced row echelon form (RREF), then to the identity matrix. The inverse is then extracted from the augmented
-// // matrix and returned.
-// func Square_Inverse(A *Tensor) *Tensor {
-// 	// augment A with the identity matrix
-// 	I := Eye(A.shape[0])
-// 	AI := Augment_Matrix(A, I)
-// 	// Gauss Jordan Elimination
-// 	Forward_Elimination(AI)
-// 	RREF(AI)
-// 	return AI.Partial(fmt.Sprintf(":, %d:", A.shape[1])) // <--- return the rightmost columns of the augmented matrix
-// }
+//--------------------------------------------------------------------------------------------------PyTorch Linear Systems Approximator
+
+// This function uses the Linear Systems Approximator from within Go-LinAlg/Extensions/<inear-Systems-Regression to
+// solve a linear systems of equations. When the package is first imported, the init() function in init.go downloads
+// the remote repository containing the Linear Systems Approximator (if not downloaded already).
+
+type LinearSystemsApproximator struct{ modelFileName string }
+
+func (LSA LinearSystemsApproximator) Execute(A, b *Tensor) *Tensor {
+	// Marshal tensor A and B into JSON strings
+	aDataJSON, aShapeJSON := MarshalTensor(A)
+	bDataJSON, bShapeJSON := MarshalTensor(b)
+
+	// Call the Python script with the marshaled data
+	x := runPythonScript("Extensions/approximate_linear_system.py", aDataJSON, aShapeJSON, bDataJSON, bShapeJSON, LSA.modelFileName)
+
+	output := Zero_Tensor([]int{len(x), 1}, false)
+	copy(output.Data, x)
+	return output
+}
+
+func AI_LinSys_Approximator(A *Tensor, b *Tensor, batching bool) *Tensor {
+
+	// The pytorch files for the Linear Systems Approximator are stored as LinSys_Approximator(Num_Unknowns).pt
+	A_size := A.Shape[1]
+
+	modelFileName := "LinSys_Approximator" + strconv.Itoa(A_size) + ".pt"
+	modelFilePath := filepath.Join("Linear_Systems_Regression", modelFileName)
+
+	// Train a new model of the corrent specs if there does not already exist one
+	if _, err := os.Stat(modelFilePath); os.IsNotExist(err) {
+		Train_LinSys_Approximator("dense", A_size, 1.0)
+	}
+
+	// Create an instance of the LinearSystemsApproximator struct
+	LSA := LinearSystemsApproximator{modelFileName: modelFileName}
+	if batching {
+		return Batch_TwoTensor_Tensor_Operation(LSA, A, b) // batched processing
+	}
+	return LSA.Execute(A, b) // single processing otherwise
+}
+
+func runPythonScript(scriptName string, args ...string) []float64 {
+	// Prepare the command with script name and arguments
+	cmdArgs := append([]string{scriptName}, args...)
+	cmd := exec.Command("python3", cmdArgs...)
+
+	// Buffers to capture the output
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+
+	// Run the command and check for errors
+	err := cmd.Run()
+	if err != nil {
+		panic("Within runPythonScript() --- " + err.Error() + " --- Stderr: " + stderr.String())
+	}
+
+	// Split the output into separate strings
+	output := strings.TrimSpace(out.String())
+	strValues := strings.Split(output, " ")
+
+	// Parse each string as a float64
+	var result []float64
+	for _, str := range strValues {
+		value, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			panic("Within runPythonScript() --- " + err.Error())
+		}
+		result = append(result, value)
+	}
+
+	return result
+}
+
+// marshalTensor marshals the data and shape of a Tensor into JSON strings
+func MarshalTensor(tensor *Tensor) (string, string) {
+	dataJSON, err := json.Marshal(tensor.Data)
+	if err != nil {
+		panic(err)
+	}
+	shapeJSON, err := json.Marshal(tensor.Shape)
+	if err != nil {
+		panic(err)
+	}
+	return string(dataJSON), string(shapeJSON)
+}
 
 //--------------------------------------------------------------------------------------------------Helper Functions for Elimination Functions
 

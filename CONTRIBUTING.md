@@ -32,3 +32,6 @@ Comments should not be used in situations where the code is obvious. Unnecessary
 
 ## Refering to Tensors
 When reffering to Tensor arguments inside of a function, the convention is to use A, then B,C,D and so on for subsequent arguments.
+
+## All Python Code must be Typed
+All Python code must be typed. This is to ensure that the Python code is as readable as possible.
