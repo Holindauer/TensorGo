@@ -9,73 +9,169 @@ import (
 
 func Test_Vector(t *testing.T) {
 
-	// Test Dot() --- currently no batching
-	fmt.Println("Testing Dot Product:\n---------------------")
-	A := Range_Tensor([]int{4}, false)
-	B := Range_Tensor([]int{4}, false)
+	//-------------------------------------------------------------------------------------------------------------- Dot()
+
+	fmt.Println("Testing Dot() unbatched...")
+	A := Range_Tensor([]int{3}, false)
+	B := Range_Tensor([]int{3}, false)
+	C := Dot(A, B, false)
+	fmt.Println("A = ", A)
+	fmt.Println("B = ", B)
+	fmt.Println("C = Dot(A, B, false) = ", C)
+	fmt.Println()
+
+	fmt.Println("Testing Dot() batched...")
+	A = Range_Tensor([]int{3, 3}, true)
+	B = Range_Tensor([]int{3, 3}, true)
+	C = Dot(A, B, true)
+
+	fmt.Println("A = ")
+	Display_Matrix(A, true)
+	fmt.Println("B = ")
+	Display_Matrix(B, true)
+	fmt.Println("C = Dot(A, B, true) = ", C)
+	fmt.Println()
+
+	//-------------------------------------------------------------------------------------------------------------- Norm()
+
+	fmt.Println("Testing Norm() unbatched...")
+	A = Range_Tensor([]int{3}, false)
+	C = Norm(A, false)
+	fmt.Println("A = ", A)
+	fmt.Println("C = Norm(A, false) = ", C)
+	fmt.Println()
+
+	fmt.Println("Testing Norm() batched...")
+	A = Range_Tensor([]int{3, 3}, true)
+	C = Norm(A, true)
+	Display_Matrix(A, true)
+	fmt.Println("C = Norm(A, true) = ", C)
+	fmt.Println()
+
+	//-------------------------------------------------------------------------------------------------------------- Unit()
+
+	fmt.Println("\nTesting Unit() unbatched...")
+	A = Range_Tensor([]int{3}, false)
+	C = Unit(A, false)
+	fmt.Println("A = ", A)
+	fmt.Println("C = Unit(A, false) = ", C)
+	fmt.Println()
+
+	fmt.Println("\nTesting Unit() batched...")
+	A = Range_Tensor([]int{3, 3}, true)
+	C = Unit(A, true)
+	Display_Matrix(A, true)
+	fmt.Println("\nC = Unit(A, true) = ", C)
+	fmt.Println()
+
+	//-------------------------------------------------------------------------------------------------------------- Check_Perpendicular()
+
+	fmt.Println("Testing Check_Perpendicular() unbatched...")
+	A = Zero_Tensor([]int{2}, false)
+	B = Zero_Tensor([]int{2}, false)
+	// case 1
+	A.Data = []float64{-1, 2}
+	B.Data = []float64{4, 2}
+
+	fmt.Println("A = ", A)
+	fmt.Println("B = ", B)
+	fmt.Println("Check_Perpendicular(A, B, false) = ", Check_Perpendicular(A, B, false))
+
+	// case 2
+	A.Data = []float64{1, 2}
+	B.Data = []float64{4, 2}
+
+	fmt.Println("A = ", A)
+	fmt.Println("B = ", B)
+	fmt.Println("Check_Perpendicular(A, B, false) = ", Check_Perpendicular(A, B, false))
+
+	// batched test
+	fmt.Println("Testing Check_Perpendicular() batched...")
+	A = Zero_Tensor([]int{3, 2}, true)
+	B = Zero_Tensor([]int{3, 2}, true)
+
+	// case 1
+	A.Data = []float64{-1, 2, -1, 2, -1, 2}
+	B.Data = []float64{4, 2, 4, 2, 4, 2}
+
+	fmt.Println("\nA: ")
+	Display_Matrix(A, true)
+	fmt.Println("\nB: ")
+	Display_Matrix(B, true)
+	fmt.Println("Check_Perpendicular(A, B, true) = ", (Check_Perpendicular(A, B, true)))
+
+	// case 2
+	A.Data = []float64{1, 2, 1, 2, 1, 2}
+	B.Data = []float64{4, 2, 4, 2, 4, 2}
+
+	fmt.Println("\nA: ")
+	Display_Matrix(A, true)
+	fmt.Println("\nB: ")
+	Display_Matrix(B, true)
+	fmt.Println("Check_Perpendicular(A, B, true) = :", Check_Perpendicular(A, B, true))
+
+	//-------------------------------------------------------------------------------------------------------------- Cosine_Similarity()
+
+	fmt.Println("\nTesting Cosine_Similarity() unbatched...")
+
+	// case 1
+	A = Range_Tensor([]int{4}, false)
+	B = Range_Tensor([]int{4}, false)
+
+	fmt.Println("\nA:", A.Data)
+	fmt.Println("\nA:", B.Data)
+
+	fmt.Println("\nCosine_Similarity(P_1, P_2)?:", Cosine_Similarity(A, B, false))
+
+	// case 2
+	A = Ones_Tensor([]int{4}, false)
+	fmt.Println("\nA:", A.Data)
+	fmt.Println("\nB:", B.Data)
+
+	fmt.Println("\nCosine_Similarity(P_1, P_2)?:", Cosine_Similarity(A, B, false))
+
+	// batched test
+	fmt.Println("\nTesting Cosine_Similarity() batched...")
+
+	// case 1
+	A = Range_Tensor([]int{3, 4}, true)
+	B = Range_Tensor([]int{3, 4}, true)
 
 	fmt.Println("\nA:", A.Data)
 	fmt.Println("\nB:", B.Data)
-	fmt.Println("\nDot Product of A and B:", Dot(A, B))
 
-	// Test Norm() --- currently no batching
-	fmt.Println("\nTesting Norm:\n-------------")
-	A = Range_Tensor([]int{4}, false)
-	fmt.Println("\nA:", A.Data)
-	fmt.Println("\nNorm of A:", Norm(A))
+	fmt.Println("\nCosine_Similarity(A, B)?:", Cosine_Similarity(A, B, true))
 
-	// Test Unit_Vector() --- currently no batching
-	fmt.Println("\nTesting Unit Vector:\n--------------------")
-	A = Range_Tensor([]int{4}, false)
-	fmt.Println("\nA:", A.Data)
-	fmt.Println("\nUnit Vector of A:", Unit(A).Data, "---- Norm of Unit(A):", Norm(Unit(A)))
+	// case 2
+	A = Ones_Tensor([]int{3, 4}, true)
+	fmt.Println("\nA:", A)
+	fmt.Println("\nB:", B)
 
-	// Test Check_Perpindicular()
-	fmt.Println("\nTesting Check_Perpindicular():\n------------------------------")
-	P_1 := Range_Tensor([]int{2}, false)
-	P_2 := Range_Tensor([]int{2}, false)
+	fmt.Println("\nCosine_Similarity(A, B)?:", Cosine_Similarity(A, B, true))
 
-	P_1.Data = []float64{-1, 2}
-	P_2.Data = []float64{4, 2}
+	//-------------------------------------------------------------------------------------------------------------- Outer()
 
-	fmt.Println("\nA:", P_1.Data)
-	fmt.Println("\nB:", P_2.Data)
-
-	fmt.Println("\nExpected: true --- Check_Perpindicular(P_1, P_2)?:", Check_Perpendicular(P_1, P_2))
-
-	P_1.Data = []float64{1, 2}
-	P_2.Data = []float64{4, 2}
-
-	fmt.Println("\nA:", P_1.Data)
-	fmt.Println("\nB:", P_2.Data)
-
-	fmt.Println("\nExpected: false --- Check_Perpindicular(P_1, P_2)?:", Check_Perpendicular(P_1, P_2))
-
-	// Test Cosine_Similarity()
-	fmt.Println("\nTesting Cosine_Similarity():\n------------------------------")
-
-	A = Range_Tensor([]int{4}, false)
-	B = Range_Tensor([]int{4}, false)
+	fmt.Println("\nTesting Outer() unbatched...")
+	A = Range_Tensor([]int{3}, false)
+	B = Range_Tensor([]int{3}, false)
 
 	fmt.Println("\nA:", A.Data)
-	fmt.Println("\nA:", B.Data)
+	fmt.Println("\nB:", B.Data)
 
-	fmt.Println("\nExpected: 1  --- Cosine_Similarity(P_1, P_2)?:", Cosine_Similarity(A, B))
+	fmt.Println("\nOuter(A, B)?:")
+	Display_Matrix(Outer(A, B, false), false)
 
-	fmt.Println("\nP_1:", P_1.Data)
-	fmt.Println("\nP_2:", P_2.Data)
+	// batched test
+	fmt.Println("\nTesting Outer() batched...")
+	A = Range_Tensor([]int{3, 3}, true)
+	B = Range_Tensor([]int{3, 3}, true)
 
-	fmt.Println("\nExpected: 0.8 --- Cosine_Similarity(P_1, P_2)?:", Cosine_Similarity(P_1, P_2))
+	fmt.Println("\nA:")
+	Display_Matrix(A, true)
+	fmt.Println("\nB:")
+	Display_Matrix(B, true)
 
-	// Test Outer_Product()
-	fmt.Println("\nTesting Outer_Product():\n------------------------------")
-
-	A = Range_Tensor([]int{4}, false)
-	B = Range_Tensor([]int{4}, false)
-
-	fmt.Println("\nA:", A.Data)
-	fmt.Println("\nA:", B.Data)
-
-	fmt.Println("\nExpected: [[0 0 0 0] [0 1 2 3] [0 2 4 6] [0 3 6 9]] --- Outer_Product(P_1, P_2)?:", Outer(A, B).Data)
+	fmt.Println("\nOuter(A, B:")
+	Display_Matrix(Outer(A, B, true), true)
 
 }
