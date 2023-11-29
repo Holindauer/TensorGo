@@ -1,12 +1,11 @@
 package GLA
 
-// This source file contains the Tensor struct and functions
-// related to instantiating and retrieving data from them
+// tensor.go contains the Tensor struct and functions related to instantiating and retrieving data from them
 
 type Tensor struct {
 	Shape    []int
 	Data     []float64 // <--- this 1D slice to store flattened tensor
-	boolData []bool    // <--- optional boolean data for binary tensors
+	BoolData []bool    // <--- optional boolean data for binary tensors
 	Batched  bool      // <--- optional boolean to indicate if the tensor is batched
 }
 

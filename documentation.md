@@ -5,9 +5,13 @@ The following is the documentation for this library.
 # Tensors
 This library introduces the Tensor data structure. All functions and methods in this library are used in relation to this data structure in some way. A Tensor is an n dimmensional array of numbers. Although Tensor structs can have any number of dimmensions, their data is stored in memory contiguously within their Data member. To simulate higher dimmensionality, the Shape member is used to calculate the 1D index with respect to a given multi-dimmensnional index. 
 
-    A        // <--- Tensor struct
-    A.Data   // <--- 1D array of numbers
-    A.Shape  // <--- shape of the tensor
+    A            // <--- Tensor struct
+    A.Data       // <--- 1D array of float64 values
+    A.BoolData   // <--- 1D array of bool values
+    A.Shape      // <--- shape of the tensor
+    
+Data can be stored as either a float64 or a bool. However, most operations in this library are only supported for float64 Data.
+
 
 # A Note About Batching...
 
@@ -153,48 +157,39 @@ There is another way to accomplish this as well that is more flexible to adding 
     A.Shape = append(1, A.Shape...)  // <--- Add singleton dimmension to beginning of shape
 
 # Vector Operations 
-The following are operations for vector Tensors (ie: Tensors of a single dimmension).
+The following are operations for vector Tensors (ie: Tensors of a single dimmension). 
 
 ### Dot()
-The Dot() function accepts two vector Tensors and returns their dot product. 
+The Dot() function accepts two vector Tensors and returns their dot product in the form of a Tensor of 1 element or a batched Tensor of 1 element Tensors depending on the batching argument.
 
-    var A *Tensor = Range_Tensor([]int{5}, false)
-    var B *Tensor = Range_Tensor([]int{5}, false)
-    var A_dot_B float64 = Dot(A, B)
+    var A_Dot_B *Tensor := Dot(A *Tensor, B *Tensor, batching bool)
 
 ### Norm()
-The Norm() function returns the norm of a vector Tensor. 
+The Norm() function returns the norm of a vector Tensor in the form of a Tensor of 1 element or a batched Tensor of 1 element Tensors depending on the batching argument.
 
-    var A *Tensor = Range_Tensor([]int{5}, false)
-    var A_norm float64 = Norm(A)
+    var A_Norm *Tensor := Norm(A *Tensor, batching bool)
 
 ### Unit() 
 The Unit() function returns a unit vector in the direction of a given vector Tensor. 
 
-    var A *Tensor = Range_Tensor([]int{5}, false)
-    var A_unit *Tensor = Unit(A)
+    var A_Unit *Tensor = Unit(A *Tensor, batching bool)
 
 ### Check_Perpendicular()
-The Check_Perpendicular() function returns a boolean value indicating if two vector Tensors are perpendicular to each other. 
+The Check_Perpendicular() function returns a Zero_Tensor of either of shape [1] or of a [batch, 1] depending on the batching argument. The boolean of whether the Two vectors are perpindicular is stored within the boolData member of the Tensor.
 
-    var A *Tensor = Range_Tensor([]int{5}, false)
-    var B *Tensor = Range_Tensor([]int{5}, false)
-    var A_perp_B bool = Check_Perpendicular(A, B)
+    var A_perp_B *Tensor = Check_Perpendicular(A *Tensor, B *Tensor, batching bool)
 
 ### Cosine_Similarity()
-The Cosine_Similarity() function returns the cosine similarity of two vector Tensors. 
+The Cosine_Similarity() function returns the cosine similarity of two vector Tensors. The scalar similarity score is returned in the form of a Tensor of 1 element or a batched Tensor of 1 element Tensors depending on the batching argument.
 
-    var A *Tensor = Range_Tensor([]int{5}, false)
-    var B *Tensor = Range_Tensor([]int{5}, false)
-    var A_cos_B float64 = Cosine_Similarity(A, B)
+    var Similarity_Score *Tensor := Cosine_Similarity(A *Tensor, B *Tensor, batching bool)
 
 
 ### Outer() 
-The Outer() function computers the outer product of a Tensor. It is essentially hte same function as MatMul(), but with added protections against improper shape
+The Outer() function computers the outer product of a Tensor. It is essentially hte same function as MatMul(), but with added protections against improper shape. There is optional batching.
 
-    var A *Tensor = Range_Tensor([]int{5}, false)
-    var B *Tensor = Range_Tensor([]int{5}, false)
-    var A_outer_B *Tensor = Outer(A, B)
+
+    var A_outer_B *Tensor = Outer(A *Tensor, B *Tensor, batching bool)
 
 
 # Matrix Operations

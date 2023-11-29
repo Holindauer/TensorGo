@@ -2,7 +2,7 @@ package GLA
 
 //import "fmt"
 
-// This source file contains a general interface for batching within any Tensor Operation.
+// batching.go contains a general interface for batching within any Tensor Operation.
 
 // -------------------------------------------------------------------------------------------------- Batched Initialization
 

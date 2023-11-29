@@ -1,6 +1,6 @@
 package GLA
 
-// This file contains algorithms for solving systems of linear equations
+// elimination.go algorithms for solving systems of linear equations
 
 import (
 	"bytes"

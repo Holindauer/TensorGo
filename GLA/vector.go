@@ -1,6 +1,6 @@
 package GLA
 
-// This source contains functions related to vector/1D Tensor operations
+// vector.go contains functions related to vector/1D Tensor operations
 
 import (
 	//"fmt"
@@ -116,13 +116,13 @@ func (op Batched_Check_Perpendicular) Execute(A *Tensor, B *Tensor) *Tensor {
 
 	// Initialize boolTensor with a shape of [1] and boolData slice of length 1
 	boolTensor := Zero_Tensor([]int{1}, false)
-	boolTensor.boolData = make([]bool, 1) // Initializing the boolData slice
+	boolTensor.BoolData = make([]bool, 1) // Initializing the boolData slice
 
 	// check if the dot product is zero
 	if Dot(A, B, false).Data[0] == 0 {
-		boolTensor.boolData[0] = true
+		boolTensor.BoolData[0] = true
 	} else {
-		boolTensor.boolData[0] = false
+		boolTensor.BoolData[0] = false
 	}
 
 	return boolTensor
@@ -162,7 +162,7 @@ func (op Batched_Cosine_Similarity) Execute(A *Tensor, B *Tensor) *Tensor {
 }
 
 // This function computes the cosine similarity of two vectors, returning
-// a single element Tensor with the answer. THere is optional batching.
+// a single element Tensor with the answer. There is optional batching.
 func Cosine_Similarity(A *Tensor, B *Tensor, batching bool) *Tensor {
 
 	if batching {

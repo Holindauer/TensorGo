@@ -29,15 +29,15 @@ import (
 
 func main() {
 
-	A := Range_Tensor([]int{9, 9}, false)
+	// Test Normalize_Axis()
+	A := Range_Tensor([]int{3, 4}, false)
 
-	x := Range_Tensor([]int{9, 1}, false)
+	fmt.Println("A:")
+	Display_Matrix(A, false)
 
-	b := MatMul(A, x, false)
+	fmt.Println("A_Normalized:")
+	A_Normalized := A.Normalize_Axis(0) // normalize along the first axis
 
-	x_approximated := AI_LinSys_Approximator(A, b, false)
-
-	fmt.Println("x actual = ", x)
-	fmt.Println("x_approximated = ", x_approximated)
+	Display_Matrix(A_Normalized, false)
 
 }

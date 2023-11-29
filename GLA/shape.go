@@ -1,6 +1,6 @@
 package GLA
 
-// This source file contains functions related to manipulating the shape of a tensor.
+// shape.go contains functions related to manipulating the shape of a tensor.
 
 import (
 	//"fmt"
@@ -197,19 +197,7 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 
 		// determine the reordering of the axes for transpose to make axis_cat the 0'th axis the slice
 		// will be a permutation of the numbers 0 through len(A.shape) - 1 with axis cat and 0 swapped
-		axes_reordering := make([]int, len(A.Shape))
-
-		// set axis cat to 0'th axis
-		axes_reordering[0] = axis_cat
-
-		// Now fill in the rest of the axes.
-		for i, count := 1, 0; count < len(A.Shape); count++ {
-			// exclude axis_cat from the reordering, its already at 0
-			if count != axis_cat {
-				axes_reordering[i] = count
-				i++
-			}
-		}
+		axes_reordering := Permute_Shape(A.Shape, axis_cat, 0)
 
 		// transpose A and B to make axis_cat the 0'th axis
 		A_T := A.Transpose(axes_reordering)
@@ -239,6 +227,32 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 	}
 
 	return concatTensor
+}
+
+// Permute_Shape creates a new order for axes to transpose a tensor by swapping two specified axes.
+// This function generates a permutation of the axis indices of a tensor's shape, where the two specified axes are swapped,
+// and the rest of the axes retain their original order.
+//
+// Parameters:
+// - shape: A slice of integers representing the shape of the tensor.
+// - axis1, axis2: The two axes to be swapped.
+//
+// Returns:
+// A slice of integers representing the reordered axes for transposition.
+func Permute_Shape(shape []int, axis1, axis2 int) []int {
+	if axis1 < 0 || axis1 >= len(shape) || axis2 < 0 || axis2 >= len(shape) {
+		panic("SwapAxesForTranspose --- Invalid axes")
+	}
+
+	axesReordering := make([]int, len(shape))
+	for i := range shape {
+		axesReordering[i] = i
+	}
+
+	// Swap the two axes
+	axesReordering[axis1], axesReordering[axis2] = axesReordering[axis2], axesReordering[axis1]
+
+	return axesReordering
 }
 
 func Check_Concat_Requirements(A *Tensor, B *Tensor, axis_cat int) {

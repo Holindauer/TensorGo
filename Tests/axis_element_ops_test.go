@@ -1,6 +1,6 @@
 package GLA
 
-// This source file contains tests of operats that are applied along an axis
+// This source file contains tests of operations that are applied along an axis that result in the axis being collapsed
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	. "github.com/Holindauer/Go-LinAlg.git/GLA"
 )
 
-func Test_Tensor_Axis_Ops(t *testing.T) {
+func Test_Tensor_Axis_ElementOps(t *testing.T) {
 	//-------------------------------------------------------------------------------------------------------------- Sum_Axis()
 
 	fmt.Println("\nTesting Sum_Axis() unbatched...")

@@ -1,13 +1,13 @@
 package GLA
 
-// This source file contains operations performed over all elements of a tensor
+// all_elements.go contains operations performed over all elements of a tensor
 
 import (
 	"math"
 	"sync"
 )
 
-//=========================================================================================================== Operations on All Elements Generalization
+//=========================================================================================================== Operations on All Elements That Return a Single Value
 
 // AllOperation is an interface representing an operation applied to all elements of a tensor.
 type AllOperation interface {
@@ -148,55 +148,4 @@ func (A *Tensor) Std_All() float64 {
 	varOp := VarAllOperation{mean: A.Mean_All()} // <-- pass mean to variance operation
 	variance := A.AllOperation(varOp)            // <-- calculate variance of all elements
 	return math.Sqrt(variance)                   // <-- return sqrt(variance)
-}
-
-//----------------------------------------------------------------------------------------------------------- NOTE: the below functions use a different method of implementing elementwise operation
-//----------------------------------------------------------------------------------------------------------- They return a enitre tensor. The above functions return a single float64 value
-//----------------------------------------------------------------------------------------------------------- create a new AllOperation() type of function to reduce the code
-
-//=========================================================================================================== Elementwise Tensor Addition
-
-// This function performs elementwise addition on two tensors
-// The tensors must have the same shape. It returns a pointer to a new tensor
-func Add(A *Tensor, B *Tensor) *Tensor {
-
-	if !Same_Shape(A, B) {
-		panic("Within Add(): Tensors must have the same shape")
-	}
-
-	C := Zero_Tensor(A.Shape, false)
-	for i := 0; i < len(A.Data); i++ {
-		C.Data[i] = A.Data[i] + B.Data[i] // add elements
-	}
-
-	return C // <-- pointer
-}
-
-//=========================================================================================================== Elementwise Tensor Subtraction
-
-// This function performs elementwise subtraction on two tensors
-// The tensors must have the same shape. It returns a pointer to a new tensor
-func Subtract(A *Tensor, B *Tensor) *Tensor {
-
-	// Check that the tensors have the same shape
-	if !Same_Shape(A, B) {
-		panic("Within Subtract(): Tensors must have the same shape")
-	}
-
-	C := Zero_Tensor(A.Shape, false)
-	for i := 0; i < len(A.Data); i++ {
-		C.Data[i] = A.Data[i] - B.Data[i] // subtract elements
-	}
-	return C
-}
-
-// =========================================================================================================== Elementwise Scalar Multiplication
-
-// This funciton performs scalar multiplication on a tensor in place
-// It returns a pointer to the same tensor
-func (A *Tensor) Scalar_Mult_(scalar float64) *Tensor {
-	for i := 0; i < len(A.Data); i++ {
-		A.Data[i] *= scalar
-	}
-	return A
 }
