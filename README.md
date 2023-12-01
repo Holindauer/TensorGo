@@ -34,7 +34,7 @@ The documentation for this library can be found here: [GLA Doc](documentation.md
 -----------------------------------------------------------------------------------------------------
 
 
-If you would like to contriibute to this poroject, take on an issue and submit a pull request. If you would like to add a new feature, please open an issue first to discuss the feature you would like to add. 
+If you would like to contriibute to this poroject, take on an issue and submit a [pull request](pull_request_template.md). If you would like to add a new feature, please open an issue first to discuss the feature you would like to add. 
 
 The two most import rules are: 
 
@@ -43,6 +43,8 @@ The two most import rules are:
 
 
 For more information on the contribution procedure and coding standards, please visit our [Contribution Guidelines](CONTRIBUTING.md) 
+
+Also, take a look at the [Project Structure](project_structure.md) file to get a sense for how the project is organized: 
 
 # Discord
 -----------------------------------------------------------------------------------------------------
