@@ -89,8 +89,12 @@ type LinearSystemsApproximator struct{ modelFileName string }
 
 func (LSA LinearSystemsApproximator) Execute(A, b *Tensor) *Tensor {
 	// Marshal tensor A and B into JSON strings
-	aDataJSON, aShapeJSON := MarshalTensor(A)
-	bDataJSON, bShapeJSON := MarshalTensor(b)
+    aJSONTensor := MarshalTensor(A)    
+    aDataJSON := aJSONTensor.Data    
+    aShapeJSON := aJSONTensor.Data    
+    bJSONTensor := MarshalTensor(b)    
+    bDataJSON := bJSONTensor.Data    
+    bShapeJSON := bJSONTensor.Shape
 
 	// Call the Python script with the marshaled data
 	x := runPythonScript("Extensions/approximate_linear_system.py", aDataJSON, aShapeJSON, bDataJSON, bShapeJSON, LSA.modelFileName)
@@ -153,19 +157,6 @@ func runPythonScript(scriptName string, args ...string) []float64 {
 	}
 
 	return result
-}
-
-// marshalTensor marshals the data and shape of a Tensor into JSON strings
-func MarshalTensor(tensor *Tensor) (string, string) {
-	dataJSON, err := json.Marshal(tensor.Data)
-	if err != nil {
-		panic(err)
-	}
-	shapeJSON, err := json.Marshal(tensor.Shape)
-	if err != nil {
-		panic(err)
-	}
-	return string(dataJSON), string(shapeJSON)
 }
 
 //--------------------------------------------------------------------------------------------------Helper Functions for Elimination Functions
