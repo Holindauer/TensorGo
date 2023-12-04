@@ -87,17 +87,27 @@ func (A *Tensor) Partial(slice string) *Tensor {
 
 //=====================================================================================================================Reshape()
 
-// Reshape()  takes a tensors and a new shape for that tensors, and returns a pointer to a
-// new tensors that has the same data as the original tensor, but with the new shape. Reshape
-// can be done in this way becauase data for Tensors in stored contigously in memory.
-func (A *Tensor) Reshape(shape []int) *Tensor {
+type Batched_Reshape struct{ shape []int }
 
-	if Product(shape) != len(A.Data) {
+func (op Batched_Reshape) Execute(A *Tensor) *Tensor {
+	if Product(op.shape) != len(A.Data) {
 		panic("Within Reshape(): Cannot reshape tensor to shape with different number of elements")
 	}
 	reshapedTensor := A.Copy()
-	reshapedTensor.Shape = shape
+	reshapedTensor.Shape = op.shape
 	return reshapedTensor
+}
+
+// Reshape()  takes a tensors and a new shape for that tensors, and returns a pointer to a
+// new tensors that has the same data as the original tensor, but with the new shape. Reshape
+// can be done in this way becauase data for Tensors in stored contigously in memory.There is
+// optional batching
+func (A *Tensor) Reshape(shape []int, batching bool) *Tensor {
+
+	if batching {
+		return Batch_Tensor_Tensor_Operation(Batched_Reshape{shape: shape}, A) // batched reshape
+	}
+	return Batched_Reshape{shape: shape}.Execute(A) // otherwise single reshape
 }
 
 //=====================================================================================================================Transpose()
