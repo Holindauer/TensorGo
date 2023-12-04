@@ -1,6 +1,6 @@
 package GLA
 
-// This file contains functions for manipulating 2D
+// matrix.go contains functions for manipulating 2D
 
 import (
 	"fmt"
@@ -43,16 +43,11 @@ func (op Batched_Matmul) Execute(A *Tensor, B *Tensor) *Tensor {
 // This function computes the dot product of two vectors
 func MatMul(A *Tensor, B *Tensor, batching bool) *Tensor {
 
-	// define Batched_Matmul struct
-	batched_matmul := Batched_Matmul{}
-
-	if !batching {
-		// Perform single operation
-		return batched_matmul.Execute(A, B)
-	} else {
-		// Perform batched operation
-		return Batch_TwoTensor_Tensor_Operation(batched_matmul, A, B)
-	}
+	if batching {
+		return Batch_TwoTensor_Tensor_Operation(Batched_Matmul{}, A, B)
+	} 
+	return Batched_Matmul{}.Execute(A, B)
+	
 }
 
 //-------------------------------------------------------------------------------------------------------------- Display_Matrix()

@@ -75,3 +75,16 @@ func Check_MatMul_Compatibility(A *Tensor, B *Tensor) {
 		panic("Within Matmul(): 2D Tensors must be compatible for matmul")
 	}
 }
+
+// isEqual compares two slices of integers for equality.
+func isEqual(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}

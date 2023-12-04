@@ -6,7 +6,7 @@ package GLA
 
 import (
 	//"fmt"
-	"math"
+
 )
 
 //------------------------------------------------------------------------------------------------------ Axis_ElementOperation()
@@ -66,17 +66,10 @@ func (nop NormalizeOperation) Apply_InplaceOp(tensorSlice *Tensor) {
 
 // Normalize_Axis normalizes a tensor along the specified axis
 func (A *Tensor) Normalize_Axis(axis int) *Tensor {
-	normOp := NormalizeOperation{}
-	return A.Axis_InplaceOperation(axis, normOp)
+	return A.Axis_InplaceOperation(axis,  NormalizeOperation{})
 }
 
 // calculateNorm calculates the norm of a tensor slice
-// Implement the specific norm calculation here, e.g., Euclidean norm
 func calculateNorm(tensorSlice *Tensor) float64 {
-	// Example: Euclidean norm calculation
-	var sum float64
-	for _, value := range tensorSlice.Data {
-		sum += value * value
-	}
-	return math.Sqrt(sum)
+	return Norm(tensorSlice, false).Data[0]
 }
