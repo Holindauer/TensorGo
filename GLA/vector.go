@@ -105,39 +105,6 @@ func Unit(A *Tensor, batching bool) *Tensor {
 	return Batched_Unit{}.Execute(A) // single op
 }
 
-//---------------------------------------------------------------------------------------------------------------------------- Check_Perpendicular()
-
-type Batched_Check_Perpendicular struct{}
-
-func (op Batched_Check_Perpendicular) Execute(A *Tensor, B *Tensor) *Tensor {
-	if Same_Dimmension_Vectors(A, B) == false {
-		panic("Within Check_Perpindicular(): Tensors must both be vectors to check if perpendicular")
-	}
-
-	// Initialize boolTensor with a shape of [1] and boolData slice of length 1
-	boolTensor := Zero_Tensor([]int{1}, false)
-	boolTensor.BoolData = make([]bool, 1) // Initializing the boolData slice
-
-	// check if the dot product is zero
-	if Dot(A, B, false).Data[0] == 0 {
-		boolTensor.BoolData[0] = true
-	} else {
-		boolTensor.BoolData[0] = false
-	}
-
-	return boolTensor
-}
-
-// Check_Perpindicular() checks if two vectors are perpendicular. It returns a single element.
-// Zero_Tensor with the answer contained in its boolData Member. There is optional batching.
-func Check_Perpendicular(A *Tensor, B *Tensor, batching bool) *Tensor {
-	if batching {
-		return Batch_TwoTensor_Tensor_Operation(Batched_Check_Perpendicular{}, A, B) // batched op
-	}
-	return Batched_Check_Perpendicular{}.Execute(A, B) // single op
-
-}
-
 //---------------------------------------------------------------------------------------------------------------------------- Cosine_Similarity()
 
 type Batched_Cosine_Similarity struct{}
@@ -171,6 +138,109 @@ func Cosine_Similarity(A *Tensor, B *Tensor, batching bool) *Tensor {
 	return Batched_Cosine_Similarity{}.Execute(A, B) // single op
 }
 
+//---------------------------------------------------------------------------------------------------------------------------- Angle()
+
+func Angle_Vector(A *Tensor, B *Tensor, batching bool) *Tensor {
+
+	// anonymous function to apply arccos to a tensor
+	applyArcCos := func(A *Tensor) *Tensor {
+		for i := 0; i < len(A.Data); i++ {
+			A.Data[i] = math.Acos(A.Data[i])
+		}
+		return A
+	}
+
+	if batching {
+		return applyArcCos(Cosine_Similarity(A, B, true)) // batched op
+	}
+	return applyArcCos(Cosine_Similarity(A, B, false)) // single op
+}
+
+//---------------------------------------------------------------------------------------------------------------------------- Funcs to check vector features --- which return bools
+
+type Batched_Check_Vectors struct {
+	checker func() bool // function to check something about angle between vbectors
+}
+
+// This method of the Batched_Check_Vectors struct is callable alone or by using a batching.go function. It operates on single Tensors
+// at a time and serves as a way to generalize functions for checking yes/no features about vectors. The checker function used within is passed
+// in as a parameter to the Batched_Check_Orthoganal struct before use.
+func (op Batched_Check_Vectors) Execute(A *Tensor, B *Tensor) *Tensor {
+
+	if len(A.Shape) != 1 || len(B.Shape) != 1 {
+		panic("Within Batched_Check_Vectors(): Tensors must both be vectors to check if perpendicular")
+	}
+
+	// Initialize boolTensor with a shape of [1] and boolData slice of length 1
+	boolTensor := Zero_Tensor([]int{1}, false)
+	boolTensor.BoolData = make([]bool, 1) // Initializing the boolData slice
+
+	// check if the dot product is zero
+	if op.checker() {
+		boolTensor.BoolData[0] = true
+	} else {
+		boolTensor.BoolData[0] = false
+	}
+
+	return boolTensor
+}
+
+// This function is called within the below functions that start with "Check_". It is a generalization of the
+// process of instantiating the logic for batched ops and executing them for vector operations that return a bool.
+func Check_Vector_Feature(A *Tensor, B *Tensor, checker func() bool, batching bool) *Tensor {
+
+	op := Batched_Check_Vectors{checker: checker} // create op
+
+	if batching {
+		return Batch_TwoTensor_Tensor_Operation(op, A, B) // batched op
+	}
+	return Batched_Check_Vectors{}.Execute(A, B) // single op
+}
+
+// Check_Orthogonal() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
+// function into the Check_Vector_Feature() generalization, which returns a Tensor of booleans.
+func Check_Orthogonal(A *Tensor, B *Tensor, batching bool) *Tensor {
+
+	checker_func := func() bool {
+		if Dot(A, B, false).Data[0] == 0 { // dot == 0 indicates orthogonality
+			return true
+		}
+		return false
+	}
+	// pass in the checker function to Check_Angle_Feature()
+	return Check_Vector_Feature(A, B, checker_func, batching)
+}
+
+// Check_Acute() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
+// function into the Check_Vector_Feature() generalization, which returns a Tensor of booleans.
+func Check_Acute(A *Tensor, B *Tensor, batching bool) *Tensor {
+
+	// anon func for within Batched_Check_Orthoganal.Execute()
+	checker_func := func() bool {
+		if Dot(A, B, false).Data[0] > 0 { // dot > 0 indicates acute angle
+			return true
+		}
+		return false
+	}
+
+	return Check_Vector_Feature(A, B, checker_func, batching)
+}
+
+// Check_Obtuse() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
+// function into the Check_Vector_Feature() generalization, which returns a Tensor of booleans.
+func Check_Obtuse(A *Tensor, B *Tensor, batching bool) *Tensor {
+
+	// anon func for within Batched_Check_Orthoganal.Execute()
+	checker_func := func() bool {
+		if Dot(A, B, false).Data[0] > 0 { // dot < 0 indicates Obtuse angle
+			return true
+		}
+		return false
+	}
+
+	return Check_Vector_Feature(A, B, checker_func, batching)
+}
+
 //---------------------------------------------------------------------------------------------------------------------------- Outer()
 
 type Batched_Outer struct{}
@@ -198,3 +268,5 @@ func Outer(A *Tensor, B *Tensor, batching bool) *Tensor {
 	}
 	return Batched_Outer{}.Execute(A, B) // single op
 }
+
+
