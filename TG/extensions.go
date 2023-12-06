@@ -1,4 +1,5 @@
-package GLA
+package TG
+
 
 // extensions.go contains functions related to retrieving and using extensions to the library. Extensions are defined as anything that
 // must be downloaded from a remote repository in order to be used. Currently, the only extension is the Linear Systems Approximator.

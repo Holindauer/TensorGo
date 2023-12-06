@@ -1,4 +1,4 @@
-package GLA
+package TG
 
 // shape.go contains functions related to manipulating the shape of a tensor.
 
@@ -64,8 +64,8 @@ func (A *Tensor) Partial(slice string) *Tensor {
 			}
 
 			// Convert the multi-dimensional indices to flattened indices and use them to copy the data.
-			srcFlattenedIndex := Index(srcIndex, A.Shape)
-			dstFlattenedIndex := Index(tempIndex, partialTensor.Shape)
+			srcFlattenedIndex := A.Index(srcIndex)
+			dstFlattenedIndex := partialTensor.Index(tempIndex)
 			partialTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 
 			return
@@ -116,16 +116,16 @@ func (A *Tensor) Reshape(shape []int, batching bool) *Tensor {
 // This function is modeled after the NumPy transpose function. It accepts a tensor and an array
 // of integers specifying the new order of the axes. For example, if the tensor has shape [2, 3, 4]
 // and the axes array is [2, 0, 1], then the resulting tensor will have shape [4, 2, 3].
-func (A *Tensor) Transpose(axes []int) *Tensor {
+func (A *Tensor) Transpose(perumuation []int) *Tensor {
 
 	// Check for invalid axes
-	if len(axes) != len(A.Shape) {
+	if len(perumuation) != len(A.Shape) {
 		panic("Within Transpose(): The number of axes does not match the number of dimensions of the tensor.")
 	}
 
 	// Check for duplicate or out-of-range axes
 	seen := make(map[int]bool) // map is like dict in python
-	for _, axis := range axes {
+	for _, axis := range perumuation {
 		if axis < 0 || axis >= len(A.Shape) || seen[axis] {
 			panic("Within Transpose(): Invalid axis specification for transpose.")
 		}
@@ -134,7 +134,7 @@ func (A *Tensor) Transpose(axes []int) *Tensor {
 
 	// Determine the new shape from the reordering in axes
 	newShape := make([]int, len(A.Shape))
-	for i, axis := range axes {
+	for i, axis := range perumuation {
 		newShape[i] = A.Shape[axis]
 	}
 
@@ -145,16 +145,16 @@ func (A *Tensor) Transpose(axes []int) *Tensor {
 	// Reindex and copy data
 	for i := range A.Data {
 		// Get the multi-dimensional indices for the current element
-		originalIndices := UnravelIndex(i, A.Shape)
+		originalIndices := A.UnravelIndex(i)
 
 		// Reorder the indices according to the axes array for transpose
 		newIndices := make([]int, len(originalIndices))
-		for j, axis := range axes {
+		for j, axis := range perumuation {
 			newIndices[j] = originalIndices[axis]
 		}
 
 		// Convert the reordered multi-dimensional indices back to a flat index
-		newIndex := Index(newIndices, newShape)
+		newIndex := Index_Off_Shape(newIndices, newShape)
 
 		// Assign the i'th value of original tensor to the newIndex'th val of new tensor
 		B.Data[newIndex] = A.Data[i]
@@ -311,10 +311,10 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	fillExtendedTensor = func(dim int) {
 		if dim == len(A.Shape) { // If we reached the last original dimension
 			// Copy the data from the original tensor to the extended tensor
-			srcFlattenedIndex := Index(tempIndex[:len(tempIndex)-1], A.Shape)
+			srcFlattenedIndex := A.Index(tempIndex[:len(tempIndex)-1])
 			for i := 0; i < num_elements; i++ {
 				tempIndex[len(tempIndex)-1] = i
-				dstFlattenedIndex := Index(tempIndex, newShape)
+				dstFlattenedIndex := Index_Off_Shape(tempIndex, newShape)
 				extendedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 			}
 			return
@@ -361,8 +361,8 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 	fillExtendedTensor = func(dim int) {
 		if dim >= len(A.Shape) {
 			// As the recursion unwinds, this base case is reached where we copy data from the original tensor in the appropriate idx
-			srcFlattenedIndex := Index(tempIndex, A.Shape)  // <---  Index() call for og vs dest differ by shape provided as arg
-			dstFlattenedIndex := Index(tempIndex, newShape) // <---
+			srcFlattenedIndex := Index_Off_Shape(tempIndex, A.Shape)  // <---  Index() call for og vs dest differ by shape provided as arg
+			dstFlattenedIndex := Index_Off_Shape(tempIndex, newShape) // <---
 			extendedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 			return
 		}

@@ -8,13 +8,13 @@ The following is a list of guidelines for contributing to this project.
 When opening a pull request, fill out the [pull request template](pull_request_template.md) 
 
 ## Changes must pass all tests in the Tests directory
-The Go-LinAlg/Tests directory contains tests for all functions in the library. Run "go test" in the Tests directory to run all tests. If you make a change that causes a test to fail, the change will not be accepted.
+The Tensor-Go/Tests directory contains tests for all functions in the library. Run "go test" in the Tests directory to run all tests. If you make a change that causes a test to fail, the change will not be accepted.
 
 ## Refactor Code to Reduce Duplication
 Changes should be as simple as possible while still being correct. If you see a way to refactor code to reduce duplication, do it.
 
 ## Update the README
-If you make a shcange that affects the way an operation is used, update the readme. 
+If you make a change that affects the way an operation is used, update the readme. 
 
 # Style Guide
 

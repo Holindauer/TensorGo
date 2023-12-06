@@ -24,20 +24,71 @@ package main
 import (
 	"fmt"
 
-	. "github.com/Holindauer/Go-LinAlg.git/GLA"
+	. "github.com/Holindauer/Tensor-Go.git/TG"
 )
 
 func main() {
 
-	// Test Normalize_Axis()
-	A := Range_Tensor([]int{3, 4}, false)
+	A := RandFloat_Tensor([]int{3, 3, 3}, 0, 1, true)
 
-	fmt.Println("A:")
-	Display_Matrix(A, false)
+	fmt.Println("Original A:", A)
 
-	fmt.Println("A_Normalized:")
-	A_Normalized := A.Normalize_Axis(0) // normalize along the first axis
+	Display_Matrix(A, true)
 
-	Display_Matrix(A_Normalized, false)
+	fmt.Println("Sum_Axis(A, 0):")
+	A_Sum_Axis := A.Sum_Axis(0, false)
+	Display_Matrix(A_Sum_Axis, false)
+
+	fmt.Println("Mean_Axis(A, 0):")
+	A_Mean_Axis := A.Mean_Axis(0, false)
+	Display_Matrix(A_Mean_Axis, false)
+
+	fmt.Println("Var_Axis(A, 0):")
+	A_Var_Axis := A.Var_Axis(0, false)
+	Display_Matrix(A_Var_Axis, false)
+
+	fmt.Println("Std_Axis(A, 0):")
+
+	A_Std_Axis := A.Std_Axis(0, false)
+	Display_Matrix(A_Std_Axis, false)
+
+	//-------------------------------------------------------------------------------------------------------------- Check_Orthogonal(), Check_Acute(), Check_Obtuse()
+
+	// fmt.Println("Testing Check_Orthogonal() unbatched...")
+	// A := Zero_Tensor([]int{2}, false)
+	// B := Zero_Tensor([]int{2}, false)
+
+	// // orthogonal case
+	// A.Data = []float64{2, -2}
+	// B.Data = []float64{-2, 2}
+
+	// fmt.Println("\n\n Orthogonal case: ")
+	// fmt.Println("\nA = ", A)
+	// fmt.Println("\nB = ", B)
+	// fmt.Println("Expect: True --- Got: Check_Orthogonal(A, B, false) = ", Check_Orthogonal(A, B, false))
+	// fmt.Println("Expect: False --- Got: Check_Acute(A, B, false) = ", Check_Acute(A, B, false))
+	// fmt.Println("Expect: False --- Got: Check_Obtuse(A, B, false) = ", Check_Obtuse(A, B, false))
+
+	// // acute case
+	// A.Data = []float64{2, -2}
+	// B.Data = []float64{2, 0}
+
+	// fmt.Println("\n\n Acute case: ")
+	// fmt.Println("\nA = ", A)
+	// fmt.Println("\nB = ", B)
+	// fmt.Println("Expect: False --- Got: Check_Orthogonal(A, B, false) = ", Check_Orthogonal(A, B, false))
+	// fmt.Println("Expect: True --- Got: Check_Acute(A, B, false) = ", Check_Acute(A, B, false))
+	// fmt.Println("Expect: False --- Got: Check_Obtuse(A, B, false) = ", Check_Obtuse(A, B, false))
+
+	// // acute case
+	// A.Data = []float64{-2, -2}
+	// B.Data = []float64{2, 0}
+
+	// fmt.Println("\n\n Obtuse case: ")
+	// fmt.Println("\nA = ", A)
+	// fmt.Println("\nB = ", B)
+	// fmt.Println("Expect: False --- Got: Check_Orthogonal(A, B, false) = ", Check_Orthogonal(A, B, false))
+	// fmt.Println("Expect: False --- Got: Check_Acute(A, B, false) = ", Check_Acute(A, B, false))
+	// fmt.Println("Expect: True --- Got: Check_Obtuse(A, B, false) = ", Check_Obtuse(A, B, false))
 
 }

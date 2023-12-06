@@ -1,4 +1,5 @@
-package GLA
+package TG
+
 
 // init() is called before main (currently) to initialize the extensions
 

@@ -1,4 +1,4 @@
-package GLA
+package TG
 
 // axis_ops.go contains functions that perform operations along a specified
 // axis of a tensor that result in the axis being collapsed due to the nature
@@ -83,7 +83,7 @@ func (s Collapsing_Sum_Operation) contributeToResult(partial, result *Tensor) {
 	// Consider a 3x3x3 tensor. The indices will start at [0, 0, 0], [0, 0, 1], then [0, 0, 2], [0, 1, 0]... etc.
 	for i := 0; i < len(result.Data); i++ {
 
-		flatIndex := Index(indices, result.Shape) // <--- 1D index of the result tensor
+		flatIndex := result.Index(indices) // <--- 1D index of the result tensor
 
 		// Add the partial's element to the result tensor's element
 		result.Data[flatIndex] += partial.Data[flatIndex]

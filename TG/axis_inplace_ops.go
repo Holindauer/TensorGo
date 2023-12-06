@@ -1,4 +1,5 @@
-package GLA
+package TG
+
 
 // axis_ops.go contains functions that perform an operation along a specified axis of a Tensor that keeps the dimmensions of the Tensor in tact.
 

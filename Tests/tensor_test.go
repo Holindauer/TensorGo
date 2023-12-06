@@ -1,51 +1,65 @@
-package GLA
+package TG
+
+// tensor_test.go contains tests for functions in tensor.go
 
 import (
 	"fmt"
 	"testing"
 
-	. "github.com/Holindauer/Go-LinAlg.git/GLA"
+	. "github.com/Holindauer/Tensor-Go.git/TG"
 )
 
 func Test_Tensor(t *testing.T) {
 
-	fmt.Println()
-	fmt.Println()
-	fmt.Println("Now Testing Functions from tensor.go\n-------------------------------------")
+	fmt.Println("\n\nNow Testing Functions from tensor.go\n-------------------------------------")
 
 	// Test Index()
-
+	fmt.Print("Testing Index()...")
 	A := Range_Tensor([]int{10, 12, 14}, false)
+	if A.Index([]int{2, 4, 3}) != 395 {
+		t.Errorf("Index() failed. Expected Output: 395 --- Actual Output: %v", A.Index([]int{2, 4, 3}))
+	}
 
-	fmt.Println("A.Index(2, 4, 3) Expected Output 2*12*14 + 4*14 + 3 = 395 --- Actual Output: ", Index([]int{2, 4, 3}, A.Shape))
-	fmt.Println()
-	fmt.Println()
+	fmt.Println("Succsess!")
 
 	// Test Retrieve()
-	val := A.Retrieve([]int{2, 4, 3})
+	fmt.Print("Testing Retrieve()...")
+	if A.Retrieve([]int{2, 4, 3}) != A.Data[395] {
+		t.Errorf("Retrieve() failed. Expected Output: %v --- Actual Output: %v", A.Data[395], A.Retrieve([]int{2, 4, 3}))
+	}
 
-	fmt.Println("A.Retrieve(2, 4, 3) Expected Output: ", A.Data[395], " --- Actual Output: ", val)
-	fmt.Println()
-	fmt.Println()
+	fmt.Println("Succsess!")
 
 	// Test UnravelIndex()
-	fmt.Println("UnravelIndex(395, A.Shape) Expected Output: [2, 4, 3] --- Actual Output: ", UnravelIndex(395, A.Shape))
+	fmt.Print("Testing UnravelIndex()...")
+	Unraveled := A.UnravelIndex(395)
+	if Unraveled[0] != 2 || Unraveled[1] != 4 || Unraveled[2] != 3 {
+		t.Errorf("UnravelIndex() failed. Expected Output: [2, 4, 3] --- Actual Output: %v", Unraveled)
+	}
 
-	// Test Acces()
+	fmt.Println("Succsess!")
 
-	// Concatenate 4 range tensors, then 1 random Tensor, then 1 ones tensor
-	ranges := Range_Tensor([]int{4, 10, 10}, true)
-	randoms := RandFloat_Tensor([]int{1, 10, 10}, 0, 1, true)
-	ones := Ones_Tensor([]int{1, 10, 10}, true)
+	// Test Extract()
+	fmt.Print("Testing Extract()...")
 
-	batched_tensors := ranges.Concat(randoms, 0)
-	batched_tensors = batched_tensors.Concat(ones, 0)
+	// Concatenate 2 range tensors, then 1 ones Tensor, then 2 range ones tensor
+	ranges_1 := Range_Tensor([]int{2, 10, 10}, true)
+	randoms := Ones_Tensor([]int{1, 10, 10}, true)
+	ranges_2 := Range_Tensor([]int{2, 10, 10}, true)
 
-	accessed_element := batched_tensors.Extract(4)
+	batched_tensors := ranges_1.Concat(randoms, 0)
+	batched_tensors = batched_tensors.Concat(ranges_2, 0)
 
-	fmt.Println("Expected Shape of accessed_randoms: [10, 10] --- Actual Shape: ", accessed_element.Shape)
+	fmt.Println("Succsess!")
 
-	fmt.Println("The following tensor should be a random tensor: ")
-	Display_Matrix(accessed_element, false)
+	// Extract the random tensor
+	fmt.Print("Testing Extract()...")
+	accessed_element := batched_tensors.Extract(2)
 
+	if accessed_element.Sum_All() != 100 {
+		t.Errorf("Extract() failed. Expected a 10x10 ones Tensor --- Actual Output:")
+		Display_Matrix(accessed_element, false)
+	}
+
+	fmt.Println("Succsess!")
 }

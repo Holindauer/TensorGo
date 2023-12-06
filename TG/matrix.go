@@ -1,4 +1,5 @@
-package GLA
+package TG
+
 
 // matrix.go contains functions for manipulating 2D
 
@@ -33,7 +34,7 @@ func (op Batched_Matmul) Execute(A *Tensor, B *Tensor) *Tensor {
 			}
 
 			// write to C.data slice
-			C.Data[Index([]int{row, col}, C.Shape)] = sum
+			C.Data[C.Index([]int{row, col})] = sum
 		}
 	}
 

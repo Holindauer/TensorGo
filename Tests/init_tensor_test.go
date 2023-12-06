@@ -1,131 +1,134 @@
-package GLA
+package TG
 
-// This source file contains tests of tensor creation and initialization
-// functions. The tests are intended to be run with the go test command
+// init_tensor_test.go contains tests for functions in init_tensor.go
 
 import (
 	"fmt"
-
 	"testing"
 
-	. "github.com/Holindauer/Go-LinAlg.git/GLA"
+	. "github.com/Holindauer/Tensor-Go.git/TG"
 )
 
 func Test_Tensor_Init(t *testing.T) {
 
-	// Const Tensor Initialziation
+	fmt.Println("\n\nNow Testing Functions from tensor_init.go\n-------------------------------------")
 
-	// Unbatched Ones Tensor Initialization
-	fmt.Println("Unbatched Ones Tensor Initialization:\n--------------------------------------")
-	ones_tensor := Ones_Tensor([]int{10, 10, 10}, false)
+	// Test Zero_Tensor(), Ones_Tensor(), and Const_Tensor()
+	fmt.Print("Testing Zero_Tensor() Unbatched...")
+	if Zero_Tensor([]int{2, 3, 4}, false).Sum_All() != 0 {
+		t.Errorf("Zero_Tensor() failed. Expected Output: 0 --- Actual Output: %v", Zero_Tensor([]int{2, 3, 4}, false).Sum_All())
+	}
+	fmt.Println("Succsess!")
 
-	fmt.Println("Expect Tensor Shape [10, 10, 10] --- Actual Shape: ", ones_tensor.Shape)
-	fmt.Println("Expected Sum of Data: 1000 --- Actual Sum of Data: ", ones_tensor.Sum_All())
-	fmt.Println()
-	fmt.Println()
+	fmt.Print("Testing Zero_Tensor() Batched...")
+	if Zero_Tensor([]int{2, 3, 4}, true).Sum_All() != 0 {
+		t.Errorf("Zero_Tensor() failed. Expected Output: 0 --- Actual Output: %v", Zero_Tensor([]int{2, 3, 4}, true).Sum_All())
+	}
+	fmt.Println("Succsess!")
 
-	// Batched Ones Tensor Initialization
-	fmt.Println("Batched Ones Tensor Initialization:\n-------------------------------------")
-	batched_ones_tensor := Ones_Tensor([]int{10, 10, 10}, true)
+	fmt.Print("Testing Ones_Tensor() Unbatched...")
+	if Ones_Tensor([]int{2, 3, 4}, false).Sum_All() != 24 {
+		t.Errorf("Ones_Tensor() failed. Expected Output: 24 --- Actual Output: %v", Ones_Tensor([]int{2, 3, 4}, false).Sum_All())
+	}
+	fmt.Println("Succsess!")
 
-	fmt.Println("Expect Tensor Shape [10, 10, 10] --- Actual Shape: ", batched_ones_tensor.Shape)
-	fmt.Println("Expected Sum of Data: 1000 --- Actual Sum of Data: ", batched_ones_tensor.Sum_All())
-	fmt.Println()
-	fmt.Println()
+	fmt.Print("Testing Ones_Tensor() Batched...")
+	if Ones_Tensor([]int{2, 3, 4}, true).Sum_All() != 24 {
+		t.Errorf("Ones_Tensor() failed. Expected Output: 24 --- Actual Output: %v", Ones_Tensor([]int{2, 3, 4}, true).Sum_All())
+	}
+	fmt.Println("Succsess!")
 
-	// Unbatched Zeros Tensor Initialization
-	fmt.Println("Unbatched Zeros Tensor Initialization:\n--------------------------------------")
-	zeros_tensor := Zero_Tensor([]int{10, 10, 10}, false)
+	fmt.Print("Testing Const_Tensor() Unbatched...")
+	if Const_Tensor([]int{2, 3, 4}, 5, false).Sum_All() != 120 {
+		t.Errorf("Const_Tensor() failed. Expected Output: 120 --- Actual Output: %v", Const_Tensor([]int{2, 3, 4}, 5, false).Sum_All())
+	}
+	fmt.Println("Succsess!")
 
-	fmt.Println("Expect Tensor Shape [10, 10, 10] --- Actual Shape: ", zeros_tensor.Shape)
-	fmt.Println("Expected Sum of Data: 0 --- Actual Sum of Data: ", zeros_tensor.Sum_All())
-	fmt.Println()
-	fmt.Println()
+	fmt.Print("Testing Const_Tensor() Batched...")
+	if Const_Tensor([]int{2, 3, 4}, 5, true).Sum_All() != 120 {
+		t.Errorf("Const_Tensor() failed. Expected Output: 120 --- Actual Output: %v", Const_Tensor([]int{2, 3, 4}, 5, true).Sum_All())
+	}
+	fmt.Println("Succsess!")
 
-	// Batched Zeros Tensor Initialization
-	fmt.Println("Batched Zeros Tensor Initialization:\n-------------------------------------")
-	batched_zeros_tensor := Zero_Tensor([]int{10, 10, 10}, true)
+	// Test Range_Tensor()
+	fmt.Print("Testing Range_Tensor()...")
+	if Range_Tensor([]int{3, 3, 3}, false).Sum_All() != 351 {
+		t.Errorf("Range_Tensor() failed. Expected Output: 351 --- Actual Output: %v", Range_Tensor([]int{3, 3, 3}, false).Sum_All())
+	}
+	fmt.Println("Succsess!")
 
-	fmt.Println("Expect Tensor Shape [10, 10, 10] --- Actual Shape: ", batched_zeros_tensor.Shape)
-	fmt.Println("Expected Sum of Data: 0 --- Actual Sum of Data: ", batched_zeros_tensor.Sum_All())
-	fmt.Println()
-	fmt.Println()
+	fmt.Print("Testing Range_Tensor() Batched...")
+	if Range_Tensor([]int{3, 3, 3}, true).Sum_All() != 108 {
+		t.Errorf("Range_Tensor() failed. Expected Output: 108 --- Actual Output: %v", Range_Tensor([]int{3, 3, 3}, true).Sum_All())
+	}
+	fmt.Println("Succsess!")
 
-	// Unbatched Range Tensor Initialization
-	fmt.Println("Unbatched Range Tensor Initialization:\n--------------------------------------")
-	range_tensor := Range_Tensor([]int{10, 10, 10}, false)
+	// // Test RandFloat_Tensor() <--- Think of a better way to test this Use Standard Deviation?
+	// fmt.Print("Testing RandFloat64_Tensor() Unbatched...")
+	// rand_float_sum := RandFloat64_Tensor([]int{3, 3, 3}, 0, 1, false).Sum_All()
+	// if rand_float_sum > 17 || rand_float_sum < 10 {
+	// 	t.Errorf("RandFloat_Tensor() failed. Expected Output Sum Range: 10-17 --- Actual Output Sum: %v", rand_float_sum)
+	// }
+	// fmt.Println("Succsess!")
 
-	fmt.Println("Expect Tensor Shape [10, 10, 10] --- Actual Shape: ", range_tensor.Shape)
-	fmt.Println("Expected Sum of Data: 499500 --- Actual Sum of Data: ", range_tensor.Sum_All())
-	fmt.Println()
-	fmt.Println()
+	// fmt.Print("Testing RandFloat64_Tensor() Batched...")
+	// rand_float_sum = RandFloat64_Tensor([]int{3, 3, 3}, 0, 1, true).Sum_All()
+	// if rand_float_sum < 8 || rand_float_sum < 12 {
+	// 	t.Errorf("RandFloat_Tensor() failed. Expected Output Sum Range: 8-12 --- Actual Output Sum: %v", rand_float_sum)
+	// }
+	// fmt.Println("Succsess!")
 
-	// Batched Range Tensor Initialization
-	fmt.Println("Batched Range Tensor Initialization:\n-------------------------------------")
-	batched_range_tensor := Range_Tensor([]int{10, 10, 10}, true)
+	// Test Copy()
+	fmt.Print("Testing Copy()...")
+	A := Range_Tensor([]int{10, 12, 14}, false)
+	B := A.Copy()
+	if A.Sum_All() != B.Sum_All() {
+		t.Errorf("Copy() failed. Expected Output: %v --- Actual Output: %v", A.Sum_All(), B.Sum_All())
+	}
+	fmt.Println("Succsess!")
 
-	fmt.Println("Expect Tensor Shape [10, 10, 10] --- Actual Shape: ", batched_range_tensor.Shape)
-	fmt.Println("Expected Sum of Data: 499500 --- Actual Sum of Data: ", batched_range_tensor.Sum_All())
-	fmt.Println()
-	fmt.Println()
+	// Test Eye()
 
-	// Copy Tensor Initialization (currently there is no batching option)
-	fmt.Println("Copy Tensor Initialization:\n----------------------------")
-	copy_tensor := range_tensor.Copy()
+	// Test Eye() Unbatched
+	fmt.Print("Testing Eye() Unbatched...")
+	A = Eye([]int{3, 3}, false)
+	if A.Retrieve([]int{0, 0}) != 1 || A.Retrieve([]int{1, 1}) != 1 || A.Retrieve([]int{2, 2}) != 1 {
+		t.Errorf("Eye() failed. Expected Output: 1 --- Actual Output: %v", A.Retrieve([]int{0, 0}))
+	}
+	fmt.Println("Succsess!")
 
-	fmt.Println("Expect Tensor Shape [10, 10, 10] --- Actual Shape: ", copy_tensor.Shape)
-	fmt.Println("Expected Sum of Data: 499500 --- Actual Sum of Data: ", copy_tensor.Sum_All())
-	fmt.Println()
-	fmt.Println()
+	// Test Eye() Batched
+	fmt.Print("Testing Eye() Batched...")
+	A = Eye([]int{3, 3, 3}, true)
+	A_Extracted := A.Extract(1)
+	if A_Extracted.Retrieve([]int{0, 0}) != 1 || A_Extracted.Retrieve([]int{1, 1}) != 1 || A_Extracted.Retrieve([]int{2, 2}) != 1 {
+		t.Errorf("Eye() failed. Expected Output: 1 --- Actual Output: %v", A.Retrieve([]int{0, 0}))
+	}
+	fmt.Println("Succsess!")
 
-	// Unbatched Identity Matrix Tensor Initialization
-	fmt.Println("Unbatched Identity Matrix Tensor Initialization:\n------------------------------------------------")
-	identity_matrix_tensor := Eye([]int{10, 10}, false)
+	// Test Gram()
 
-	Display_Matrix(identity_matrix_tensor, false)
-	fmt.Println()
-	fmt.Println()
+	// Test Gram() Unbatched
+	fmt.Print("Testing Gram() Unbatched...")
+	A = Range_Tensor([]int{3, 3}, false)
+	B = A.Gram(false)
 
-	// Batched Identity Matrix Tensor Initialization
-	fmt.Println("Batched Identity Matrix Tensor Initialization:\n-----------------------------------------------")
-	batched_identity_matrix_tensor := Eye([]int{3, 10, 10}, true)
+	if B.Retrieve([]int{0, 0}) != 5 || B.Retrieve([]int{1, 1}) != 50 || B.Retrieve([]int{2, 2}) != 149 {
+		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Retrieve([]int{0, 0}), B.Retrieve([]int{1, 1}), B.Retrieve([]int{2, 2}))
+	}
 
-	Display_Matrix(batched_identity_matrix_tensor, true)
-	fmt.Println()
-	fmt.Println()
+	fmt.Println("Succsess!")
 
-	// Gram Matrix Tensor Initialization (currently there is no batching option)
+	// Test Gram() Batched
+	fmt.Print("Testing Gram() Batched...")
+	A = Range_Tensor([]int{3, 3, 3}, true)
+	B = A.Gram(true)
+	B_Extracted := B.Extract(1)
 
-	// Unbatched Gram Matrix Tensor Initialization (currently there is no batching option)
-	fmt.Println("Unbatched Gram Matrix Tensor Initialization:\n---------------------------------------------")
-	gram_matrix_tensor := Gram(Range_Tensor([]int{10, 10}, false), false)
+	if B_Extracted.Retrieve([]int{0, 0}) != 5 || B_Extracted.Retrieve([]int{1, 1}) != 50 || B_Extracted.Retrieve([]int{2, 2}) != 149 {
+		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Retrieve([]int{0, 0}), B.Retrieve([]int{1, 1}), B.Retrieve([]int{2, 2}))
+	}
 
-	Display_Matrix(gram_matrix_tensor, false)
-	fmt.Println()
-	fmt.Println()
+	fmt.Println("Succsess!")
 
-	// Batched Gram Matrix Tensor Initialization (currently there is no batching option)
-	fmt.Println("Batched Gram Matrix Tensor Initialization:\n---------------------------------------------")
-	batched_gram_matrix_tensor := Gram(Range_Tensor([]int{3, 10, 10}, true), true)
-
-	Display_Matrix(batched_gram_matrix_tensor, true)
-	fmt.Println()
-	fmt.Println()
-
-	// Unbatched Random Tensor Initialization
-	fmt.Println("Unbatched Random Tensor Initialization:\n--------------------------------------")
-	random_tensor := RandFloat_Tensor([]int{10, 10, 10}, 0, 1, false)
-
-	fmt.Println("Expect Tensor Shape [10, 10, 10] --- Actual Shape: ", random_tensor.Shape)
-	fmt.Println()
-	fmt.Println()
-
-	// Batched Random Tensor Initialization
-	fmt.Println("Batched Random Tensor Initialization:\n-------------------------------------")
-	batched_random_tensor := RandFloat_Tensor([]int{3, 10, 10}, 0, 1, true)
-
-	fmt.Println("Expect Tensor Shape [3, 10, 10] --- Actual Shape: ", batched_random_tensor.Shape)
-	fmt.Println()
-	Display_Matrix(batched_random_tensor, true)
-	fmt.Println()
 }

@@ -1,4 +1,5 @@
-package GLA
+package TG
+
 
 // vector.go contains functions related to vector/1D Tensor operations
 

@@ -3,140 +3,166 @@
 The following is the documentation for this library.
 
 # Tensors
-This library introduces the Tensor data structure. All functions and methods in this library are used in relation to this data structure in some way. A Tensor is an n dimmensional array of numbers. Although Tensor structs can have any number of dimmensions, their data is stored in memory contiguously within their Data member. To simulate higher dimmensionality, the Shape member is used to calculate the 1D index with respect to a given multi-dimmensnional index. 
+Tensor-Go uses the Tensor data structure. A Tensor is an array of arbitrary dimmesionality. Although Tensors can have any dimmensionality, under the hood Tensor-Go stores Tensor data contiguously. For a Tensor A, contiguous memory is stored in the *Data* member of the Tensor struct, and the *Shape* member is used to keep track of the dimmensions of the Tensor.
 
     A            // <--- Tensor struct
     A.Data       // <--- 1D array of float64 values
     A.BoolData   // <--- 1D array of bool values
-    A.Shape      // <--- shape of the tensor
+    A.Shape      // <--- shape of Tensor A
+    A.Batched    // <--- flag for batched operations
     
-Data can be stored as either a float64 or a bool. However, most operations in this library are only supported for float64 Data.
+Currently, Tensor-Go supports float64 and bool Tensor data. However, most operations in this library are currently only supported for float64 Data.
 
+# Indexing Tensors
 
-# A Note About Batching...
+As mentioned above, the multidimmensionality of Tensors in Tensor-Go is simulated by the use of the *Shape* member. This is an integer slice that contains the number of elements along each axes of a multidimmensional Tensor. 
 
-This library supports batched Tensor operations. This means that a single Tensor struct can be used to represent a collection of individual Tensors. Every function in this library is capable of (or soon to be) operating on batched Tensors such that the operation is applied to the individual members of the batch, and not the Tensor as a whole. 
-
-The way to specify if a function is to operate on a batched Tensor is to set it's last argument to True. The last argument of all functions in this library is a boolean value that specifies whether the operation is batched or not. 
-
-    Sum_Tensor := A.Add(B, true)  // <--- A and B are batched Tensors
-
-If a Tensor is batched, the first dimmension is used as the batch dimmension. 
-
-    Batch_Rng := Range_Tensor([]int{3, 2, 2}, true)  // <--- 3 Tensors of shape (2, 2)
-
-
-There is techincally no difference between the mechanism by which batched vs non-batched Tensors are stored in contiguous memory. Only in how their data is initialized and operated upon.
-
-There is an optional Batch member that can be set to signify if a Tensor is intended for batched operations. This is only a flag and does not affect the Tensor in any way.
-
-    A.Batched = true 
-
-# Initialization of Tensors
-A Tensor intializaton function will always require the Tensor shape and whether it should be batched. A Tensor initialization functions will always return a pointer to a Tensor struct. 
-
-### Zero_Tensor(), Ones_Tensor(), Const_Tensor()
-These functions are used to intialize Tensor structs which contain a constant float64 value across all elements. They all follow the same syntax
-
-    var A *Tensor = FName(shape []int, batching bool)
-
-### Range_Tensor()
-Range Tensor has the same syntax as Const_Tensor(), however it will intialize its contiguous memory in a range starting from 0 and going to the number of elements in the Tensor. 
-
-    var A *Tensor = Range_Tensor(shape []int, batching bool)
-
-### RandFloat_Tensor()
-RandFloat_Tensor() intitialized with values in a random range between specified min and max values. 
-
-    var A *Tensor = RandFloat_Tensor(shape []int, batching bool, min float64, max float64)
-
-### Copy() 
-The Copy() method is used to copy an entire Tensor into a new Tensor. The new Tensor will have the same shape and batching as the original Tensor. 
-
-    var A *Tensor = Zero_Tensor([]int{2, 2}, false)
-    var A_Copy *Tensor = A.Copy()
-    
-### Eye() 
-The Eye() function is used to initialize a 2D Identity matrix of a specified size. 
-
-    var A *Tensor = Eye([]int{4, 3, 3}, false)  // <--- 4 3x3 Identity matricies
-
-### Gram()
-The Gram() fucntion creates a Matrix of an inputed matrix Tensor. This means that for a 2D Tensor A the Gram(A) will return A multplied by its Transpose. Batching is supported.
-
-    var A *Tensor = RandFloat_Tensor([]int{2, 2}, 0, 1, false)
-    var A_Gram *Tensor = Gram(A, false)  // <--- A_Gram = A * A.T
-
-
-# Accessing Data From A Tensor
+Tensor-Go takes handles the conversion of multi dimmensional indicies back to their corresponding 1D index in memory. The following are various ways to access elements of a Tensor.
 
 ### Retrieve() 
-The Retrieve() method is used to retrieve a single element from a Tensor. It takes a list of indices as input and returns the value at that index. 
+The Retrieve() method is used to retrieve a single element from a Tensor given an integer slice representing the multi-dimmensional index of the element to retrieve. Currently, Retrieve is only supported for float64 data.
 
-    var A *Tensor = Zero_Tensor([]int{2, 2}, false)
-    var A_00 float64 = A.Retrieve([]int{0, 0})
+    var A float64 = (A *Tensor) Retrieve(indices []int)
 
 ### Index()
 Internally, the Retrieve() method calls the Index() method. Index() recieves the shape of a Tensor and a multi-dimmensional index, to which it returns the corresponding 1D index for that shape and indexing. A retrieved index can be used to directly access elements from the Data member of a Tensor.
 
-    var A *Tensor = Ones_Tensor([]int{2, 2}, false)
-    var flat_idx int = A.Index([]int{1, 1}, []int{2, 2})  // multi-dim idx, shape
-    var A_11 float64 = A.Data[flat_idx] // retrieve value at index
+    var flat_index int = (A *Tensor) Index(indices []int) 
 
+### Index_Off_Shape()
+Additionally, Index_Off_Shape() is used to retrieve the 1D index of a Tensor given a multi-dimmensional index and a shape without the need of a Tensor struct.
+
+    var flat_index int = Index_Off_Shape(indices []int, shape []int)
 
 
 ### UnravelIndex()
-UnravelIndex() is used to take a flat 1D index and transform it into a multidimmensional index given a Tensor shape. 
+UnravelIndex() is used to convert a flat 1D index into a multidimmensional index given a Tensor shape. 
 
     var multi_dim_idx []int = UnravelIndex(flat_index, shape []int)  
 
 ### Extract()
-Extract() is used to retrieve a Tensor element from a batched Tensor. It accepts an integer index of the first dimmension of the Tensor, representing the elemnt of the batch to extract. 
+Extract() is used to retrieve a Tensor element from a batched Tensor. It accepts the integer index of the first dimmension of the Tensor containing the element of the batch to extract. 
 
-var element *Tensor = A.Extract(0)  // <--- Extract first element of batch
+    var batch_element *Tensor = (A *Tensor) Extract(batch_element int) 
+
+
+# A Note About Batching...
+
+This library supports *batched Tensor operations*. 
+
+This means that a single Tensor can be used to hold many other individual Tensors. The elements of a batched Tensor are stored in the 0'th dimmension of the Tensor. *Technically, this is only a symbolic representation of the data. The underlying contiguous memory of a batched Tensor is the same as a non-batched Tensor. Because of this, an optional Batched flag can be set in a Tensor struct to clarify it is a batch.*
+
+    A.Batched = true
+
+
+Every function in this library is capable of operating in a batched fashion. The last argument of every function in this library is a boolean value that specifies whether the operation is batched or not. 
+
+    Sum_Tensor := A.Add(B, true)  // <--- A and B are batched Tensors
+
+If a Tensor is batched, the first dimmension is used as the batch dimmension. The operation will be applied to every element along that dimmension. 
+
+
+# Initialization of Tensors
+Tensor-Go provides various functions for intializing Tensors with different attributes.
+
+The general format for these type of functions is as follows (with some variation).
+
+    var A *Tensor = FName(shape []int, batching bool)
+
+### Zero_Tensor(), Ones_Tensor(), Const_Tensor()
+The above functions are used to intialize Tensor structs that contain a constant float64 value across all elements. They all follow the same syntax
+
+    var zero *Tensor = Zero_Tensor(shape []int, batching bool)
+    var ones *Tensor = Ones_Tensor(shape []int, batching bool)
+    var constant *Tensor = Const_Tensor(shape []int, value float64, batching bool)
+
+### Range_Tensor()
+Range_Tensor() intializes a Tensor with its contiguous memory in a range starting from 0 to the total number of elements in the Tensor. 
+
+    var range *Tensor = Range_Tensor(shape []int, batching bool)
+
+### RandFloat64_Tensor()
+RandFloat_Tensor() intitialized with float64 values in a random range between specified min and max values. 
+
+    var random *Tensor = RandFloat64_Tensor(shape []int, lower float64, upper float64, batching bool) *Tensor 
+### Copy() 
+The Copy() method is used to create a deep copy of a Tensor. There is currently no option for batching.
+
+    var A *Tensor = Zero_Tensor([]int{2, 2}, false)
+    var deep_copy_A *Tensor = A.Copy()
+    
+### Eye() 
+The Eye() function is used to initialize a 2D Identity matrix of a specified size. 
+
+    var I *Tensor = Eye(shape []int, batching bool) 
+
+### Gram()
+The Gram() fucntion computes the Matrix product of a Tensor with its transpose. It is used to compute the Gram Matrix of a Tensor.
+
+    var gram *Tensor = A.Gram(batching bool) 
 
 
 # Operations on Tensor Shape
-There are various operations in this library used for manipulating the shape of a Tensor. 
+
+Manipulating the shape of Tensors is a useful operation when working wiht multi-dimmensional data. The following functions provide various ways to manipulate the shape of a Tensor.
+
+*Note: Currently batching is limited for shape related functions.*
 
 ### Partial()
 The Partial method recieves a string containing a python style slice notation indexing of each dimmension of a Tensor. Partial() extracts the specified ranges of each dimmension of the Tensor it acts on into a new Tensor. The bounds of the slice are exclusive of the upper bound. By using just a colon for a dimmensions index, the entire dimmension is extracted.
 
+    // Syntax:
+    var partial *Tensor := Partial(slice string)
+
+    // For Example:
     A := Range_Tensor([]int{3, 4, 9, 2})
     A_Partial := Partial(A, "0:2, 2:, :3, :")
 
 ### Reshape()
 The Reshape() function accepts a new shape slice for a given Tensor. Assuming the new shape is of the same number of total elements, this shape will be swapped with the Tensor being acted on. The underlying contiguous memory will remain the same. 
 
-    A := Range_Tensor([]int{3, 4, 9, 2})
-    var A_reshaped *Tensor = A.Reshape([]int{2, 3, 6, 2})
+    var reshaped *Tensor = A.Reshape(new_shape []int, batching bool)
+
+*Note: For batched reshapes, only specify the new shape of the batch elements.*
 
 ### Transpose()
 The Transpose() method recieves a permuation of a slice of integers ranging from 0 to len(dimmensions). Transpose() will reorder both the Shape member of the Tensor it acts on as well as the contiguous memory to reflect this change. 
 
+    // Syntax:
+    var transposed *Tensor := Transpose(permuation []int)
+
+    // Example:
     A := Range_Tensor([]int{3, 4, 9, 2})
     A_Reversed := A.Transpose([]int{3, 2, 1, 0})  
-### Concat()
-The Concat() method recieves arguments of an integer axis of concatenation and a Tensor pointer to which will be concatenated to the Tensor the method acts upon. Concat() requires that the Tensor Shapes be the same except for the axis of concatenation.
 
+### Concat()
+The Concat() method accepts an integer axis of concatenation and a Tensor pointer to which will be concatenated to the Tensor the method acts upon. Concat() requires that the Tensor Shapes be the same except for the axis of concatenation.
+
+    // Syntax:
+    var concatenated *Tensor := A.Concat(B *Tensor, axis_cat int)
+
+    // Example:
     A := Range_Tensor([]int{3, 4, 9, 2})
     B := Range_Tensor([]int{3, 4, 9, 2})
     var A_cat_B *Tensor = A.Concat(B, 0)  // <--- Concatenate B to A along first dimmension
 
 ### Extend_Shape()
-The Extend_Shape() methods adds a new dimmension of a specified num_elements to the end of a Tensor. It returns a pointer to a new Tensor with these changes made. Values in the extended dimmension are intialized to zero.
+The Extend_Shape() methods adds a new dimmension of a specified num_elements to the end of a Tensor. It returns a pointer to a new Tensor with these changes made. Values in the extended dimmension the same as the original Tensor across all elements in the new axis.
 
-    A := Range_Tensor([]int{3, 4, 9, 2})
-    var A_extended *Tensor = A.Extend_Shape(5)  // shape: (3, 4, 9, 2, 5)
+    var A_extended *Tensor = A.Extend_Shape(num_elements int)
 
 ### Extend_Dim()
 The Extend_Dim() appends additional elements to an already existing axis. New elements are initialized to zero. 
 
-    A := Ones_Tensor(axis int, num_elements int)
+    var A_extended *Tensor = A.Extend_Dim(axis int, num_elements int)
 
 ### Remove_Dim()
 The Remove_Dim() method recieves an integer axis_of_removal and element of retrieval. The axis of removal is removed from the Tensor, with the element_of_retrieval specifying which 'state' of that dimmension to retrieve out of it. This is a similar idea to specifying a single element out of a batch Tensor, then extracting only that element. 
 
+    // Syntax:
+    var removed *Tensor := Remove_Dim(axis_of_removal int, element_of_retrieval int)
+
+    // Example:
     var Removed_0 *Tensor = A.Remove_Dim(0, 0)  // <--- Remove first dimmension, retrieve first element
 
 ### Remove_Singletons()

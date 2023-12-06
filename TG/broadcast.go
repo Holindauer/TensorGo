@@ -1,4 +1,5 @@
-package GLA
+package TG
+
 
 // broadcast.go contains versions of preexisting function in the format of broadcasting.
 

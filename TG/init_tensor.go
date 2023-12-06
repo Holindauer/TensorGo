@@ -1,4 +1,4 @@
-package GLA
+package TG
 
 // init_tensor.go contains functions for initializing tensors
 
@@ -90,7 +90,7 @@ func (ri *RandomInitializer) Execute(shape []int) *Tensor { // <--- Execute() fr
 	return InitializeData(shape, ri)
 }
 
-func RandFloat_Tensor(shape []int, lower float64, upper float64, batching bool) *Tensor {
+func RandFloat64_Tensor(shape []int, lower float64, upper float64, batching bool) *Tensor {
 
 	random := NewRandom() // <--- NewRandom() is a function from utils.go
 	ri := &RandomInitializer{min: lower, max: upper, random: random}
@@ -156,7 +156,7 @@ func (gi *GramienInitializer) Execute(A *Tensor) *Tensor { // <--- Execute() fro
 }
 
 // Gramien_Matrix(A) returns A * A.T for a square matrix.
-func Gram(A *Tensor, batching bool) *Tensor {
+func (A *Tensor) Gram(batching bool) *Tensor {
 
 	GI := &GramienInitializer{}
 	if !batching {

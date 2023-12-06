@@ -1,4 +1,4 @@
-package GLA
+package TG
 
 // all_elements.go contains operations performed over all elements of a tensor
 

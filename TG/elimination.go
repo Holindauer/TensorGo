@@ -1,4 +1,4 @@
-package GLA
+package TG
 
 // elimination.go algorithms for solving systems of linear equations
 

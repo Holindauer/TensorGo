@@ -1,11 +1,16 @@
-# Go-LinAlg
-Go-LinAlg (GLA) is an open source numerical computation and linear algebra library for the Go Programming Language. It is designed to be easy to use and as efficient as possible. Many of the Concepts and Functions in this library are based on the NumPy library for Python.
+# Tensor-Go 
+
 
 
 
 
 -----------------------------------------------------------------------------------------------------
-![planes_img](planes.png)
+<center>
+    <h3>Tensor-Go is an open-source numerical computation and linear algebra library for the Go Programming Language.</h3>
+    <img src="tensor_visualization.jpg" width ="500">
+    <h3>TG is designed for easy use and efficiency when working with arrays of arbitrary dimmension.</h3>
+</center>
+
 
 Try out a Matrix Multiplication:
 
@@ -16,18 +21,19 @@ Try out a Matrix Multiplication:
 
 To set up this use this package in your own project, first install the package using the following command:
 
-    go get github.com/Holindauer/Go-LinAlg
+    go get github.com/Holindauer/Tensor-Go
 
 Then import the package into your project:
 
-    import . "github.com/Holindauer/Go-LinAlg/GLA"
+    import . "github.com/Holindauer/Tensor-Go/TG"
 
 Don't forget the . before the import statement. This allows you to call the functions and methods in this package without having to specify the package name.
 
 # Documentation
 -----------------------------------------------------------------------------------------------------
 
-The documentation for this library can be found here: [GLA Doc](documentation.md).
+
+The documentation for this library can be found here: [TG Doc](documentation.md).
 
 
 # Contributing
@@ -48,4 +54,6 @@ Also, take a look at the [Project Structure](project_structure.md) file to get a
 
 # Discord
 -----------------------------------------------------------------------------------------------------
-For more information, or to ask questions about functionality or contribution, join our Discord server: [GLA Discord](https://discord.gg/mEy8F49Szu)
+For more information, or to ask questions about functionality or contribution, join our Discord server: [TG Discord](https://discord.gg/mEy8F49Szu)
+
+

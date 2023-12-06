@@ -1,3 +1,3 @@
-module github.com/Holindauer/Go-LinAlg.git
+module github.com/Holindauer/Tensor-Go.git
 
 go 1.21.1
