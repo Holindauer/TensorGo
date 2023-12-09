@@ -72,5 +72,5 @@ func (A *Tensor) Normalize_Axis(axis int) *Tensor {
 
 // calculateNorm calculates the norm of a tensor slice
 func calculateNorm(tensorSlice *Tensor) float64 {
-	return Norm(tensorSlice, false).Data[0]
+	return tensorSlice.Norm(false).Data[0]
 }

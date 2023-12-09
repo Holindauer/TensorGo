@@ -136,7 +136,7 @@ type Batched_Normalize struct{}
 func (bn Batched_Normalize) Execute(A *Tensor) *Tensor {
 	// convert A to a vector Tensor in order to use Norm()
 	A_vector := A.Copy().Reshape([]int{Product(A.Shape)}, false)
-	A_Norm := Norm(A_vector, false)
+	A_Norm := A_vector.Norm(false)
 
 	// iterate over all elements of A and divide by A_Norm
 	for i := 0; i < len(A.Data); i++ {

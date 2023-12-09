@@ -1,10 +1,8 @@
 package TG
 
-
 // vector.go contains functions related to vector/1D Tensor operations
 
 import (
-	//"fmt"
 	"math"
 )
 
@@ -66,7 +64,7 @@ func (op Batched_Norm) Execute(A *Tensor) *Tensor {
 }
 
 // Norm() comptues the norm of a vector Tensor into a single element Tensor. There is optional batching.
-func Norm(A *Tensor, batching bool) *Tensor {
+func (A *Tensor) Norm(batching bool) *Tensor {
 
 	if batching {
 		return Batch_Tensor_Tensor_Operation(Batched_Norm{}, A) // batched op
@@ -83,7 +81,7 @@ func (op Batched_Unit) Execute(A *Tensor) *Tensor {
 		panic("Within Unit(): Tensor must be a vector to compute unit vector")
 	}
 
-	norm := Norm(A, false).Data[0] // <-- single element Tensor
+	norm := A.Norm(false).Data[0] // <-- single element Tensor
 
 	if norm == 0 { // handle the case where normalization involves division by zero
 		return Zero_Tensor(A.Shape, false)
@@ -99,7 +97,7 @@ func (op Batched_Unit) Execute(A *Tensor) *Tensor {
 }
 
 // This function computes the unit vector of a vector Tensor. There is optional batching.
-func Unit(A *Tensor, batching bool) *Tensor {
+func (A *Tensor) Unit(batching bool) *Tensor {
 	if batching {
 		return Batch_Tensor_Tensor_Operation(Batched_Unit{}, A) // batched op
 	}
@@ -117,8 +115,8 @@ func (op Batched_Cosine_Similarity) Execute(A *Tensor, B *Tensor) *Tensor {
 
 	similarityTensor := Zero_Tensor([]int{1}, false)
 
-	normA := Norm(A, false).Data[0]
-	normB := Norm(B, false).Data[0]
+	normA := A.Norm(false).Data[0]
+	normB := A.Norm(false).Data[0]
 
 	if normA == 0 || normB == 0 { // Handle the zero norm case
 		similarityTensor.Data[0] = 0 // Or NaN, or any other value you deem appropriate
@@ -190,12 +188,17 @@ func (op Batched_Check_Vectors) Execute(A *Tensor, B *Tensor) *Tensor {
 // process of instantiating the logic for batched ops and executing them for vector operations that return a bool.
 func Check_Vector_Feature(A *Tensor, B *Tensor, checker func() bool, batching bool) *Tensor {
 
+	// Check if A or B is nil
+	if A == nil || B == nil {
+		panic("Check_Vector_Feature: One or both Tensors are nil")
+	}
+
 	op := Batched_Check_Vectors{checker: checker} // create op
 
 	if batching {
 		return Batch_TwoTensor_Tensor_Operation(op, A, B) // batched op
 	}
-	return Batched_Check_Vectors{}.Execute(A, B) // single op
+	return op.Execute(A, B) // single op
 }
 
 // Check_Orthogonal() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
@@ -203,7 +206,8 @@ func Check_Vector_Feature(A *Tensor, B *Tensor, checker func() bool, batching bo
 func Check_Orthogonal(A *Tensor, B *Tensor, batching bool) *Tensor {
 
 	checker_func := func() bool {
-		if Dot(A, B, false).Data[0] == 0 { // dot == 0 indicates orthogonality
+
+		if Dot(A, B, batching).Sum_All() == 0 { // dot == 0 indicates orthogonality
 			return true
 		}
 		return false
@@ -233,7 +237,7 @@ func Check_Obtuse(A *Tensor, B *Tensor, batching bool) *Tensor {
 
 	// anon func for within Batched_Check_Orthoganal.Execute()
 	checker_func := func() bool {
-		if Dot(A, B, false).Data[0] > 0 { // dot < 0 indicates Obtuse angle
+		if Dot(A, B, false).Data[0] < 0 { // dot < 0 indicates Obtuse angle
 			return true
 		}
 		return false
@@ -269,5 +273,3 @@ func Outer(A *Tensor, B *Tensor, batching bool) *Tensor {
 	}
 	return Batched_Outer{}.Execute(A, B) // single op
 }
-
-

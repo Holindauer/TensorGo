@@ -48,7 +48,7 @@ Extract() is used to retrieve a Tensor element from a batched Tensor. It accepts
 
 # A Note About Batching...
 
-This library supports *batched Tensor operations*. 
+Tensor-Go supports *batched Tensor operations*. 
 
 This means that a single Tensor can be used to hold many other individual Tensors. The elements of a batched Tensor are stored in the 0'th dimmension of the Tensor. *Technically, this is only a symbolic representation of the data. The underlying contiguous memory of a batched Tensor is the same as a non-batched Tensor. Because of this, an optional Batched flag can be set in a Tensor struct to clarify it is a batch.*
 
@@ -59,8 +59,26 @@ Every function in this library is capable of operating in a batched fashion. The
 
     Sum_Tensor := A.Add(B, true)  // <--- A and B are batched Tensors
 
-If a Tensor is batched, the first dimmension is used as the batch dimmension. The operation will be applied to every element along that dimmension. 
+If a Tensor is batched, the first dimmension is used as the batch dimmension. The operation will be applied to every element along that dimmension.
 
+# A note about Broadcasting
+
+Tesnor-Go support *broadcasting*.
+
+ Broadcasting is the process of performind a Tensor operation across two Tensors of different shapes. The smaller Tensor is 'broadcasted' across the larger Tensor to match its shape.
+
+For Example, if you have a [3, 3, 3] batched Tensor and you want to add a [3, 3] Tensor to each element of the batch, you can broadcast the [3, 3] Tensor across the 0'th axis of the [3, 3, 3] to match the larger shape. 
+
+
+
+### Broadcast()
+Broadcast() allows you to turn any already existing operation into a Broadcasted operation. The Broadcast_Arg is the Tensor we are broadcasting onto Broadcast_Onto. The op argument is a function that accepts two Tensor pointers and returns a Tensor pointer. When defining the op function, the first argument is the Broadcast_Arg and the second argument is the Broadcast_Onto.
+
+    var broadedcasted *Tensor = (Broadcast_Arg *Tensor) Broadcast(Broadcast_Onto *Tensor, op func(A *Tensor, B *Tensor) *Tensor) 
+
+There are also some pre-defined broadcasted operations listed below which are explained along in the documentaion along with their non-broadcasted counterparts. 
+- Broadcast_Add() 
+- Broadcast_Subtract()
 
 # Initialization of Tensors
 Tensor-Go provides various functions for intializing Tensors with different attributes.
@@ -182,6 +200,7 @@ There is another way to accomplish this as well that is more flexible to adding 
 
     A.Shape = append(1, A.Shape...)  // <--- Add singleton dimmension to beginning of shape
 
+
 # Vector Operations 
 The following are operations for vector Tensors (ie: Tensors of a single dimmension). 
 
@@ -193,15 +212,15 @@ The Dot() function accepts two vector Tensors and returns their dot product in t
 ### Norm()
 The Norm() function returns the norm of a vector Tensor in the form of a Tensor of 1 element or a batched Tensor of 1 element Tensors depending on the batching argument.
 
-    var A_Norm *Tensor := Norm(A *Tensor, batching bool)
+    var A_Norm *Tensor := (A *Tensor) Norm(batching bool)
 
 ### Unit() 
 The Unit() function returns a unit vector in the direction of a given vector Tensor. 
 
-    var A_Unit *Tensor = Unit(A *Tensor, batching bool)
+    var A_Unit *Tensor = (A *Tensor) Unit(batching bool)
 
-### Check_Perpendicular()
-The Check_Perpendicular() function returns a Zero_Tensor of either of shape [1] or of a [batch, 1] depending on the batching argument. The boolean of whether the Two vectors are perpindicular is stored within the boolData member of the Tensor.
+### Check_Orthogonal(), Check_Acute(), Check_Obtuse()
+The above function returns a Zero_Tensor of either of shape [1] or of a [batch, 1] depending on the batching argument. The boolean of whether the Two vectors are what the function is checking for. This data is stored within is stored within the BoolData member of the Tensor.
 
     var A_perp_B *Tensor = Check_Perpendicular(A *Tensor, B *Tensor, batching bool)
 
@@ -257,7 +276,13 @@ The functions compute the sum, mean, variance, or standard deviation across all 
 
 Add() and Subtract perform elementwise addition and subtraction respectively. Their syntax is the same between them.
 
-    var A_plus_B *Tensor = A.Add(B, true)  
+    var A_plus_B *Tensor = A.Add(B, true) 
+
+There are also broadcasted versions of these functions.
+
+    var A_broadcastedTo_B *Tensor = A.Broadcast_Add(B)
+    var A_broadcastedTo_B *Tensor = A.Broadcast_Subtract(B)
+
 
 ### Scalar_Mult() 
 Scalar_Mult() accepts an float64 argument and performs scalar multiplication across a Tensor. Currently there is no batching option.
@@ -272,3 +297,6 @@ The following funcitons perform an operation along a specified axis. The shape o
 The functions compute the sum, mean, variance, or standard deviation across a specified axis of a Tensor. They each return a pointer to a new Tensor with the result of the operation. Currently there is no batching option. Their syntax is the same between them.
 
     var A_summed *Tensor = A.Sum_Axis(0)  // <--- Sum along first dimmension
+
+
+

@@ -15,7 +15,7 @@ func Test_Broadcasting(t *testing.T) {
 
 	// Testing Broadcast_Add()
 
-	fmt.Println("\nTesting Broadcast_Add()...")
+	fmt.Print("\nTesting Broadcast_Add()...")
 	A := Ones_Tensor([]int{3, 3, 3}, true)
 	B := Ones_Tensor([]int{3, 3}, false)
 
@@ -29,7 +29,7 @@ func Test_Broadcasting(t *testing.T) {
 
 	// Testing Broadcast_Subtract()
 
-	fmt.Print("\nTesting Broadcast_Subtract()...")
+	fmt.Print("Testing Broadcast_Subtract()...")
 
 	B_broad_A = B.Broadcast_Subtract(A)
 
