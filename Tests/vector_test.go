@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	//"math"
-	. "github.com/Holindauer/Tensor-Go.git/TG"
+	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
 func Test_Vector(t *testing.T) {

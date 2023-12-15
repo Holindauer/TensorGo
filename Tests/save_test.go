@@ -5,7 +5,7 @@ import (
 
 	"testing"
 
-	. "github.com/Holindauer/Tensor-Go.git/TG"
+	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
 func Test_Save(t *testing.T) {

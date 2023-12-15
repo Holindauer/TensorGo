@@ -24,7 +24,7 @@ package main
 import (
 	"fmt"
 
-	. "github.com/Holindauer/Tensor-Go.git/TG"
+	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
 func main() {

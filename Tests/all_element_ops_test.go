@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	. "github.com/Holindauer/Tensor-Go.git/TG"
+	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
 func Test_All_Element_Operations(t *testing.T) {

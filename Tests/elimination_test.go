@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	. "github.com/Holindauer/Tensor-Go.git/TG"
+	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
 func Test_Elimination(t *testing.T) {

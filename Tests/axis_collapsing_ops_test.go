@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	. "github.com/Holindauer/Tensor-Go.git/TG"
+	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
 func Test_Axis_Collapsing_Operations(t *testing.T) {
