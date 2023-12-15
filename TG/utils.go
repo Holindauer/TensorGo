@@ -3,7 +3,11 @@ package TG
 // utils.go contains helper functions for this projects
 
 import (
+	"bytes"
 	"math/rand"
+	"os/exec"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -87,4 +91,38 @@ func isEqual(a, b []int) bool {
 		}
 	}
 	return true
+}
+
+func runPythonScript(scriptName string, args ...string) []float64 {
+	// Prepare the command with script name and arguments
+	cmdArgs := append([]string{scriptName}, args...)
+	cmd := exec.Command("python3", cmdArgs...)
+
+	// Buffers to capture the output
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+
+	// Run the command and check for errors
+	err := cmd.Run()
+	if err != nil {
+		panic("Within runPythonScript() --- " + err.Error() + " --- Stderr: " + stderr.String())
+	}
+
+	// Split the output into separate strings
+	output := strings.TrimSpace(out.String())
+	strValues := strings.Split(output, " ")
+
+	// Parse each string as a float64
+	var result []float64
+	for _, str := range strValues {
+		value, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			panic("Within runPythonScript() --- " + err.Error())
+		}
+		result = append(result, value)
+	}
+
+	return result
 }

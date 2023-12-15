@@ -3,13 +3,12 @@ package TG
 // elimination.go algorithms for solving systems of linear equations
 
 import (
-	"bytes"
+	"fmt"
 	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 // --------------------------------------------------------------------------------------------------Normal Gaussian Elimination
@@ -87,33 +86,31 @@ func Gauss_Jordan_Elimination(A *Tensor, b *Tensor, batching bool) *Tensor {
 type LinearSystemsApproximator struct{ modelFileName string }
 
 func (LSA LinearSystemsApproximator) Execute(A, b *Tensor) *Tensor {
-	// Marshal tensor A and B into JSON strings
-	aJSONTensor := MarshalTensor(A)
-	aDataJSON := aJSONTensor.Data
-	aShapeJSON := aJSONTensor.Data
-	bJSONTensor := MarshalTensor(b)
-	bDataJSON := bJSONTensor.Data
-	bShapeJSON := bJSONTensor.Shape
 
-	// Call the Python script with the marshaled data
-	x := runPythonScript("Extensions/approximate_linear_system.py", aDataJSON, aShapeJSON, bDataJSON, bShapeJSON, LSA.modelFileName)
+	// Call the Python script with the JSON marshaled Tensorsx=
+	A_JSON := MarshalTensor(A)
+	b_JSON := MarshalTensor(b)
+	script_name := "Extensions/approximate_linear_system.py"
+
+	x := runPythonScript(script_name, A_JSON.Data, A_JSON.Shape, b_JSON.Data, b_JSON.Shape, LSA.modelFileName)
 
 	output := Zero_Tensor([]int{len(x), 1}, false)
 	copy(output.Data, x)
 	return output
 }
 
-func AI_LinSys_Approximator(A *Tensor, b *Tensor, batching bool) *Tensor {
+func LinSys_Approximator(A *Tensor, b *Tensor, matrixType string, fillPercentage float64, batching bool) *Tensor {
 
-	// The pytorch files for the Linear Systems Approximator are stored as LinSys_Approximator(Num_Unknowns).pt
-	A_size := A.Shape[1]
+	// download the Linear Systems Approximator if not already downloaded
+	Get_LinSys_Approximator()
 
-	modelFileName := "LinSys_Approximator" + strconv.Itoa(A_size) + ".pt"
+	// Create the path to the model file
+	modelFileName := "LinSys_Approximator" + strconv.Itoa(A.Shape[1]) + ".pt"
 	modelFilePath := filepath.Join("Linear_Systems_Regression", modelFileName)
 
 	// Train a new model of the corrent specs if there does not already exist one
 	if _, err := os.Stat(modelFilePath); os.IsNotExist(err) {
-		Train_LinSys_Approximator("dense", A_size, 1.0)
+		Train_LinSys_Approximator(matrixType, A.Shape[1], fillPercentage)
 	}
 
 	// Create an instance of the LinearSystemsApproximator struct
@@ -124,38 +121,40 @@ func AI_LinSys_Approximator(A *Tensor, b *Tensor, batching bool) *Tensor {
 	return LSA.Execute(A, b) // single processing otherwise
 }
 
-func runPythonScript(scriptName string, args ...string) []float64 {
-	// Prepare the command with script name and arguments
-	cmdArgs := append([]string{scriptName}, args...)
-	cmd := exec.Command("python3", cmdArgs...)
+// This function runs the script that checks if the Linear Systems Approximator has been downloaded. If it has not, it downloads it.
+func Get_LinSys_Approximator() {
 
-	// Buffers to capture the output
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
+	// Adjusted path to the script
+	cmd := exec.Command("sh", "./Scripts/LinSys_Approximator/check_repository_download.sh")
 
-	// Run the command and check for errors
 	err := cmd.Run()
 	if err != nil {
-		panic("Within runPythonScript() --- " + err.Error() + " --- Stderr: " + stderr.String())
+		fmt.Println("Error: ", err)
+	}
+}
+
+// This function trains the Linear Systems Approximator on a matrix of the specified type, size, and fill percentage.
+func Train_LinSys_Approximator(matrixType string, aSize int, fillPercentage float64) error {
+	fmt.Println("Training Linear Systems Approximator...")
+
+	// The script path relative to the current working directory
+	scriptPath := filepath.Join("Scripts", "LinSys_Approximator", "run_training.sh")
+
+	// Convert aSize and fillPercentage to string
+	aSizeStr := fmt.Sprintf("%d", aSize)
+	fillPercentageStr := fmt.Sprintf("%f", fillPercentage)
+
+	// Prepare the command to execute the script with arguments
+	cmd := exec.Command("bash", scriptPath, matrixType, aSizeStr, fillPercentageStr)
+
+	// Run the command
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("Error running training script:", err)
+		return err
 	}
 
-	// Split the output into separate strings
-	output := strings.TrimSpace(out.String())
-	strValues := strings.Split(output, " ")
-
-	// Parse each string as a float64
-	var result []float64
-	for _, str := range strValues {
-		value, err := strconv.ParseFloat(str, 64)
-		if err != nil {
-			panic("Within runPythonScript() --- " + err.Error())
-		}
-		result = append(result, value)
-	}
-
-	return result
+	return nil
 }
 
 //--------------------------------------------------------------------------------------------------Helper Functions for Elimination Functions

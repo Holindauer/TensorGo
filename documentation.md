@@ -264,6 +264,13 @@ The following are funcitons used to solve for x in Ax = b.
 ### Gauss_Jordan_Elimination()
     x := Gauss_Jordan_Elimination(A, b, true)  // <--- batched Gauss Jordan Elimination
 
+### LinSys_Approximator()
+The LinSys_Approximator() is an experimental feature that will accept A and b Tensors of a linear system, along with matrixType ("dense" or "sparse") and fillPecentage (0.0 to 1.0) arguments. The function will direct a process that trains a neural network on the spot for approximating the solution to linear systems as specified. The function will then run inference on that network to return the solution to the linear system.
+
+    var x *Tensor = LinSys_Approximator(A *Tensor, b *Tensor, matrixType string, fillPercentage float64, batching bool) 
+
+This is currently an experimental feature. It is not recommended to use this function for any serious work.
+
 # Operations Across All Elements
 The following functions are Tensor operations applied to all elements of at once. 
 

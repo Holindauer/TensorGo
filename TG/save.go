@@ -1,67 +1,77 @@
 package TG
 
 import (
-//    "io/ioutil"
-    "os"
-    "encoding/json"
-    "strconv"
-    "reflect"
-    "strings"
+	//    "io/ioutil"
+	"encoding/json"
+	"fmt"
+	"os"
 )
 
 type JSON_Tensor struct {
-    Shape    string
-    Data     string
-    BoolData string
-    Batched  string
+	Shape    string
+	Data     string
+	BoolData string
+	Batched  string
 }
 
-func SliceToString(slice interface{}, converter func(interface{}) string) string {
-	values := make([]string, 0)
+// This function marshals the members of a tensor to JSON and returns a JSON_Tensor
+// Note, the JSON_Tensor itself is not JSON, it is a struct with string members
+func MarshalTensor(A *Tensor) *JSON_Tensor {
 
-	sliceValue := reflect.ValueOf(slice)
-	for i := 0; i < sliceValue.Len(); i++ {
-		element := sliceValue.Index(i).Interface()
-		values = append(values, converter(element))
+	// Marshal Tensor Members to JSON
+	Data_JSON, err := json.Marshal(A.Data)
+	if err != nil {
+		panic(err)
 	}
-	return strings.Join(values, ",")
+	BoolData_JSON, err := json.Marshal(A.BoolData)
+	if err != nil {
+		panic(err)
+	}
+	Shape_JSON, err := json.Marshal(A.Shape)
+	if err != nil {
+		panic(err)
+	}
+	Batched_JSON, err := json.Marshal(A.Batched)
+	if err != nil {
+		panic(err)
+	}
+
+	result := &JSON_Tensor{
+		Shape:    string(Shape_JSON),
+		Data:     string(Data_JSON),
+		BoolData: string(BoolData_JSON),
+		Batched:  string(Batched_JSON),
+	}
+	return result
 }
 
-func MarshalTensor(tensor *Tensor) (JSON_Tensor) {    
-	intResult := SliceToString(tensor.Shape, func(v interface{}) string {
-		return strconv.Itoa(v.(int))
-	})
+// This function marshals an entire tensor to JSON and writes it to the specified fileName
+func Save(fileName string, A *Tensor) {
 
-	floatResult := SliceToString(tensor.Data, func(v interface{}) string {
-		return strconv.FormatFloat(v.(float64), 'f', -1, 64)
-	})
-    
-	boolResult := SliceToString(tensor.BoolData, func(v interface{}) string {
-		return strconv.FormatBool(v.(bool))
-	})
+	// Marshal the Tensor
+	A_JSON, err := json.Marshal(A)
+	{
+		if err != nil {
+			panic(err)
+		}
+	}
 
-    result := JSON_Tensor {
-        Shape: intResult,
-        Data: floatResult,
-        BoolData: boolResult,
-        Batched: strconv.FormatBool(tensor.Batched),
-    }
-    return result
-}
+	// Create and open the file
+	file, err := os.Create(fileName)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		os.Exit(1)
+	}
+	defer file.Close()
 
-func Save(filename string, json_tensor *JSON_Tensor) {
-    jsonData, err := json.Marshal(json_tensor)
-    if err != nil {
-        panic(err)
-    }
+	// Write something to the file
+	_, err = file.WriteString(string(A_JSON))
+	if err != nil {
+		// Handle the error
+		fmt.Println("Error writing to file:", err)
+		os.Exit(1)
+	}
 
-    file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-    if err != nil {
-        panic(err)
-    }
-    defer file.Close()
-
-    if _, err := file.Write(jsonData); err != nil {
-        panic(err)
-    }
+	// Success message
+	fmt.Println(fileName, " written successfully")
 }
