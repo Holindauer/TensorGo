@@ -6,18 +6,18 @@
 
 -----------------------------------------------------------------------------------------------------
 <center>
-    <h3>Tensor-Go is an open-source numerical computation and linear algebra library for the Go Programming Language.</h3>
+<h3>Tensor-Go is an open-source numerical computation and linear algebra library for the Go Programming Language.</h3>
     
-    <img src="tensor_visualization.jpg" width ="500">
+<img src="tensor_visualization.jpg" width ="500">
 
-    <h3>TG is designed for easy use and efficiency when working with arrays of arbitrary dimmension.</h3>
+<h3>TG is designed for easy use and efficiency when working with arrays of arbitrary dimmension.</h3>
 </center>
 
 
-Try out a Matrix Multiplication:
+Try out a Batched Matrix Multiplication:
 
     A := Range_Tensor([]int{4, 5, 5}, true) // batch of 4 tensors of shape [5, 5]
-    AxA := MatMul(A, A, true)                // <--- batched matmul 
+    AxA := MatMul(A, A, true)      
 # Setup
 -----------------------------------------------------------------------------------------------------
 

@@ -271,16 +271,19 @@ The LinSys_Approximator() is an experimental feature that will accept A and b Te
 
 This is currently an experimental feature. It is not recommended to use this function for any serious work.
 
-# Operations Across All Elements
-The following functions are Tensor operations applied to all elements of at once. 
+# Operations Across All Elements That Result in a Scalar
+The following functions are Tensor operations applied to all elements of at once that result in a single float64 value.
 
 ### Sum_All(), Mean_All(), Var_All(), Std_All()
 The functions compute the sum, mean, variance, or standard deviation across all elements of a Tensor at once. They each return a float64 value of the stat they compute. Currently there is no batching option. Their syntax is the same between them.
 
     var stat float64 := A.Sum_All()
 
-### Add(), Subtract()
 
+# Inplace Operations Across All Elements
+The following functions are used to perform Inplace operations on Tensors that result in a Tensor that is the same size, but whose data has been altered in the process.
+
+### Add(), Subtract()
 Add() and Subtract perform elementwise addition and subtraction respectively. Their syntax is the same between them.
 
     var A_plus_B *Tensor = A.Add(B, true) 
@@ -296,7 +299,17 @@ Scalar_Mult() accepts an float64 argument and performs scalar multiplication acr
 
     var A_scaled *Tensor = A.Scalar_Mult(2.0) 
 
-# Operations Across an Axis
+### Normalize()
+The Normalize() function will divide all elements of a Tensor by the overall Norm of that Tensor. There is optional batching.
+
+    var A_Normalized *Tensor := A.Normalize(batching bool)
+
+### Standardize()
+The Standardize() function performs [z-score normalization](https://www.codecademy.com/article/normalization) on a Tensor. *This is a batched-only operaiton*. 
+
+    var A_Standardized *Tensor := A.Standardize()
+
+# Axis Collapsing Operations
 The following funcitons perform an operation along a specified axis. The shape of the resulting Tensor will be 1 less than the original argument. This is because specified axis the operation is to be performed on is collapsed into itself. 
 
 ### Sum_Axis(), Mean_Axis(), Var_Axis(), Std_Axis()
@@ -307,3 +320,9 @@ The functions compute the sum, mean, variance, or standard deviation across a sp
 
 
 
+# Inplace Operations Along and Axis
+
+### Normalize_Axis()
+Unlike Normalize() which will take the Norm of the entire Dataset when performing normalization, Normalize_Axis will take the norm along the axis specified in the integer argument, then normalize the axis with the result.
+
+    var A_Normalized_Axis *Tensor := A.Normalize_Axis(axis int) 
