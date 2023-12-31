@@ -27,5 +27,9 @@ func Test_Save(t *testing.T) {
 	fmt.Println()
 
 	fmt.Println("Testing Save function")
-	// Save("test.json", &json_tensor)
+	Save_JSON("test.json", &tensor)
+
+    fmt.Println("Testing Load function")
+    load_result := Load_JSON("test.json")
+    fmt.Println(load_result.Shape)
 }

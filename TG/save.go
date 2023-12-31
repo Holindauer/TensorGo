@@ -1,7 +1,7 @@
 package TG
 
 import (
-	//    "io/ioutil"
+	"io/ioutil"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -46,7 +46,7 @@ func MarshalTensor(A *Tensor) *JSON_Tensor {
 }
 
 // This function marshals an entire tensor to JSON and writes it to the specified fileName
-func Save(fileName string, A *Tensor) {
+func Save_JSON(fileName string, A *Tensor) {
 
 	// Marshal the Tensor
 	A_JSON, err := json.Marshal(A)
@@ -74,4 +74,29 @@ func Save(fileName string, A *Tensor) {
 
 	// Success message
 	fmt.Println(fileName, " written successfully")
+}
+
+func Load_JSON(fileName string) *Tensor {
+    file, err := os.Open(fileName)
+    if err != nil {
+        fmt.Println("Error open file:", err)
+        os.Exit(1)
+    }
+    defer file.Close()
+
+    jsonData, err := ioutil.ReadAll(file)
+    if err != nil {
+        fmt.Println("Error parse json data")
+        os.Exit(1)
+    }
+
+    var A *Tensor
+    err = json.Unmarshal(jsonData, &A)
+    if err != nil {
+        fmt.Println("Error unmarshal json", err)
+        os.Exit(1)
+    }
+
+    fmt.Println(fileName, " loaded successfully")
+    return A 
 }
