@@ -8,7 +8,9 @@
 <center>
 <h3>Tensor-Go is an open-source numerical computation and linear algebra library for the Go Programming Language.</h3>
     
-<img src="tensor_visualization.jpg" width ="500">
+<p align="center">
+  <img src="tensor_visualization.jpg" alt="Description" style="width:50%">
+</p>
 
 <h3>TG is designed for easy use and efficiency when working with arrays of arbitrary dimmension.</h3>
 </center>

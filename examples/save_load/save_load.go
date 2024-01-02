@@ -1,15 +1,14 @@
-package TG
+package main
 
 import (
-	"fmt"
-
-	"testing"
-
 	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
-func Test_Save(t *testing.T) {
-	fmt.Println("Testing save.go")
+func main() {
+
+	/*
+		This example demonstates how to save and load a Tensor to and from a JSON file.
+	*/
 
 	// Init a Tensor
 	A := RandFloat64_Tensor([]int{2, 3}, 0, 1, false)
@@ -20,8 +19,9 @@ func Test_Save(t *testing.T) {
 	// Load the Tensor from the JSON file
 	B := Load_JSON("A.json")
 
-	// asert that A sums to the same value as B.
+	// asert that A.Sum_All() == B.Sum_All()
 	if A.Sum_All() != B.Sum_All() {
 		panic("A != B")
 	}
+
 }
