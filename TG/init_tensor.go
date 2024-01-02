@@ -36,11 +36,16 @@ func (ci *ConstInitializer) Execute(shape []int) *Tensor { // <--- Execute() fro
 func Const_Tensor(shape []int, constant float64, batching bool) *Tensor {
 
 	initializer := &ConstInitializer{value: constant} // <-- set cont val in initializer
+
+	var A *Tensor
 	if !batching {
-		return InitializeData(shape, initializer) // single op
+		A = InitializeData(shape, initializer) // single op
 	} else {
-		return Batched_Initializer_Operation(initializer, shape) // single op
+		A = Batched_Initializer_Operation(initializer, shape) // single op
 	}
+
+	A.Batched = batching // <-- set batched flag
+	return A
 }
 
 func Zero_Tensor(shape []int, batching bool) *Tensor {
@@ -67,11 +72,17 @@ func (ri *RangeInitializer) Execute(shape []int) *Tensor { // <--- Execute() fro
 
 // populates a tensor's contiguous mem with values from 0 to n-1
 func Range_Tensor(shape []int, batching bool) *Tensor {
+
+	var A *Tensor
+
 	if !batching {
-		return InitializeData(shape, &RangeInitializer{}) // single op
+		A = InitializeData(shape, &RangeInitializer{}) // single op
 	} else {
-		return Batched_Initializer_Operation(&RangeInitializer{}, shape) // batched op
+		A = Batched_Initializer_Operation(&RangeInitializer{}, shape) // batched op
 	}
+
+	A.Batched = batching // <-- set batched flag
+	return A
 }
 
 //=============================================================================================================Random Tensors
@@ -95,11 +106,16 @@ func RandFloat64_Tensor(shape []int, lower float64, upper float64, batching bool
 	random := NewRandom() // <--- NewRandom() is a function from utils.go
 	ri := &RandomInitializer{min: lower, max: upper, random: random}
 
+	var A *Tensor
+
 	if !batching {
-		return InitializeData(shape, ri) // single init
+		A = InitializeData(shape, ri) // single init
 	} else {
-		return Batched_Initializer_Operation(ri, shape) // batched init
+		A = Batched_Initializer_Operation(ri, shape) // batched init
 	}
+
+	A.Batched = batching // <-- set batched flag
+	return A
 }
 
 //=============================================================================================================Copy a Tensor
@@ -107,7 +123,8 @@ func RandFloat64_Tensor(shape []int, lower float64, upper float64, batching bool
 // copy_tensor = tensor.Copy() creates a copy of tensor
 func (A *Tensor) Copy() *Tensor {
 	B := Zero_Tensor(A.Shape, false)
-	copy(B.Data, A.Data) // <--- built in func
+	copy(B.Data, A.Data)  // <--- copy() is a built in func
+	B.Batched = A.Batched // <-- set batched flag
 	return B
 }
 
@@ -137,11 +154,16 @@ func Eye(shape []int, batching bool) *Tensor {
 	size := shape[len(shape)-1] // <-- get last elem of shape to avoid getting batch size as mat size
 	initializer := &IdentityInitializer{size: size}
 
+	var A *Tensor
+
 	if !batching {
-		return InitializeData(shape, initializer) // single tensor init
+		A = InitializeData(shape, initializer) // single tensor init
 	} else {
-		return Batched_Initializer_Operation(initializer, shape) // batched tensor init
+		A = Batched_Initializer_Operation(initializer, shape) // batched tensor init
 	}
+
+	A.Batched = batching // <-- set batched flag
+	return A
 }
 
 //=============================================================================================================Gramien Matrix
