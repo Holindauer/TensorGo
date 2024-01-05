@@ -19,7 +19,7 @@ func (ge GaussianElimination) Execute(A, b *Tensor) *Tensor {
 	// Implement the Gaussian Elimination logic here.
 	// You can use the existing Gaussian_Elimination function logic.
 	if len(b.Shape) == 1 {
-		b = b.Add_Singleton() // Augment_Matrix() requires a 2D Tensor
+		b = b.Add_Singleton(0) // Augment_Matrix() requires a 2D Tensor
 	}
 
 	// Perform Forward Elimination and Back Substitution on the augmented matrix
@@ -49,7 +49,7 @@ type GaussJordanElimination struct{}
 
 func (gje GaussJordanElimination) Execute(A, b *Tensor) *Tensor {
 	if len(b.Shape) == 1 {
-		b = b.Add_Singleton() // <--- Augment_Matrix() requires a 2D Tensor
+		b = b.Add_Singleton(0) // <--- Augment_Matrix() requires a 2D Tensor
 	}
 
 	// Perform Forward ELimination and Backsubstitiution on the augmented matrix

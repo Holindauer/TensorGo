@@ -136,7 +136,8 @@ func Test_Shape(t *testing.T) {
 
 	fmt.Print("Testing Add_Singleton()...")
 	A = Range_Tensor([]int{3, 3, 3}, true)
-	A_added := A.Add_Singleton()
+	A_added := A.Add_Singleton(1)
+    fmt.Printf("%v", A_added)
 
 	if len(A_added.Shape) != 4 {
 		t.Errorf("Add_Singleton() failed. Expected Output: 4 --- Actual Output: %v", len(A_added.Shape))
