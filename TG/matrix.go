@@ -16,7 +16,7 @@ func (op Batched_Matmul) Execute(A *Tensor, B *Tensor) *Tensor {
 
 	// Address Matrix Vector Multiplication
 	if len(B.Shape) == 1 {
-		B = B.Add_Singleton()
+		B = B.Add_Singleton(0)
 	}
 
 	// Check that the two Tensors are compatible for matrix multiplication

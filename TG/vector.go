@@ -257,7 +257,7 @@ func (op Batched_Outer) Execute(A *Tensor, B *Tensor) *Tensor {
 	}
 
 	// add singletons to the end A's Shape and the beggining of B's Shape
-	A = A.Add_Singleton()
+	A = A.Add_Singleton(0)
 	B.Shape = append([]int{1}, B.Shape...)
 	Outer := MatMul(A, B, false)
 

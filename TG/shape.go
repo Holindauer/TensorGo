@@ -449,10 +449,16 @@ func (A *Tensor) Remove_Singletons() *Tensor {
 
 // This function is used to add a singleton dimmension to a Tensor, this menas that a 1 is simply appended to the end
 // of the shape of the existing Tensor. A pointer to a new Tensor is return.
-func (A *Tensor) Add_Singleton() *Tensor {
+func (A *Tensor) Add_Singleton(index int) *Tensor {
 
 	newTensor := A.Copy()
 	newTensor.Shape = append(newTensor.Shape, 1) // <--- Append a 1 to the end of the shape slice
+        
+    // insert a 1 to specified index         
+    if index != 0 {        
+        copy(newTensor.Shape[index+1:], newTensor.Shape[index:])        
+        newTensor.Shape[index] = 1        
+    }        
 
 	return newTensor
 }
