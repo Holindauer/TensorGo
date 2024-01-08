@@ -24,8 +24,8 @@ func Test_Tensor(t *testing.T) {
 
 	// Test Retrieve()
 	fmt.Print("Testing Retrieve()...")
-	if A.Retrieve([]int{2, 4, 3}) != A.Data[395] {
-		t.Errorf("Retrieve() failed. Expected Output: %v --- Actual Output: %v", A.Data[395], A.Retrieve([]int{2, 4, 3}))
+	if A.Get([]int{2, 4, 3}) != A.Data[395] {
+		t.Errorf("Retrieve() failed. Expected Output: %v --- Actual Output: %v", A.Data[395], A.Get([]int{2, 4, 3}))
 	}
 
 	fmt.Println("Succsess!")
@@ -54,7 +54,7 @@ func Test_Tensor(t *testing.T) {
 
 	// Extract the random tensor
 	fmt.Print("Testing Extract()...")
-	accessed_element := batched_tensors.Extract(2)
+	accessed_element := batched_tensors.GetBatchElement(2)
 
 	if accessed_element.Sum_All() != 100 {
 		t.Errorf("Extract() failed. Expected a 10x10 ones Tensor --- Actual Output:")

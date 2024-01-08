@@ -1,6 +1,5 @@
 package TG
 
-
 // matrix.go contains functions for manipulating 2D
 
 import (
@@ -30,7 +29,7 @@ func (op Batched_Matmul) Execute(A *Tensor, B *Tensor) *Tensor {
 		for col := 0; col < C.Shape[1]; col++ { // <-- iterate through columns of C
 			sum = 0                           // <-- reset sum
 			for k := 0; k < A.Shape[1]; k++ { // compute dot product of row of A and column of B
-				sum += A.Retrieve([]int{row, k}) * B.Retrieve([]int{k, col})
+				sum += A.Get([]int{row, k}) * B.Get([]int{k, col})
 			}
 
 			// write to C.data slice
@@ -46,9 +45,9 @@ func MatMul(A *Tensor, B *Tensor, batching bool) *Tensor {
 
 	if batching {
 		return Batch_TwoTensor_Tensor_Operation(Batched_Matmul{}, A, B)
-	} 
+	}
 	return Batched_Matmul{}.Execute(A, B)
-	
+
 }
 
 //-------------------------------------------------------------------------------------------------------------- Display_Matrix()

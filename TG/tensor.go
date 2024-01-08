@@ -1,33 +1,42 @@
 package TG
 
-// tensor.go contains the Tensor struct and functions related to instantiating and retrieving data from them
-
+/*
+* @notice tensor.go contains the Tensor struct and functions related to instantiating and retrieving data from them
+* @dev The Tensor struct is the primary data structure used in the TensorGo library. It is a multi-dimensional array
+* of float64 values.
+* @dev Data is a 1D slice that stores multi-dimensional Tensor data contiguously.
+* @dev Batched is a boolean that indicates whether the Tensor is being used as a batch of Tensors or not.
+ */
 type Tensor struct {
-	Shape    []int
-	Data     []float64 // <--- this 1D slice to store flattened tensor
-	BoolData []bool    // <--- optional boolean data for binary tensors
-	Batched  bool      // <--- optional boolean to indicate if the tensor is batched
+	Shape   []int
+	Data    []float64
+	Batched bool
 }
 
-//=============================================================================================================Accesing Data from a Tensor
-
-// This function is used to retrieve a value from a tensor given a slice
-// of the indicies at each dimension. It returns a float64 value
-func (A *Tensor) Retrieve(indices []int) float64 {
+/*
+* @notive Get() is used to access a single element from a tensor
+* @param index: A slice of ints that represent the multi dimmensional index of the element to be retrieved
+* @return float64: The value of the element at the given index
+ */
+func (A *Tensor) Get(index []int) float64 {
 	// check if each index of each dim is within the bounds of the tensor
-	for i, index := range indices {
+	for i, index := range index {
 		if index >= A.Shape[i] {
 			panic("Within Retrieve(); Index out of bounds")
 		}
 	}
 
-	return A.Data[A.Index(indices)]
+	// index the flattened tensor
+	return A.Data[A.Index(index)]
 }
 
-// The general algorithm for computing the index of a flattened tensor from the multi dimensional indices:
-// Create a slice of ints to store the strides. A stride is the number of elements in the tensor that must
-// be skipped to move one index in a given dimension. Then, iterate over through each dimension of the tensor,
-// multiplying the stride of that dimmension by the index of that dimension. Add the result to the flattened index.
+/*
+* @notice given a multi-dimensional index, Index() returns that elements index in the contiguously stored 1D Data slice
+* @dev The algorithm for computing a flat index from a multi-dimensional index involves tje stride (number of elements to
+* skip over to move one index in a given dimension) of each dimension. The stride of the last dimension is always 1.
+* @param indices: A slice of ints that represent the multi dimmensional index of the element to be retrieved
+* @return int: The index of the Data slice that corresponds to the given multi-dimensional index
+ */
 func (A *Tensor) Index(indices []int) int {
 
 	// check that the number of indices matches the number of dimensions
@@ -35,47 +44,55 @@ func (A *Tensor) Index(indices []int) int {
 		panic("Within Index(): Number of indices must match number of dimensions")
 	}
 
-	strides := make([]int, len(A.Shape)) // create a slice of ints to store the strides
-	strides[len(A.Shape)-1] = 1          // stride for the last dimension is always 1
+	//create a slice of ints to store the strides
+	strides := make([]int, len(A.Shape))
 
-	for i := len(A.Shape) - 2; i >= 0; i-- { // decrement through the dimensions
-		strides[i] = strides[i+1] * A.Shape[i+1] // multiply the stride of the current dimension by the size of the next dimension
-		// this is because if you move one element up in dim i, then you must skip the entire
-		// next dimension of the flattened tensor to get there
+	// the stride of the last dimension is always 1
+	strides[len(A.Shape)-1] = 1
+
+	// decrement through Tensor axis, computing the stride of each dimension by multiplying by the stride of the next dimension
+	for i := len(A.Shape) - 2; i >= 0; i-- {
+		strides[i] = strides[i+1] * A.Shape[i+1]
 	}
 
-	flattenedIndex := 0
-
-	// iterate through tensor indices
+	// iterate through provided indices, multiplying the index by the stride of that dimension
+	flatIdx := 0
 	for i, index := range indices {
-		// multiply the index by the stride of that dimension
-		flattenedIndex += index * strides[i]
+		flatIdx += index * strides[i]
 	}
 
-	return flattenedIndex
+	return flatIdx
 }
 
-// This function is a wrapper for the Index() function that allows the computation of an index from a slice of indices
-// and a slice representing the dimmensions of a Tensor. This is opposed to needing an entier Tensor object.
-func Index_Off_Shape(indices []int, shape []int) int {
-	temp_tensor := &Tensor{Shape: shape} // 
+/*
+* @notice TheoreticalIndex() is a wrapper for the Index() function that allows the computation of an index for a theoretical
+* Tensor, ie based on shape.
+* @param indices: A slice of ints that represent the multi dimmensional index of the element to be retrieved
+* @param shape: A slice of ints that represent the dimensions of the theoretical Tensor
+* @return int: The index of the Data slice that corresponds to the given multi-dimensional index
+ */
+func TheoreticalIndex(indices []int, shape []int) int {
+	temp_tensor := &Tensor{Shape: shape} //
 	return temp_tensor.Index(indices)
 }
 
-// UnravelIndex converts a flat index into multi-dimensional indices based on the shape of the tensor.
-// index: The flat index in the one-dimensional representation of the tensor.
-// shape: The dimensions of the tensor.
+/*
+* @notice UnravelIndex() converts a flat index into multi-dimensional indices based on the shape of the tensor.
+* @param index: The flat index in the one-dimensional representation of the tensor.
+* @return []int: The multi-dimensional indices of the element at the given flat index
+ */
 func (A *Tensor) UnravelIndex(index int) []int {
+
 	// Create a slice to store the multi-dimensional indices.
 	indices := make([]int, len(A.Shape))
 
 	// Iterate over the shape in reverse order.
 	for i := len(A.Shape) - 1; i >= 0; i-- {
-		// The index for the i-th dimension is the remainder of the index
-		// divided by the size of the i-th dimension.
+
+		// axis idx for the i-th dimension is the mod of the index by the size of the i-th dimension.
 		indices[i] = index % A.Shape[i]
-		// Update the index for the next iteration to be the quotient
-		// of the index divided by the size of the i-th dimension.
+
+		// Update the idx for the next iteration to be the integral counterpart of the above mod
 		index = index / A.Shape[i]
 	}
 
@@ -83,8 +100,11 @@ func (A *Tensor) UnravelIndex(index int) []int {
 	return indices
 }
 
-// This func is used to access a single element from a batched tensor
-// NOTE: Partial() can be used to access multiple contiguous batch elements
-func (A *Tensor) Extract(batch_element int) *Tensor {
+/*
+* @notice getBatchElement() is used to access a single element from a batched tensor
+* @param batch_element: The index of the 0'th dim of the tensor, representing the element to be retrieved
+* @return *Tensor: A pointer to the Tensor that was retrieved
+ */
+func (A *Tensor) GetBatchElement(batch_element int) *Tensor {
 	return A.Remove_Dim(0, batch_element)
 }

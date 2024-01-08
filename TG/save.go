@@ -23,10 +23,6 @@ func MarshalTensor(A *Tensor) *JSON_Tensor {
 	if err != nil {
 		panic(err)
 	}
-	BoolData_JSON, err := json.Marshal(A.BoolData)
-	if err != nil {
-		panic(err)
-	}
 	Shape_JSON, err := json.Marshal(A.Shape)
 	if err != nil {
 		panic(err)
@@ -37,10 +33,9 @@ func MarshalTensor(A *Tensor) *JSON_Tensor {
 	}
 
 	result := &JSON_Tensor{
-		Shape:    string(Shape_JSON),
-		Data:     string(Data_JSON),
-		BoolData: string(BoolData_JSON),
-		Batched:  string(Batched_JSON),
+		Shape:   string(Shape_JSON),
+		Data:    string(Data_JSON),
+		Batched: string(Batched_JSON),
 	}
 	return result
 }

@@ -92,17 +92,17 @@ func Test_Tensor_Init(t *testing.T) {
 	// Test Eye() Unbatched
 	fmt.Print("Testing Eye() Unbatched...")
 	A = Eye([]int{3, 3}, false)
-	if A.Retrieve([]int{0, 0}) != 1 || A.Retrieve([]int{1, 1}) != 1 || A.Retrieve([]int{2, 2}) != 1 {
-		t.Errorf("Eye() failed. Expected Output: 1 --- Actual Output: %v", A.Retrieve([]int{0, 0}))
+	if A.Get([]int{0, 0}) != 1 || A.Get([]int{1, 1}) != 1 || A.Get([]int{2, 2}) != 1 {
+		t.Errorf("Eye() failed. Expected Output: 1 --- Actual Output: %v", A.Get([]int{0, 0}))
 	}
 	fmt.Println("Succsess!")
 
 	// Test Eye() Batched
 	fmt.Print("Testing Eye() Batched...")
 	A = Eye([]int{3, 3, 3}, true)
-	A_Extracted := A.Extract(1)
-	if A_Extracted.Retrieve([]int{0, 0}) != 1 || A_Extracted.Retrieve([]int{1, 1}) != 1 || A_Extracted.Retrieve([]int{2, 2}) != 1 {
-		t.Errorf("Eye() failed. Expected Output: 1 --- Actual Output: %v", A.Retrieve([]int{0, 0}))
+	A_Extracted := A.GetBatchElement(1)
+	if A_Extracted.Get([]int{0, 0}) != 1 || A_Extracted.Get([]int{1, 1}) != 1 || A_Extracted.Get([]int{2, 2}) != 1 {
+		t.Errorf("Eye() failed. Expected Output: 1 --- Actual Output: %v", A.Get([]int{0, 0}))
 	}
 	fmt.Println("Succsess!")
 
@@ -113,8 +113,8 @@ func Test_Tensor_Init(t *testing.T) {
 	A = Range_Tensor([]int{3, 3}, false)
 	B = A.Gram(false)
 
-	if B.Retrieve([]int{0, 0}) != 5 || B.Retrieve([]int{1, 1}) != 50 || B.Retrieve([]int{2, 2}) != 149 {
-		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Retrieve([]int{0, 0}), B.Retrieve([]int{1, 1}), B.Retrieve([]int{2, 2}))
+	if B.Get([]int{0, 0}) != 5 || B.Get([]int{1, 1}) != 50 || B.Get([]int{2, 2}) != 149 {
+		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Get([]int{0, 0}), B.Get([]int{1, 1}), B.Get([]int{2, 2}))
 	}
 
 	fmt.Println("Succsess!")
@@ -123,10 +123,10 @@ func Test_Tensor_Init(t *testing.T) {
 	fmt.Print("Testing Gram() Batched...")
 	A = Range_Tensor([]int{3, 3, 3}, true)
 	B = A.Gram(true)
-	B_Extracted := B.Extract(1)
+	B_Extracted := B.GetBatchElement(1)
 
-	if B_Extracted.Retrieve([]int{0, 0}) != 5 || B_Extracted.Retrieve([]int{1, 1}) != 50 || B_Extracted.Retrieve([]int{2, 2}) != 149 {
-		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Retrieve([]int{0, 0}), B.Retrieve([]int{1, 1}), B.Retrieve([]int{2, 2}))
+	if B_Extracted.Get([]int{0, 0}) != 5 || B_Extracted.Get([]int{1, 1}) != 50 || B_Extracted.Get([]int{2, 2}) != 149 {
+		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Get([]int{0, 0}), B.Get([]int{1, 1}), B.Get([]int{2, 2}))
 	}
 
 	fmt.Println("Succsess!")
