@@ -154,7 +154,7 @@ func (A *Tensor) Transpose(perumuation []int) *Tensor {
 		}
 
 		// Convert the reordered multi-dimensional indices back to a flat index
-		newIndex := Index_Off_Shape(newIndices, newShape)
+		newIndex := TheoreticalIndex(newIndices, newShape)
 
 		// Assign the i'th value of original tensor to the newIndex'th val of new tensor
 		B.Data[newIndex] = A.Data[i]
@@ -314,7 +314,7 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 			srcFlattenedIndex := A.Index(tempIndex[:len(tempIndex)-1])
 			for i := 0; i < num_elements; i++ {
 				tempIndex[len(tempIndex)-1] = i
-				dstFlattenedIndex := Index_Off_Shape(tempIndex, newShape)
+				dstFlattenedIndex := TheoreticalIndex(tempIndex, newShape)
 				extendedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 			}
 			return
@@ -361,8 +361,8 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 	fillExtendedTensor = func(dim int) {
 		if dim >= len(A.Shape) {
 			// As the recursion unwinds, this base case is reached where we copy data from the original tensor in the appropriate idx
-			srcFlattenedIndex := Index_Off_Shape(tempIndex, A.Shape)  // <---  Index() call for og vs dest differ by shape provided as arg
-			dstFlattenedIndex := Index_Off_Shape(tempIndex, newShape) // <---
+			srcFlattenedIndex := TheoreticalIndex(tempIndex, A.Shape)  // <---  Index() call for og vs dest differ by shape provided as arg
+			dstFlattenedIndex := TheoreticalIndex(tempIndex, newShape) // <---
 			extendedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 			return
 		}
@@ -453,12 +453,12 @@ func (A *Tensor) Add_Singleton(index int) *Tensor {
 
 	newTensor := A.Copy()
 	newTensor.Shape = append(newTensor.Shape, 1) // <--- Append a 1 to the end of the shape slice
-        
-    // insert a 1 to specified index         
-    if index != 0 {        
-        copy(newTensor.Shape[index+1:], newTensor.Shape[index:])        
-        newTensor.Shape[index] = 1        
-    }        
+
+	// insert a 1 to specified index
+	if index != 0 {
+		copy(newTensor.Shape[index+1:], newTensor.Shape[index:])
+		newTensor.Shape[index] = 1
+	}
 
 	return newTensor
 }

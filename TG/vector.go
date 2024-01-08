@@ -157,94 +157,96 @@ func Angle_Vector(A *Tensor, B *Tensor, batching bool) *Tensor {
 
 //---------------------------------------------------------------------------------------------------------------------------- Funcs to check vector features --- which return bools
 
-type Batched_Check_Vectors struct {
-	checker func() bool // function to check something about angle between vbectors
-}
+// TODO: These need to stop using BoolData and instead just return a Tensor of ones or zeros
 
-// This method of the Batched_Check_Vectors struct is callable alone or by using a batching.go function. It operates on single Tensors
-// at a time and serves as a way to generalize functions for checking yes/no features about vectors. The checker function used within is passed
-// in as a parameter to the Batched_Check_Orthoganal struct before use.
-func (op Batched_Check_Vectors) Execute(A *Tensor, B *Tensor) *Tensor {
+// type Batched_Check_Vectors struct {
+// 	checker func() bool // function to check something about angle between vbectors
+// }
 
-	if len(A.Shape) != 1 || len(B.Shape) != 1 {
-		panic("Within Batched_Check_Vectors(): Tensors must both be vectors to check if perpendicular")
-	}
+// // This method of the Batched_Check_Vectors struct is callable alone or by using a batching.go function. It operates on single Tensors
+// // at a time and serves as a way to generalize functions for checking yes/no features about vectors. The checker function used within is passed
+// // in as a parameter to the Batched_Check_Orthoganal struct before use.
+// func (op Batched_Check_Vectors) Execute(A *Tensor, B *Tensor) *Tensor {
 
-	// Initialize boolTensor with a shape of [1] and boolData slice of length 1
-	boolTensor := Zero_Tensor([]int{1}, false)
-	boolTensor.BoolData = make([]bool, 1) // Initializing the boolData slice
+// 	if len(A.Shape) != 1 || len(B.Shape) != 1 {
+// 		panic("Within Batched_Check_Vectors(): Tensors must both be vectors to check if perpendicular")
+// 	}
 
-	// check if the dot product is zero
-	if op.checker() {
-		boolTensor.BoolData[0] = true
-	} else {
-		boolTensor.BoolData[0] = false
-	}
+// 	// Initialize boolTensor with a shape of [1] and boolData slice of length 1
+// 	boolTensor := Zero_Tensor([]int{1}, false)
+// 	boolTensor.BoolData = make([]bool, 1) // Initializing the boolData slice
 
-	return boolTensor
-}
+// 	// check if the dot product is zero
+// 	if op.checker() {
+// 		boolTensor.BoolData[0] = true
+// 	} else {
+// 		boolTensor.BoolData[0] = false
+// 	}
 
-// This function is called within the below functions that start with "Check_". It is a generalization of the
-// process of instantiating the logic for batched ops and executing them for vector operations that return a bool.
-func Check_Vector_Feature(A *Tensor, B *Tensor, checker func() bool, batching bool) *Tensor {
+// 	return boolTensor
+// // }
 
-	// Check if A or B is nil
-	if A == nil || B == nil {
-		panic("Check_Vector_Feature: One or both Tensors are nil")
-	}
+// // This function is called within the below functions that start with "Check_". It is a generalization of the
+// // process of instantiating the logic for batched ops and executing them for vector operations that return a bool.
+// func Check_Vector_Feature(A *Tensor, B *Tensor, checker func() bool, batching bool) *Tensor {
 
-	op := Batched_Check_Vectors{checker: checker} // create op
+// 	// Check if A or B is nil
+// 	if A == nil || B == nil {
+// 		panic("Check_Vector_Feature: One or both Tensors are nil")
+// 	}
 
-	if batching {
-		return Batch_TwoTensor_Tensor_Operation(op, A, B) // batched op
-	}
-	return op.Execute(A, B) // single op
-}
+// 	op := Batched_Check_Vectors{checker: checker} // create op
 
-// Check_Orthogonal() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
-// function into the Check_Vector_Feature() generalization, which returns a Tensor of booleans.
-func Check_Orthogonal(A *Tensor, B *Tensor, batching bool) *Tensor {
+// 	if batching {
+// 		return Batch_TwoTensor_Tensor_Operation(op, A, B) // batched op
+// 	}
+// 	return op.Execute(A, B) // single op
+// }
 
-	checker_func := func() bool {
+// // Check_Orthogonal() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
+// // function into the Check_Vector_Feature() generalization, which returns a Tensor of booleans.
+// func Check_Orthogonal(A *Tensor, B *Tensor, batching bool) *Tensor {
 
-		if Dot(A, B, batching).Sum_All() == 0 { // dot == 0 indicates orthogonality
-			return true
-		}
-		return false
-	}
-	// pass in the checker function to Check_Angle_Feature()
-	return Check_Vector_Feature(A, B, checker_func, batching)
-}
+// 	checker_func := func() bool {
 
-// Check_Acute() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
-// function into the Check_Vector_Feature() generalization, which returns a Tensor of booleans.
-func Check_Acute(A *Tensor, B *Tensor, batching bool) *Tensor {
+// 		if Dot(A, B, batching).Sum_All() == 0 { // dot == 0 indicates orthogonality
+// 			return true
+// 		}
+// 		return false
+// 	}
+// 	// pass in the checker function to Check_Angle_Feature()
+// 	return Check_Vector_Feature(A, B, checker_func, batching)
+// }
 
-	// anon func for within Batched_Check_Orthoganal.Execute()
-	checker_func := func() bool {
-		if Dot(A, B, false).Data[0] > 0 { // dot > 0 indicates acute angle
-			return true
-		}
-		return false
-	}
+// // Check_Acute() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
+// // function into the Check_Vector_Feature() generalization, which returns a Tensor of booleans.
+// func Check_Acute(A *Tensor, B *Tensor, batching bool) *Tensor {
 
-	return Check_Vector_Feature(A, B, checker_func, batching)
-}
+// 	// anon func for within Batched_Check_Orthoganal.Execute()
+// 	checker_func := func() bool {
+// 		if Dot(A, B, false).Data[0] > 0 { // dot > 0 indicates acute angle
+// 			return true
+// 		}
+// 		return false
+// 	}
 
-// Check_Obtuse() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
-// function into the Check_Vector_Feature() generalization, which returns a Tensor of booleans.
-func Check_Obtuse(A *Tensor, B *Tensor, batching bool) *Tensor {
+// 	return Check_Vector_Feature(A, B, checker_func, batching)
+// }
 
-	// anon func for within Batched_Check_Orthoganal.Execute()
-	checker_func := func() bool {
-		if Dot(A, B, false).Data[0] < 0 { // dot < 0 indicates Obtuse angle
-			return true
-		}
-		return false
-	}
+// // Check_Obtuse() checks if two vectors are orthogonal (w/ optional batching). It passes a checker
+// // function into the Check_Vector_Feature() generalization, which returns a Tensor of booleans.
+// func Check_Obtuse(A *Tensor, B *Tensor, batching bool) *Tensor {
 
-	return Check_Vector_Feature(A, B, checker_func, batching)
-}
+// 	// anon func for within Batched_Check_Orthoganal.Execute()
+// 	checker_func := func() bool {
+// 		if Dot(A, B, false).Data[0] < 0 { // dot < 0 indicates Obtuse angle
+// 			return true
+// 		}
+// 		return false
+// 	}
+
+// 	return Check_Vector_Feature(A, B, checker_func, batching)
+// }
 
 //---------------------------------------------------------------------------------------------------------------------------- Outer()
 

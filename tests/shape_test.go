@@ -21,7 +21,7 @@ func Test_Shape(t *testing.T) {
 	// Creates a 3x2x2 tensor
 	A_partial := A.Partial(":3, 1:3, 1:3")
 	//Display_Matrix(A_partial, true)
-	A_partial_extracted := A_partial.Extract(0)
+	A_partial_extracted := A_partial.GetBatchElement(0)
 
 	if A_partial_extracted.Sum_All() != 24 && len(A_partial_extracted.Shape) != 2 {
 		t.Errorf("Partial() failed. Expected Output: 24 --- Actual Output: %v", A_partial_extracted.Sum_All())
@@ -46,8 +46,8 @@ func Test_Shape(t *testing.T) {
 
 	A_reshaped = A.Reshape([]int{9}, true)
 
-	A_reshaped_extracted := A_reshaped.Extract(0)
-	A_extracted := A.Extract(0)
+	A_reshaped_extracted := A_reshaped.GetBatchElement(0)
+	A_extracted := A.GetBatchElement(0)
 
 	if A_extracted.Sum_All() != A_reshaped_extracted.Sum_All() {
 		t.Errorf("Reshape() failed. Expected Output: %v --- Actual Output: %v", A_extracted.Sum_All(), A_reshaped_extracted.Sum_All())
@@ -61,8 +61,8 @@ func Test_Shape(t *testing.T) {
 	A = Range_Tensor([]int{3, 3, 6, 8, 9}, true)
 	A_transposed := A.Transpose([]int{1, 0, 3, 2, 4})
 
-	if A.Retrieve([]int{0, 1, 2, 3, 4}) != A_transposed.Retrieve([]int{1, 0, 3, 2, 4}) {
-		t.Errorf("Transpose() failed. Same element after transpose not equal. Expected Output: %v --- Actual Output: %v", A.Retrieve([]int{0, 1, 2, 3, 4}), A_transposed.Retrieve([]int{1, 0, 3, 2, 4}))
+	if A.Get([]int{0, 1, 2, 3, 4}) != A_transposed.Get([]int{1, 0, 3, 2, 4}) {
+		t.Errorf("Transpose() failed. Same element after transpose not equal. Expected Output: %v --- Actual Output: %v", A.Get([]int{0, 1, 2, 3, 4}), A_transposed.Get([]int{1, 0, 3, 2, 4}))
 	}
 
 	fmt.Println("Succsess!")
@@ -75,8 +75,8 @@ func Test_Shape(t *testing.T) {
 	B := Range_Tensor([]int{1, 3, 3}, true)
 	C := A.Concat(B, 0)
 
-	A_extracted = A.Extract(0)
-	B_extracted := B.Extract(0)
+	A_extracted = A.GetBatchElement(0)
+	B_extracted := B.GetBatchElement(0)
 
 	if A_extracted.Sum_All()+B_extracted.Sum_All() != C.Sum_All() {
 		t.Errorf("Concat() failed. Expected Output: %v --- Actual Output: %v", A_extracted.Sum_All()+B_extracted.Sum_All(), C.Sum_All())
@@ -137,7 +137,7 @@ func Test_Shape(t *testing.T) {
 	fmt.Print("Testing Add_Singleton()...")
 	A = Range_Tensor([]int{3, 3, 3}, true)
 	A_added := A.Add_Singleton(1)
-    fmt.Printf("%v", A_added)
+	fmt.Printf("%v", A_added)
 
 	if len(A_added.Shape) != 4 {
 		t.Errorf("Add_Singleton() failed. Expected Output: 4 --- Actual Output: %v", len(A_added.Shape))

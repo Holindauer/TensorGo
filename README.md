@@ -2,8 +2,6 @@
 
 
 
-
-
 -----------------------------------------------------------------------------------------------------
 <center>
 <h3>Tensor-Go is an open-source numerical computation and linear algebra library for the Go Programming Language.</h3>
