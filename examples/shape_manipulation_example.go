@@ -37,7 +37,7 @@ func main() {
 	fmt.Println("\nOriginal Tensor Shape: ", A.Shape)
 
 	// Next let's add a singleton dimension to the end of the tensor
-	A = A.Add_Singleton()
+	A = A.Add_Singleton(len(A.Shape) - 1)
 	fmt.Println("\nAdded Singleton Dimension: ", A.Shape)
 
 	// Now lets remove all of the singletons with the Remove_Singletons() function
@@ -48,7 +48,7 @@ func main() {
 	// The reordering of the dimensions. Then we can use the Transpose() function to apply the reording to the
 	// underlying contiguous memory.
 	var reordering []int = Permute_Shape(A.Shape, 1, 3)
-	A = A.Transpose(reordering)
+	A = A.Permute(reordering)
 	fmt.Println("\nAxis Reordering: ", reordering)
 	fmt.Println("Swapped Second and Fourth Dimensions: ", A.Shape)
 
@@ -63,8 +63,8 @@ func main() {
 	A = A.Concat(B, 1)
 	fmt.Println("\nConcatenated Tensor: ", A.Shape)
 
-	// Let's now take a partial of the Tensor. This works the same as python's slice indexing.
-	A = A.Partial(":, 1:7, 34:")
+	// Let's now take a slice of the Tensor. This works the same as python's slice indexing.
+	A = A.Slice(":, 1:7, 34:")
 	fmt.Println("\nPartial Tensor: ", A.Shape)
 
 	// Let's now remove a dimmension from the Tensor. To do this, we have to specify axis we

@@ -7,7 +7,7 @@ import (
 )
 
 // this helper function checks if two Tensors are vectors of the same dimension
-func Same_Dimmension_Vectors(t1 *Tensor, t2 *Tensor) bool {
+func SameVectorSize(t1 *Tensor, t2 *Tensor) bool {
 
 	if len(t1.Shape) != 1 || len(t2.Shape) != 1 { // check if tensors are vectors (1D)
 		return false
@@ -20,11 +20,13 @@ func Same_Dimmension_Vectors(t1 *Tensor, t2 *Tensor) bool {
 
 //---------------------------------------------------------------------------------------------------------------------------- Dot()
 
-type Batched_Dot struct{}
+type DotOp struct{}
 
-func (op Batched_Dot) Execute(A *Tensor, B *Tensor) *Tensor {
+func (op DotOp) Execute(tensors ...*Tensor) *Tensor {
 
-	if Same_Dimmension_Vectors(A, B) == false {
+	A, B := tensors[0], tensors[1]
+
+	if !SameVectorSize(A, B) {
 		panic("Within dot(): Tensors must both be vectors to compute dot product")
 	}
 
@@ -42,17 +44,24 @@ func (op Batched_Dot) Execute(A *Tensor, B *Tensor) *Tensor {
 // Dot() computes the dot product of two tensors, returning
 // a single element tensor. There is optional batching.
 func Dot(A *Tensor, B *Tensor, batching bool) *Tensor {
+
+	// initialize the batched op
+	dot := DotOp{}
+
 	if batching {
-		return Batch_TwoTensor_Tensor_Operation(Batched_Dot{}, A, B) // batched op
+		return BatchedOperation(dot, A, B) // batched op
 	}
-	return Batched_Dot{}.Execute(A, B) // single op
+	return dot.Execute(A, B) // single op
 }
 
 //---------------------------------------------------------------------------------------------------------------------------- Norm()
 
-type Batched_Norm struct{}
+type NormOp struct{}
 
-func (op Batched_Norm) Execute(A *Tensor) *Tensor {
+func (op NormOp) Execute(tensor ...*Tensor) *Tensor {
+
+	A := tensor[0]
+
 	if len(A.Shape) != 1 {
 		panic("Within Norm(): Tensor must be a vector to compute norm")
 	}
@@ -66,17 +75,22 @@ func (op Batched_Norm) Execute(A *Tensor) *Tensor {
 // Norm() comptues the norm of a vector Tensor into a single element Tensor. There is optional batching.
 func (A *Tensor) Norm(batching bool) *Tensor {
 
+	norm := NormOp{}
+
 	if batching {
-		return Batch_Tensor_Tensor_Operation(Batched_Norm{}, A) // batched op
+		return BatchedOperation(norm, A) // batched op
 	}
-	return Batched_Norm{}.Execute(A) // single op
+	return norm.Execute(A) // single op
 }
 
 //---------------------------------------------------------------------------------------------------------------------------- Unit()
 
-type Batched_Unit struct{}
+type UnitOp struct{}
 
-func (op Batched_Unit) Execute(A *Tensor) *Tensor {
+func (op UnitOp) Execute(tensors ...*Tensor) *Tensor {
+
+	A := tensors[0]
+
 	if len(A.Shape) != 1 {
 		panic("Within Unit(): Tensor must be a vector to compute unit vector")
 	}
@@ -98,18 +112,24 @@ func (op Batched_Unit) Execute(A *Tensor) *Tensor {
 
 // This function computes the unit vector of a vector Tensor. There is optional batching.
 func (A *Tensor) Unit(batching bool) *Tensor {
+
+	unit := UnitOp{}
+
 	if batching {
-		return Batch_Tensor_Tensor_Operation(Batched_Unit{}, A) // batched op
+		return BatchedOperation(unit, A) // batched op
 	}
-	return Batched_Unit{}.Execute(A) // single op
+	return unit.Execute(A) // single op
 }
 
 //---------------------------------------------------------------------------------------------------------------------------- Cosine_Similarity()
 
-type Batched_Cosine_Similarity struct{}
+type CosSimilarityOp struct{}
 
-func (op Batched_Cosine_Similarity) Execute(A *Tensor, B *Tensor) *Tensor {
-	if Same_Dimmension_Vectors(A, B) == false {
+func (op CosSimilarityOp) Execute(tensrs ...*Tensor) *Tensor {
+
+	A, B := tensrs[0], tensrs[1]
+
+	if !SameVectorSize(A, B) {
 		panic("Within Cosine_Similarity(): Tensors must both be vectors to compute cosine similarity")
 	}
 
@@ -131,10 +151,12 @@ func (op Batched_Cosine_Similarity) Execute(A *Tensor, B *Tensor) *Tensor {
 // a single element Tensor with the answer. There is optional batching.
 func Cosine_Similarity(A *Tensor, B *Tensor, batching bool) *Tensor {
 
+	cos := CosSimilarityOp{}
+
 	if batching {
-		return Batch_TwoTensor_Tensor_Operation(Batched_Cosine_Similarity{}, A, B) // batched op
+		return BatchedOperation(cos, A, B) // batched op
 	}
-	return Batched_Cosine_Similarity{}.Execute(A, B) // single op
+	return cos.Execute(A, B) // single op
 }
 
 //---------------------------------------------------------------------------------------------------------------------------- Angle()
@@ -250,9 +272,12 @@ func Angle_Vector(A *Tensor, B *Tensor, batching bool) *Tensor {
 
 //---------------------------------------------------------------------------------------------------------------------------- Outer()
 
-type Batched_Outer struct{}
+type OuterOp struct{}
 
-func (op Batched_Outer) Execute(A *Tensor, B *Tensor) *Tensor {
+func (op OuterOp) Execute(tensors ...*Tensor) *Tensor {
+
+	A, B := tensors[0], tensors[1]
+
 	// check if tensors are vectors
 	if !(len(A.Shape) == 1 && len(B.Shape) == 1) {
 		panic("Within Outer_Product(): Tensors must both be vectors to compute outer product")
@@ -270,8 +295,10 @@ func (op Batched_Outer) Execute(A *Tensor, B *Tensor) *Tensor {
 // it returns a pointer to a new 2D tensor
 func Outer(A *Tensor, B *Tensor, batching bool) *Tensor {
 
+	outer := OuterOp{}
+
 	if batching {
-		return Batch_TwoTensor_Tensor_Operation(Batched_Outer{}, A, B) // batched op
+		return BatchedOperation(outer, A, B) // batched op
 	}
-	return Batched_Outer{}.Execute(A, B) // single op
+	return outer.Execute(A, B) // single op
 }

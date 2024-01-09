@@ -13,9 +13,12 @@ import (
 
 // --------------------------------------------------------------------------------------------------Normal Gaussian Elimination
 
-type GaussianElimination struct{}
+type GaussianEliminationOp struct{}
 
-func (ge GaussianElimination) Execute(A, b *Tensor) *Tensor {
+func (ge GaussianEliminationOp) Execute(tensors ...*Tensor) *Tensor {
+
+	A, b := tensors[0], tensors[1]
+
 	// Implement the Gaussian Elimination logic here.
 	// You can use the existing Gaussian_Elimination function logic.
 	if len(b.Shape) == 1 {
@@ -32,22 +35,23 @@ func (ge GaussianElimination) Execute(A, b *Tensor) *Tensor {
 // batching is a bool determining whether to use batched processing. A is an n x n matrix, b is an n x 1 column vector. It returns x of Ax=b
 func Gaussian_Elimination(A *Tensor, b *Tensor, batching bool) *Tensor {
 
-	GE := GaussianElimination{} // create instance of GaussianElimination struct
-	var Output *Tensor
+	GE := GaussianEliminationOp{} // create instance of GaussianElimination struct
 
-	if batching == false {
-		Output = GaussianElimination{}.Execute(A, b) // single processing
+	if batching {
+		return BatchedOperation(GE, A, b) // batched processing
 	} else {
-		Output = Batch_TwoTensor_Tensor_Operation(GE, A, b) // batched processing
+		return GE.Execute(A, b) // single processing
 	}
-	return Output
 }
 
 // --- ---------------------------------------------------------------------------------------------Gauss Jordan Elimination
 
-type GaussJordanElimination struct{}
+type GaussJordanEliminationOp struct{}
 
-func (gje GaussJordanElimination) Execute(A, b *Tensor) *Tensor {
+func (gje GaussJordanEliminationOp) Execute(tensors ...*Tensor) *Tensor {
+
+	A, b := tensors[0], tensors[1]
+
 	if len(b.Shape) == 1 {
 		b = b.Add_Singleton(0) // <--- Augment_Matrix() requires a 2D Tensor
 	}
@@ -65,15 +69,13 @@ func (gje GaussJordanElimination) Execute(A, b *Tensor) *Tensor {
 // and b is an n x 1 column vector. It returns a column vector x that is the solution to the system of linear equations.
 func Gauss_Jordan_Elimination(A *Tensor, b *Tensor, batching bool) *Tensor {
 
-	GJE := GaussJordanElimination{} // create instance of GaussJordanElimination struct
-	var Output *Tensor
+	GJE := GaussJordanEliminationOp{} // create instance of GaussJordanElimination struct
 
-	if batching == false {
-		Output = GaussJordanElimination{}.Execute(A, b) // single processing
+	if batching {
+		return BatchedOperation(GJE, A, b) // batched processing
 	} else {
-		Output = Batch_TwoTensor_Tensor_Operation(GJE, A, b) // batched processing
+		return GaussJordanEliminationOp{}.Execute(A, b) // single processing
 	}
-	return Output
 
 }
 
@@ -85,7 +87,9 @@ func Gauss_Jordan_Elimination(A *Tensor, b *Tensor, batching bool) *Tensor {
 
 type LinearSystemsApproximator struct{ modelFileName string }
 
-func (LSA LinearSystemsApproximator) Execute(A, b *Tensor) *Tensor {
+func (LSA LinearSystemsApproximator) Execute(tensors ...*Tensor) *Tensor {
+
+	A, b := tensors[0], tensors[1]
 
 	// Call the Python script with the JSON marshaled Tensorsx=
 	A_JSON := MarshalTensor(A)
@@ -116,7 +120,7 @@ func LinSys_Approximator(A *Tensor, b *Tensor, matrixType string, fillPercentage
 	// Create an instance of the LinearSystemsApproximator struct
 	LSA := LinearSystemsApproximator{modelFileName: modelFileName}
 	if batching {
-		return Batch_TwoTensor_Tensor_Operation(LSA, A, b) // batched processing
+		return BatchedOperation(LSA, A, b) // batched processing
 	}
 	return LSA.Execute(A, b) // single processing otherwise
 }

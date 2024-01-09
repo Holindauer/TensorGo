@@ -1,22 +1,24 @@
 package TG
 
-// shape.go contains functions related to manipulating the shape of a tensor.
-
+/* @notice shape_ops.go contain functions that manipulate a tensors shape in some way. Shape ops manipulate the shape
+* exclusively, they do not change the underlying data or compute new information from the data.
+ */
 import (
-	//"fmt"
 	"fmt"
-	"strconv" // <-- used to convert strings to ints
+	"strconv"
 	"strings"
 )
 
-//=====================================================================================================================Partial()
+/*
+* @notice Slice() uses Python-like slice notation to retrieve a subset of a Tensor. A slice from each dimension of the tensor
+* is specified by a colon-separated string. For example, the string "1:3, 2:4" would retrieve a 2x2 slice from a 5x5 tensor.
+* @dev slice notation is exclusive of the index to the right of the colon.
+* @dev if an end index is not specified, the slice will extend to the end of the dimension.
+* @param slice: A string containing the slice notation for each dimension of the tensor.
+* @return *Tensor: A pointer to a new tensor containing the sliced data.
+ */
+func (A *Tensor) Slice(slice string) *Tensor {
 
-// The Partial function is used to retrieve a section out of a Tensor using Python-like slice notation.
-// It accepts a Tensor and a string, then returns a pointer to a new tensor.
-// Example:
-// A := Range_Tensor([]int{3, 4, 9, 2})
-// A_Partial := Partial(A, "0:2, 2:, :3, :")
-func (A *Tensor) Partial(slice string) *Tensor {
 	// Remove spaces and split the slice string by commas to handle each dimension separately.
 	slice = strings.ReplaceAll(slice, " ", "")
 	split := strings.Split(slice, ",")
@@ -25,7 +27,7 @@ func (A *Tensor) Partial(slice string) *Tensor {
 	}
 
 	// Initialize slices to store the shape of the partial tensor and the start/end indices for each dimension.
-	partialShape := make([]int, len(A.Shape))
+	sliceShape := make([]int, len(A.Shape))
 	partialIndices := make([][]int, len(A.Shape))
 
 	// Iterate through each dimension of the tensor to parse the slice string and compute the shape and indices of the partial tensor.
@@ -41,38 +43,38 @@ func (A *Tensor) Partial(slice string) *Tensor {
 				end, _ = strconv.Atoi(parts[1])
 			}
 		}
-		partialShape[i] = end - start
+		sliceShape[i] = end - start
 		partialIndices[i] = []int{start, end}
 	}
 
 	// Create a new tensor to store the partial data with the computed shape.
-	partialTensor := Zero_Tensor(partialShape, false)
+	slicedTensor := Zero_Tensor(sliceShape, false)
 
 	// Initialize a slice to store the current multi-dimensional index being processed.
-	tempIndex := make([]int, len(partialShape))
+	tempIndex := make([]int, len(sliceShape))
 
-	// Define a recursive function to fill the partial tensor.
-	// The function takes the current dimension as a parameter.
+	// Define a recursive anon function to fill the partial tensor.
+	// The function accepts the current dimension as a parameter.
 	var fillPartialTensor func(int)
 	fillPartialTensor = func(dim int) {
-		if dim == len(partialShape) { // <--- This base case is reached for every element in the partial tensor.
+		if dim == len(sliceShape) { // <--- This base case is reached for every element in the slice tensor.
 
 			// Calculate the source index in the original tensor.
-			srcIndex := make([]int, len(partialShape))
+			srcIndex := make([]int, len(sliceShape))
 			for i, indices := range partialIndices {
 				srcIndex[i] = tempIndex[i] + indices[0]
 			}
 
 			// Convert the multi-dimensional indices to flattened indices and use them to copy the data.
 			srcFlattenedIndex := A.Index(srcIndex)
-			dstFlattenedIndex := partialTensor.Index(tempIndex)
-			partialTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
+			dstFlattenedIndex := slicedTensor.Index(tempIndex)
+			slicedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 
 			return
 		}
 
 		// Recursively process each index in the current dimension.
-		for i := 0; i < partialShape[dim]; i++ {
+		for i := 0; i < sliceShape[dim]; i++ {
 			tempIndex[dim] = i
 			fillPartialTensor(dim + 1)
 		}
@@ -81,15 +83,17 @@ func (A *Tensor) Partial(slice string) *Tensor {
 	// Start the recursive process from the first dimension.
 	fillPartialTensor(0)
 
-	// Return the filled partial tensor.
-	return partialTensor
+	return slicedTensor
 }
 
 //=====================================================================================================================Reshape()
 
-type Batched_Reshape struct{ shape []int }
+type ReshapeOp struct{ shape []int }
 
-func (op Batched_Reshape) Execute(A *Tensor) *Tensor {
+func (op ReshapeOp) Execute(tensors ...*Tensor) *Tensor {
+
+	A := tensors[0]
+
 	if Product(op.shape) != len(A.Data) {
 		panic("Within Reshape(): Cannot reshape tensor to shape with different number of elements")
 	}
@@ -104,10 +108,12 @@ func (op Batched_Reshape) Execute(A *Tensor) *Tensor {
 // optional batching
 func (A *Tensor) Reshape(shape []int, batching bool) *Tensor {
 
+	reshape := ReshapeOp{shape: shape}
+
 	if batching {
-		return Batch_Tensor_Tensor_Operation(Batched_Reshape{shape: shape}, A) // batched reshape
+		return BatchedOperation(reshape, A) // batched reshape
 	}
-	return Batched_Reshape{shape: shape}.Execute(A) // otherwise single reshape
+	return reshape.Execute(A) // otherwise single reshape
 }
 
 //=====================================================================================================================Transpose()
@@ -116,7 +122,7 @@ func (A *Tensor) Reshape(shape []int, batching bool) *Tensor {
 // This function is modeled after the NumPy transpose function. It accepts a tensor and an array
 // of integers specifying the new order of the axes. For example, if the tensor has shape [2, 3, 4]
 // and the axes array is [2, 0, 1], then the resulting tensor will have shape [4, 2, 3].
-func (A *Tensor) Transpose(perumuation []int) *Tensor {
+func (A *Tensor) Permute(perumuation []int) *Tensor {
 
 	// Check for invalid axes
 	if len(perumuation) != len(A.Shape) {
@@ -210,8 +216,8 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 		axes_reordering := Permute_Shape(A.Shape, axis_cat, 0)
 
 		// transpose A and B to make axis_cat the 0'th axis
-		A_T := A.Transpose(axes_reordering)
-		B_T := B.Transpose(axes_reordering)
+		A_T := A.Permute(axes_reordering)
+		B_T := B.Permute(axes_reordering)
 
 		// concatenate data contiguously into new slice
 		concatData_Transposed := append(A_T.Data, B_T.Data...)
@@ -233,7 +239,7 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 
 		// transpose the concatenated tensor back to the original ordering of axes. Because we only swapped
 		// two axes, we can just reuse the same axe_reordering array from the originbal transpose.
-		concatTensor = concatTensor_Transposed.Transpose(axes_reordering)
+		concatTensor = concatTensor_Transposed.Permute(axes_reordering)
 	}
 
 	return concatTensor
@@ -415,8 +421,8 @@ func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tens
 	// Remove the trailing comma
 	sliceString := strings.TrimRight(builder.String(), ",")
 
-	// Use the Partial() method to take a partial tensor
-	A_Partial := A.Partial(sliceString).Remove_Singletons()
+	// Use the Slice() method to take a partial tensor
+	A_Partial := A.Slice(sliceString).Remove_Singletons()
 
 	return A_Partial
 }
