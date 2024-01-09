@@ -8,10 +8,12 @@ import (
 
 //-------------------------------------------------------------------------------------------------------------- Matmul()
 
-type Batched_Matmul struct{}
+type MatMulOp struct{}
 
-// This method of the Batch_Matmul struct computes the matrix multiplication of two 2D tensors
-func (op Batched_Matmul) Execute(A *Tensor, B *Tensor) *Tensor {
+// Implementing the Execute method of IBatching interface
+func (op MatMulOp) Execute(tensors ...*Tensor) *Tensor {
+	// Assumes tensors length will be 2 for matrix multiplication
+	A, B := tensors[0], tensors[1]
 
 	// Address Matrix Vector Multiplication
 	if len(B.Shape) == 1 {
@@ -21,18 +23,15 @@ func (op Batched_Matmul) Execute(A *Tensor, B *Tensor) *Tensor {
 	// Check that the two Tensors are compatible for matrix multiplication
 	Check_MatMul_Compatibility(A, B)
 
-	C := Zero_Tensor([]int{A.Shape[0], B.Shape[1]}, false) // <-- returns pointer to Tensor struct
+	C := Zero_Tensor([]int{A.Shape[0], B.Shape[1]}, false)
 	var sum float64
 
-	for row := 0; row < C.Shape[0]; row++ { // <-- iterate through rows of C
-
-		for col := 0; col < C.Shape[1]; col++ { // <-- iterate through columns of C
-			sum = 0                           // <-- reset sum
-			for k := 0; k < A.Shape[1]; k++ { // compute dot product of row of A and column of B
+	for row := 0; row < C.Shape[0]; row++ {
+		for col := 0; col < C.Shape[1]; col++ {
+			sum = 0
+			for k := 0; k < A.Shape[1]; k++ {
 				sum += A.Get([]int{row, k}) * B.Get([]int{k, col})
 			}
-
-			// write to C.data slice
 			C.Data[C.Index([]int{row, col})] = sum
 		}
 	}
@@ -40,17 +39,22 @@ func (op Batched_Matmul) Execute(A *Tensor, B *Tensor) *Tensor {
 	return C
 }
 
-// This function computes the dot product of two vectors
 func MatMul(A *Tensor, B *Tensor, batching bool) *Tensor {
 
-	if batching {
-		return Batch_TwoTensor_Tensor_Operation(Batched_Matmul{}, A, B)
-	}
-	return Batched_Matmul{}.Execute(A, B)
+	matmul := MatMulOp{} // Create an instance of Batched_Matmul
 
+	if batching {
+		// If batching is true, call BatchedOperation directly
+		return BatchedOperation(matmul, A, B)
+	} else {
+		// If batching is false, call the Execute method directly
+		return matmul.Execute(A, B)
+	}
 }
 
 //-------------------------------------------------------------------------------------------------------------- Display_Matrix()
+
+// TODO <--- implement batching for non returning functions into the new BatchedOperation abstraction
 
 type Batched_Display_Matrix struct{}
 

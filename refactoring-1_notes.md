@@ -10,3 +10,5 @@ In this branch, I'm going to do some major refactoring of the code base. The fol
 
 - Retrieve() has been changed to Get()
 - Index_Off_Shape() is now TheoreticalIndex()
+- Transpose() --> Permute()
+- Partial() --> Slice()

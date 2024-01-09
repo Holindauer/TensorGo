@@ -72,10 +72,10 @@ type Collapsing_Operation interface {
 //------------------------------------------------------------------------------------------------------ Sum_Axis()
 
 // Collapsing_Sum_Operation defines summation on tensor elements.
-type Collapsing_Sum_Operation struct{}
+type CollapsingSumOp struct{ axis int }
 
 // contributeToResult adds each partial tensor to the result tensor.
-func (s Collapsing_Sum_Operation) contributeToResult(partial, result *Tensor) {
+func (s CollapsingSumOp) contributeToResult(partial, result *Tensor) {
 
 	// indices holds the multi-dim as we iterate through the Tensor
 	indices := make([]int, len(result.Shape))
@@ -99,20 +99,22 @@ func (s Collapsing_Sum_Operation) contributeToResult(partial, result *Tensor) {
 	}
 }
 
-type Batched_Sum_Axis struct{ axis int }
-
 // Execute is an interface used for batched operations. See batching.go for more details.
-func (op Batched_Sum_Axis) Execute(A *Tensor) *Tensor {
-	return A.Axis_Collapsing_Operation(op.axis, Collapsing_Sum_Operation{})
+func (op CollapsingSumOp) Execute(tensors ...*Tensor) *Tensor {
+	A := tensors[0]
+	return A.Axis_Collapsing_Operation(op.axis, CollapsingSumOp{})
 }
 
 // Sum_Axis sums tensor elements along a specified axis.
 func (A *Tensor) Sum_Axis(axis int, batching bool) *Tensor {
 
+	// Create an instance of the CollapsingSumOp struct
+	sumOp := CollapsingSumOp{axis: axis}
+
 	if batching {
-		return Batch_Tensor_Tensor_Operation(Batched_Sum_Axis{axis: axis}, A) // if batching is true, give interface to the batched execution function
+		return BatchedOperation(sumOp, A) // if batching is true, give interface to the batched execution function
 	}
-	return Batched_Sum_Axis{axis: axis}.Execute(A) // otherwise execute the interface directly
+	return sumOp.Execute(A) // otherwise execute the interface directly
 
 }
 
@@ -139,7 +141,7 @@ func (A *Tensor) Var_Axis(axis int, batching bool) *Tensor {
 	// subtract the meanTensor from each element of A and square the result (elementwise)
 
 	axes_reordering := Permute_Shape(A.Shape, axis, 0) // permute specified axis to 0 for elementwise batched summation
-	A_Transposed := A.Transpose(axes_reordering)
+	A_Transposed := A.Permute(axes_reordering)
 
 	A_diffMean := meanTensor.Broadcast_Subtract(A_Transposed)
 
@@ -158,8 +160,11 @@ func (A *Tensor) Var_Axis(axis int, batching bool) *Tensor {
 // StdAxisBatchOperation performs batched standard deviation calculation.
 type StdAxisBatchOperation struct{ axis int }
 
-func (op StdAxisBatchOperation) Execute(tensor *Tensor) *Tensor {
-	varTensor := tensor.Var_Axis(op.axis, false)
+func (op StdAxisBatchOperation) Execute(tensors ...*Tensor) *Tensor {
+
+	A := tensors[0]
+
+	varTensor := A.Var_Axis(op.axis, false)
 	for i := range varTensor.Data {
 		varTensor.Data[i] = math.Sqrt(varTensor.Data[i])
 	}
@@ -170,7 +175,7 @@ func (op StdAxisBatchOperation) Execute(tensor *Tensor) *Tensor {
 func (A *Tensor) Std_Axis(axis int, batching bool) *Tensor {
 	batchOp := StdAxisBatchOperation{axis: axis}
 	if batching {
-		return Batch_Tensor_Tensor_Operation(batchOp, A)
+		return BatchedOperation(batchOp, A)
 	}
 	return batchOp.Execute(A)
 }

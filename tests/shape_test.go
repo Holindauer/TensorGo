@@ -19,7 +19,7 @@ func Test_Shape(t *testing.T) {
 	A := Range_Tensor([]int{3, 3, 3}, true)
 
 	// Creates a 3x2x2 tensor
-	A_partial := A.Partial(":3, 1:3, 1:3")
+	A_partial := A.Slice(":3, 1:3, 1:3")
 	//Display_Matrix(A_partial, true)
 	A_partial_extracted := A_partial.GetBatchElement(0)
 
@@ -59,7 +59,7 @@ func Test_Shape(t *testing.T) {
 	fmt.Print("Testing Transpose()...")
 
 	A = Range_Tensor([]int{3, 3, 6, 8, 9}, true)
-	A_transposed := A.Transpose([]int{1, 0, 3, 2, 4})
+	A_transposed := A.Permute([]int{1, 0, 3, 2, 4})
 
 	if A.Get([]int{0, 1, 2, 3, 4}) != A_transposed.Get([]int{1, 0, 3, 2, 4}) {
 		t.Errorf("Transpose() failed. Same element after transpose not equal. Expected Output: %v --- Actual Output: %v", A.Get([]int{0, 1, 2, 3, 4}), A_transposed.Get([]int{1, 0, 3, 2, 4}))
