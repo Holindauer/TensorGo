@@ -107,7 +107,4 @@ func Test_Elimination(t *testing.T) {
 		t.Error("Gauss_Jordan_Elimination() failed")
 	}
 
-	//-------------------------------------------------------------------------------------------------------------- AI_LinSys_Approximator()
-
-	// This needs to be implemented
 }

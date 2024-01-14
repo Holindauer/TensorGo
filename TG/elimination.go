@@ -3,12 +3,7 @@ package TG
 // elimination.go algorithms for solving systems of linear equations
 
 import (
-	"fmt"
 	"math"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strconv"
 )
 
 // --------------------------------------------------------------------------------------------------Normal Gaussian Elimination
@@ -77,88 +72,6 @@ func Gauss_Jordan_Elimination(A *Tensor, b *Tensor, batching bool) *Tensor {
 		return GaussJordanEliminationOp{}.Execute(A, b) // single processing
 	}
 
-}
-
-//--------------------------------------------------------------------------------------------------PyTorch Linear Systems Approximator
-
-// This function uses the Linear Systems Approximator from within Go-LinAlg/Extensions/<inear-Systems-Regression to
-// solve a linear systems of equations. When the package is first imported, the init() function in init.go downloads
-// the remote repository containing the Linear Systems Approximator (if not downloaded already).
-
-type LinearSystemsApproximator struct{ modelFileName string }
-
-func (LSA LinearSystemsApproximator) Execute(tensors ...*Tensor) *Tensor {
-
-	A, b := tensors[0], tensors[1]
-
-	// Call the Python script with the JSON marshaled Tensorsx=
-	A_JSON := MarshalTensor(A)
-	b_JSON := MarshalTensor(b)
-	script_name := "Extensions/approximate_linear_system.py"
-
-	x := runPythonScript(script_name, A_JSON.Data, A_JSON.Shape, b_JSON.Data, b_JSON.Shape, LSA.modelFileName)
-
-	output := Zero_Tensor([]int{len(x), 1}, false)
-	copy(output.Data, x)
-	return output
-}
-
-func LinSys_Approximator(A *Tensor, b *Tensor, matrixType string, fillPercentage float64, batching bool) *Tensor {
-
-	// download the Linear Systems Approximator if not already downloaded
-	Get_LinSys_Approximator()
-
-	// Create the path to the model file
-	modelFileName := "LinSys_Approximator" + strconv.Itoa(A.Shape[1]) + ".pt"
-	modelFilePath := filepath.Join("Linear_Systems_Regression", modelFileName)
-
-	// Train a new model of the corrent specs if there does not already exist one
-	if _, err := os.Stat(modelFilePath); os.IsNotExist(err) {
-		Train_LinSys_Approximator(matrixType, A.Shape[1], fillPercentage)
-	}
-
-	// Create an instance of the LinearSystemsApproximator struct
-	LSA := LinearSystemsApproximator{modelFileName: modelFileName}
-	if batching {
-		return BatchedOperation(LSA, A, b) // batched processing
-	}
-	return LSA.Execute(A, b) // single processing otherwise
-}
-
-// This function runs the script that checks if the Linear Systems Approximator has been downloaded. If it has not, it downloads it.
-func Get_LinSys_Approximator() {
-
-	// Adjusted path to the script
-	cmd := exec.Command("sh", "./Scripts/LinSys_Approximator/check_repository_download.sh")
-
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println("Error: ", err)
-	}
-}
-
-// This function trains the Linear Systems Approximator on a matrix of the specified type, size, and fill percentage.
-func Train_LinSys_Approximator(matrixType string, aSize int, fillPercentage float64) error {
-	fmt.Println("Training Linear Systems Approximator...")
-
-	// The script path relative to the current working directory
-	scriptPath := filepath.Join("Scripts", "LinSys_Approximator", "run_training.sh")
-
-	// Convert aSize and fillPercentage to string
-	aSizeStr := fmt.Sprintf("%d", aSize)
-	fillPercentageStr := fmt.Sprintf("%f", fillPercentage)
-
-	// Prepare the command to execute the script with arguments
-	cmd := exec.Command("bash", scriptPath, matrixType, aSizeStr, fillPercentageStr)
-
-	// Run the command
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println("Error running training script:", err)
-		return err
-	}
-
-	return nil
 }
 
 //--------------------------------------------------------------------------------------------------Helper Functions for Elimination Functions
