@@ -1,15 +1,12 @@
 package TG
 
 import (
-	"fmt"
-
 	"testing"
 
 	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
-func Test_Save(t *testing.T) {
-	fmt.Println("Testing save.go")
+func Test_SaveLoad(t *testing.T) {
 
 	// Init a Tensor
 	A := RandFloat64_Tensor([]int{2, 3}, 0, 1, false)
