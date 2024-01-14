@@ -1,19 +1,18 @@
 package TG
 
+/*
+* @notice This file contains tests for functions in elimination.go
+ */
+
 import (
-	"fmt"
 	"testing"
 
 	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
-func Test_Elimination(t *testing.T) {
+func Test_Gaussian_Elimination(t *testing.T) {
 
-	fmt.Println("\n\nNow Testing Functions from matrix.go\n-------------------------------------")
-
-	//-------------------------------------------------------------------------------------------------------------- Gaussian_Elimination()
-
-	fmt.Print("Testing Gaussian_Elimination() unbatched...")
+	/// @notice Testing Gaussian_Elimination() unbatched
 
 	// creat an A and x, multiply them to get b --- the solution will be x = [-1, 2, 2]
 	A := Zero_Tensor([]int{3, 3}, false)
@@ -36,9 +35,8 @@ func Test_Elimination(t *testing.T) {
 		t.Error("Gaussian_Elimination() failed")
 	}
 
-	fmt.Println("Success!")
+	/// @notice Testing Gaussian_Elimination() batched
 
-	fmt.Println("Testing Gaussian_Elimination() batched...")
 	A = Zero_Tensor([]int{3, 3, 3}, true)
 	A.Data = []float64{2, 4, -2, 4, 9, -3, -2, -3, 7, 2, 4, -2, 4, 9, -3, -2, -3, 7, 2, 4, -2, 4, 9, -3, -2, -3, 7}
 	x = Zero_Tensor([]int{3, 3, 1}, true)
@@ -58,20 +56,21 @@ func Test_Elimination(t *testing.T) {
 	if x_solved.Data[2]+x_solved.Data[5]+x_solved.Data[8] < 5.9999999999 || x_solved.Data[2]+x_solved.Data[5]+x_solved.Data[8] > 6.0000000001 {
 		t.Error("Gaussian_Elimination() failed")
 	}
+}
 
-	//-------------------------------------------------------------------------------------------------------------- Gauss_Jordan_Elimination()
+func Test_Gauss_Jordan_Elimination(t *testing.T) {
 
-	fmt.Println("Testing Gauss_Jordan_Elimination() unbatched...")
+	/// @notice Testing Gauss_Jordan_Elimination() unbatched
 
 	// creat an A and x, multiply them to get b
-	A = Zero_Tensor([]int{3, 3}, false)
+	A := Zero_Tensor([]int{3, 3}, false)
 	A.Data = []float64{2, 4, -2, 4, 9, -3, -2, -3, 7}
-	x = Zero_Tensor([]int{3, 1}, false)
+	x := Zero_Tensor([]int{3, 1}, false)
 	x.Data = []float64{-1, 2, 2}
-	b = MatMul(A, x, false)
+	b := MatMul(A, x, false)
 
 	// solve for x
-	x_solved = Gauss_Jordan_Elimination(A, b, false)
+	x_solved := Gauss_Jordan_Elimination(A, b, false)
 
 	// check that the solution is correct (within 1e-10)
 	if x_solved.Data[0] < -1.0000000001 || x_solved.Data[0] > -0.9999999999 {
@@ -84,9 +83,9 @@ func Test_Elimination(t *testing.T) {
 		t.Error("Gauss_Jordan_Elimination() failed")
 	}
 
-	fmt.Println("Success!")
+	/// @notice Testing Gauss_Jordan_Elimination() batched
 
-	fmt.Println("Testing Gauss_Jordan_Elimination() batched...")
+	// Setup the batched version of the above test
 	A = Zero_Tensor([]int{3, 3, 3}, true)
 	A.Data = []float64{2, 4, -2, 4, 9, -3, -2, -3, 7, 2, 4, -2, 4, 9, -3, -2, -3, 7, 2, 4, -2, 4, 9, -3, -2, -3, 7}
 	x = Zero_Tensor([]int{3, 3, 1}, true)
@@ -106,8 +105,4 @@ func Test_Elimination(t *testing.T) {
 	if x_solved.Data[2]+x_solved.Data[5]+x_solved.Data[8] < 5.9999999999 || x_solved.Data[2]+x_solved.Data[5]+x_solved.Data[8] > 6.0000000001 {
 		t.Error("Gauss_Jordan_Elimination() failed")
 	}
-
-	//-------------------------------------------------------------------------------------------------------------- AI_LinSys_Approximator()
-
-	// This needs to be implemented
 }

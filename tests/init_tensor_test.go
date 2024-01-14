@@ -1,67 +1,70 @@
 package TG
 
-// init_tensor_test.go contains tests for functions in init_tensor.go
-
+/*
+* @notice init_tensor_test.go contains tests for functions in init_tensor.go
+ */
 import (
-	"fmt"
 	"testing"
 
 	. "github.com/Holindauer/Tensor-Go/TG"
 )
 
-func Test_Tensor_Init(t *testing.T) {
+func Test_Ones_Init(t *testing.T) {
 
-	fmt.Println("\n\nNow Testing Functions from tensor_init.go\n-------------------------------------")
-
-	// Test Zero_Tensor(), Ones_Tensor(), and Const_Tensor()
-	fmt.Print("Testing Zero_Tensor() Unbatched...")
-	if Zero_Tensor([]int{2, 3, 4}, false).Sum_All() != 0 {
-		t.Errorf("Zero_Tensor() failed. Expected Output: 0 --- Actual Output: %v", Zero_Tensor([]int{2, 3, 4}, false).Sum_All())
-	}
-	fmt.Println("Succsess!")
-
-	fmt.Print("Testing Zero_Tensor() Batched...")
-	if Zero_Tensor([]int{2, 3, 4}, true).Sum_All() != 0 {
-		t.Errorf("Zero_Tensor() failed. Expected Output: 0 --- Actual Output: %v", Zero_Tensor([]int{2, 3, 4}, true).Sum_All())
-	}
-	fmt.Println("Succsess!")
-
-	fmt.Print("Testing Ones_Tensor() Unbatched...")
+	/// @notice Testing Ones_Tensor() Unbatched
 	if Ones_Tensor([]int{2, 3, 4}, false).Sum_All() != 24 {
 		t.Errorf("Ones_Tensor() failed. Expected Output: 24 --- Actual Output: %v", Ones_Tensor([]int{2, 3, 4}, false).Sum_All())
 	}
-	fmt.Println("Succsess!")
 
-	fmt.Print("Testing Ones_Tensor() Batched...")
+	// @notice Testing Ones_Tensor() Batched
 	if Ones_Tensor([]int{2, 3, 4}, true).Sum_All() != 24 {
 		t.Errorf("Ones_Tensor() failed. Expected Output: 24 --- Actual Output: %v", Ones_Tensor([]int{2, 3, 4}, true).Sum_All())
 	}
-	fmt.Println("Succsess!")
+}
 
-	fmt.Print("Testing Const_Tensor() Unbatched...")
+func Test_Zeros_Init(t *testing.T) {
+
+	/// @notice Testing Zero_Tensor() Unbatched
+
+	if Zero_Tensor([]int{2, 3, 4}, false).Sum_All() != 0 {
+		t.Errorf("Zero_Tensor() failed. Expected Output: 0 --- Actual Output: %v", Zero_Tensor([]int{2, 3, 4}, false).Sum_All())
+	}
+
+	// @notice Testing Zero_Tensor() Batched
+	if Zero_Tensor([]int{2, 3, 4}, true).Sum_All() != 0 {
+		t.Errorf("Zero_Tensor() failed. Expected Output: 0 --- Actual Output: %v", Zero_Tensor([]int{2, 3, 4}, true).Sum_All())
+	}
+}
+
+func Test_Const_Init(t *testing.T) {
+
+	/// @notice Testing Const_Tensor() Unbatched
 	if Const_Tensor([]int{2, 3, 4}, 5, false).Sum_All() != 120 {
 		t.Errorf("Const_Tensor() failed. Expected Output: 120 --- Actual Output: %v", Const_Tensor([]int{2, 3, 4}, 5, false).Sum_All())
 	}
-	fmt.Println("Succsess!")
 
-	fmt.Print("Testing Const_Tensor() Batched...")
+	// @notice Testing Const_Tensor() Batched
 	if Const_Tensor([]int{2, 3, 4}, 5, true).Sum_All() != 120 {
 		t.Errorf("Const_Tensor() failed. Expected Output: 120 --- Actual Output: %v", Const_Tensor([]int{2, 3, 4}, 5, true).Sum_All())
 	}
-	fmt.Println("Succsess!")
+}
 
-	// Test Range_Tensor()
-	fmt.Print("Testing Range_Tensor()...")
+func Test_Range_Init(t *testing.T) {
+
+	/// @notice Test Range_Tensor() Unbatched
 	if Range_Tensor([]int{3, 3, 3}, false).Sum_All() != 351 {
 		t.Errorf("Range_Tensor() failed. Expected Output: 351 --- Actual Output: %v", Range_Tensor([]int{3, 3, 3}, false).Sum_All())
 	}
-	fmt.Println("Succsess!")
 
-	fmt.Print("Testing Range_Tensor() Batched...")
+	/// @notice Test Range_Tensor() Batched
 	if Range_Tensor([]int{3, 3, 3}, true).Sum_All() != 108 {
 		t.Errorf("Range_Tensor() failed. Expected Output: 108 --- Actual Output: %v", Range_Tensor([]int{3, 3, 3}, true).Sum_All())
 	}
-	fmt.Println("Succsess!")
+}
+
+func Test_RandFloat_Init(t *testing.T) {
+
+	// TODO: better test coverage for RandFloat_Tensor()
 
 	// // Test RandFloat_Tensor() <--- Think of a better way to test this Use Standard Deviation?
 	// fmt.Print("Testing RandFloat64_Tensor() Unbatched...")
@@ -77,50 +80,44 @@ func Test_Tensor_Init(t *testing.T) {
 	// 	t.Errorf("RandFloat_Tensor() failed. Expected Output Sum Range: 8-12 --- Actual Output Sum: %v", rand_float_sum)
 	// }
 	// fmt.Println("Succsess!")
+}
+
+func Test_Copy(t *testing.T) {
 
 	// Test Copy()
-	fmt.Print("Testing Copy()...")
 	A := Range_Tensor([]int{10, 12, 14}, false)
 	B := A.Copy()
 	if A.Sum_All() != B.Sum_All() {
 		t.Errorf("Copy() failed. Expected Output: %v --- Actual Output: %v", A.Sum_All(), B.Sum_All())
 	}
-	fmt.Println("Succsess!")
+}
 
-	// Test Eye()
-
-	// Test Eye() Unbatched
-	fmt.Print("Testing Eye() Unbatched...")
-	A = Eye([]int{3, 3}, false)
+func Test_Eye(t *testing.T) {
+	/// @notice Test Eye() Unbatched
+	A := Eye([]int{3, 3}, false)
 	if A.Get([]int{0, 0}) != 1 || A.Get([]int{1, 1}) != 1 || A.Get([]int{2, 2}) != 1 {
 		t.Errorf("Eye() failed. Expected Output: 1 --- Actual Output: %v", A.Get([]int{0, 0}))
 	}
-	fmt.Println("Succsess!")
 
-	// Test Eye() Batched
-	fmt.Print("Testing Eye() Batched...")
+	/// @notice Test Eye() Batched
 	A = Eye([]int{3, 3, 3}, true)
 	A_Extracted := A.GetBatchElement(1)
 	if A_Extracted.Get([]int{0, 0}) != 1 || A_Extracted.Get([]int{1, 1}) != 1 || A_Extracted.Get([]int{2, 2}) != 1 {
 		t.Errorf("Eye() failed. Expected Output: 1 --- Actual Output: %v", A.Get([]int{0, 0}))
 	}
-	fmt.Println("Succsess!")
+}
 
-	// Test Gram()
+func Test_Gram_Init(t *testing.T) {
 
-	// Test Gram() Unbatched
-	fmt.Print("Testing Gram() Unbatched...")
-	A = Range_Tensor([]int{3, 3}, false)
-	B = A.Gram(false)
+	/// @notice Test Gram() Unbatched
+	A := Range_Tensor([]int{3, 3}, false)
+	B := A.Gram(false)
 
 	if B.Get([]int{0, 0}) != 5 || B.Get([]int{1, 1}) != 50 || B.Get([]int{2, 2}) != 149 {
 		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Get([]int{0, 0}), B.Get([]int{1, 1}), B.Get([]int{2, 2}))
 	}
 
-	fmt.Println("Succsess!")
-
-	// Test Gram() Batched
-	fmt.Print("Testing Gram() Batched...")
+	/// @notice Test Gram() Batched
 	A = Range_Tensor([]int{3, 3, 3}, true)
 	B = A.Gram(true)
 	B_Extracted := B.GetBatchElement(1)
@@ -128,7 +125,5 @@ func Test_Tensor_Init(t *testing.T) {
 	if B_Extracted.Get([]int{0, 0}) != 5 || B_Extracted.Get([]int{1, 1}) != 50 || B_Extracted.Get([]int{2, 2}) != 149 {
 		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Get([]int{0, 0}), B.Get([]int{1, 1}), B.Get([]int{2, 2}))
 	}
-
-	fmt.Println("Succsess!")
 
 }

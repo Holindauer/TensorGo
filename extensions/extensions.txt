@@ -1,1 +1,0 @@
-This directory is used to download any extensions for functions that require them.
