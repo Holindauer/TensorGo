@@ -1,13 +1,17 @@
 package TG
 
-/* @notice shape_ops.go contain functions that manipulate a tensors shape in some way. Shape ops manipulate the shape
-* exclusively, they do not change the underlying data or compute new information from the data.
+/* @notice shape_ops.go contain functions that manipulate a tensors shape in some way.
+* @def Shape ops manipulate the shape exclusively, they do not change the underlying data in any way.
+* with the exception of reording contiguous data to reflect changes in multi dimensional shape
  */
+
 import (
 	"fmt"
 	"strconv"
 	"strings"
 )
+
+//===================================================================================================================== Slice()
 
 /*
 * @notice Slice() uses Python-like slice notation to retrieve a subset of a Tensor. A slice from each dimension of the tensor
@@ -88,26 +92,42 @@ func (A *Tensor) Slice(slice string) *Tensor {
 
 //=====================================================================================================================Reshape()
 
+// / @dev This struct contains the new shape me
 type ReshapeOp struct{ shape []int }
 
+/*
+* @notice The execute method of the ReshapeOp struct is used to apply the reshape operation to a single Tensor.
+* @dev ReshapeOps Execute method can also be sent to the BatchedOperation func in order to reshape individual
+* batch elements while maintaining the batch dim.
+ */
 func (op ReshapeOp) Execute(tensors ...*Tensor) *Tensor {
 
+	// extract tensor arg
 	A := tensors[0]
 
+	// Ensure the Tensor is being reshaped to a valid dimmension
 	if Product(op.shape) != len(A.Data) {
 		panic("Within Reshape(): Cannot reshape tensor to shape with different number of elements")
 	}
-	reshapedTensor := A.Copy()
-	reshapedTensor.Shape = op.shape
-	return reshapedTensor
+
+	// Set the new shape in A
+	A.Shape = op.shape
+
+	// Return the pointer to A
+	return A
 }
 
-// Reshape()  takes a tensors and a new shape for that tensors, and returns a pointer to a
-// new tensors that has the same data as the original tensor, but with the new shape. Reshape
-// can be done in this way becauase data for Tensors in stored contigously in memory.There is
-// optional batching
+/*
+* @notice Reshape changes the shape of a Tensor to a different shape, this does not include manipulating
+* the underlying continuous memory.
+* @dev the product of all terms in the provided integer slice argument must math the length of the
+* data in contiguous memory
+* @param A is a Tensor pointer to change the shape of.
+* @param shape is an integer slice representing the new shape fo the Tensor
+ */
 func (A *Tensor) Reshape(shape []int, batching bool) *Tensor {
 
+	// Setup the ReshapeOp struct with the shape arg
 	reshape := ReshapeOp{shape: shape}
 
 	if batching {
@@ -118,10 +138,14 @@ func (A *Tensor) Reshape(shape []int, batching bool) *Tensor {
 
 //=====================================================================================================================Transpose()
 
-// Transpose returns a new tensor with the axes transposed according to the given specification
-// This function is modeled after the NumPy transpose function. It accepts a tensor and an array
-// of integers specifying the new order of the axes. For example, if the tensor has shape [2, 3, 4]
-// and the axes array is [2, 0, 1], then the resulting tensor will have shape [4, 2, 3].
+/*
+* @notice Permute is used to reorder the dimmension of a Tensor.
+* @dev this reordering happens on both the level of the integer shape slice as well as on the level
+* of the contiguous memory
+* @param A is a pointer to the Tensor to permute
+* @param permutaion is an integer slice with elements from 0 to [len(A.shape) - 1] in any order.
+* For example: [0, 3, 2, 1, 4] will reorder the dimmensions [3, 4, 5, 7, 5] to [3, 7, 5, 4, 5]
+ */
 func (A *Tensor) Permute(perumuation []int) *Tensor {
 
 	// Check for invalid axes
@@ -169,24 +193,18 @@ func (A *Tensor) Permute(perumuation []int) *Tensor {
 	return B
 }
 
-//=====================================================================================================================Concat()
+//===================================================================================================================== Concat()
 
-// The idea behind this algorithm stems from an understanding of how Tensor data is stored in memory.
-// Tensors of n dimmension are stored contiguously in memory as a 1D array. The multi-dimensionality
-// of the tensor is simulated by indexing the 1D array using a strided index. This means that if you
-// are atttemping to index a 5D tensor of shape [3, 3, 3, 3, 3], and you want to move one element up
-// the last dimmension, then you must 'stride' over all elements of the 4th dimmension stored in the
-// contigous memory to get there. This task is handled by the Index() and Retrieve() functions.
-// ---------------------------------------------------------------------------------------------------
-// This way of storing data in in memory introduces complexity when concatenating tenosrs along an axis.
-// When the axis of concatenation is the 0'th axis, the algorithm is simple. No striding is required, and
-// the contigous data from one tensor can just be appended to the other.
-// ---------------------------------------------------------------------------------------------------
-// However, when the axis of concatenation is not the 0'th axis, the algorithm becomes more complex
-// due to the striding. This algorithm handles this complexity by simplifying the cases where the axis
-// of concatenation is not zero by first tranpsosing the tensors such that the axis of concatenation
-// is the 0'th axis. They can then simply be appended together contiguously and transposed back to the
-// original ordering of dimmensions.
+/*
+* @notice Concat is used to Concatenate a Tensor to another Tensor along a particular axis of concatenation
+* @dev In order to concatenate a Tensor to another Tensor along a partical axes, all axes except the axis
+* of concatenation must be the same.
+* @dev when the axis of concatenation is 0, the contiguous data can just be appended from one Tensor to the
+* other and have the shape adjust
+* @dev when the axis fo concatenation is not 0, the Tensor is permuted such that the axis of concatenation is
+* the 0'th axis. Then he contiguous memory is appened, shape adjusted, and the Tensor is then permuted back to
+* the original configuration.
+ */
 func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 
 	Check_Concat_Requirements(A, B, axis_cat)
@@ -255,11 +273,20 @@ func (A *Tensor) Concat(B *Tensor, axis_cat int) *Tensor {
 //
 // Returns:
 // A slice of integers representing the reordered axes for transposition.
+
+/*
+* @notice Permute Shape is a helper function that accepts an integer slice representing a Tensor shape and and two
+* indices of the shape slice that are to be swapped.
+*
+ */
 func Permute_Shape(shape []int, axis1, axis2 int) []int {
+
+	// Check that the axes are valid for the number of dims in the shape
 	if axis1 < 0 || axis1 >= len(shape) || axis2 < 0 || axis2 >= len(shape) {
-		panic("SwapAxesForTranspose --- Invalid axes")
+		panic("Permute_Shape -- Invalid axes provided")
 	}
 
+	// Initialize a slice to store the new axes order
 	axesReordering := make([]int, len(shape))
 	for i := range shape {
 		axesReordering[i] = i
@@ -271,6 +298,12 @@ func Permute_Shape(shape []int, axis1, axis2 int) []int {
 	return axesReordering
 }
 
+/*
+* @notice Check_Concat_Requirements is a helper function that checks that the requirements for concatenation
+* are met. This includes that the number of dimensions of the tensors are the same, that the axis of
+* concatenation is within the valid range, and that the shape of the tensors are the same except for the axis
+* of concatenation.
+ */
 func Check_Concat_Requirements(A *Tensor, B *Tensor, axis_cat int) {
 	// Ensure that the number of dimensions of the tensors are the same
 	if len(A.Shape) != len(B.Shape) {
@@ -292,10 +325,13 @@ func Check_Concat_Requirements(A *Tensor, B *Tensor, axis_cat int) {
 
 //=====================================================================================================================Extend_Shape()
 
-// The Extend() method is used to add a new dimmension to the tensor. The new dimmension each element
-// across the new dimmension contains a state of the pre extended tensor with all other dimmension elements
-// copied into it. The new dimmension is added to the end of the shape of the tensor. The Extend() method
-// returns a pointer to a new tensor with the extended shape and zeroed data.
+/*
+* @notice Extend() method is used to add a new dimmension to the tensor.
+* @dev Each element of the extended Tensor contains  the state of the original Tensor with all other dimmension
+* elements copied into it. The new dimmension is added to the end of the shape of the tensor.
+* @param num_elements is the number of elements to extend the new dim by
+* @returns pointer to the new Tensor
+ */
 func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	// Check that the number of elements is valid
 	if num_elements < 1 {
@@ -342,10 +378,13 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 
 //=====================================================================================================================Extend_Dim()
 
-// The Extend_Dim() method is used to add new elements to an already existing axis within a tensor.
-// The new data will be initialized to zero. The integer argument axis specifies the axis to be extended,
-// and the integer argument num_elements specifies the number of zeroed elements to be added to the axis.
-// The Extend_Dim() method returns a pointer to a new tensor with the extended shape and zeroed data.
+/*
+* @notice Extend_Dim() method is used to add new elements to an already existing axis within a tensor.
+* @dev The new data will be initialized to zero.
+* @param axis specifies the axis to be extended,
+* @param num_elements specifies the number of zeroed elements to be added to the axis.
+* @returns a pointer to a new tensor with the extended shape and zeroed data.
+ */
 func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 
 	Check_Extend_Dim_Requirements(A, axis, num_elements)
@@ -399,9 +438,14 @@ func Check_Extend_Dim_Requirements(A *Tensor, axis int, num_elements int) {
 
 //=====================================================================================================================Remove_Dim()
 
-// This function uses the Partial() method to take remove remove an axis from a tensor by taking the Partial
-// with all dims kept the same, except for one becoming a singleton dimmension. This requires  an argument of
-// the axis in which to remove the dim as well as which index of that axis to keep. Remove_Dim() first checks.
+/*
+* @notice Remove dim removes an axis from a Tensor
+* @dev In order to remove an entire dimmension, we must specify which element of the axis we are removing to keep.
+* This is done usiong the Slice() function.
+* @param axis_of_removal is the axis to remove
+* @param element_of_retrieval is the element of the axis to keep
+* @returns a pointer to a new tensor with the specified axis removed
+ */
 func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tensor {
 	// create an empty string to store the slice string for Partial()
 	var builder strings.Builder
@@ -429,8 +473,9 @@ func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tens
 
 //=====================================================================================================================Remove_Singleton()
 
-// This function is used to remove a singleton dimmension from a Tensor, It will remove all singleton dimmensions
-// it finds. Which essentially just means that it adjusts the shape slice of the tensor to remove elements of val 1
+/*
+* @notice Remove_Singleton() removes all singleton dimmensions from a Tensor
+ */
 func (A *Tensor) Remove_Singletons() *Tensor {
 
 	// initialize a slice to store the new shape of the tensor
@@ -453,8 +498,11 @@ func (A *Tensor) Remove_Singletons() *Tensor {
 
 //=====================================================================================================================Add_Singleton()
 
-// This function is used to add a singleton dimmension to a Tensor, this menas that a 1 is simply appended to the end
-// of the shape of the existing Tensor. A pointer to a new Tensor is return.
+/*
+* @notice Add_Singleton() adds a singleton dimmension to a Tensor
+* @param index is the index of the shape slice to add the singleton to
+* @returns a pointer to a new tensor with the singleton dimmension added
+ */
 func (A *Tensor) Add_Singleton(index int) *Tensor {
 
 	newTensor := A.Copy()
