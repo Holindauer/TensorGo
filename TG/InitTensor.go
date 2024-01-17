@@ -1,6 +1,8 @@
 package TG
 
-// init_tensor.go contains functions for initializing tensors
+/*
+* @notice init_tensor.go contains functions for initializing tensors
+ */
 
 // This interface initializes each element of the tensor.Data member
 type TensorInitializer interface {

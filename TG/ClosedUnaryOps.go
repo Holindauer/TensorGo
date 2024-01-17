@@ -1,42 +1,10 @@
 package TG
 
-// all_elements.go contains operations performed over all elements of a tensor in which the the result is a
-// version of the original Tensor with the same shape. This is useful for operations such as normalization an
-// elementwise multiplication.
+/*
+* @notice ClosedUnaryOps.go contains functions that accept a single tensor and return a single tensor with the same shape
+ */
 
-// Currently this includes the follwing functions: Add(), Subtract(), Scalar_Mult_(), Normalize()
-
-// =========================================================================================================== Scalar Multiplication
-
-// Define a struct that implements the Batch_Tensor_Tensor_Operation interface. See batching.go for more details
-type ScalarMultOp struct{ scalar float64 }
-
-func (bsm ScalarMultOp) Execute(tensors ...*Tensor) *Tensor {
-
-	A := tensors[0]
-
-	// create new tensor to store result
-	cA := A.Copy()
-	for i := 0; i < len(A.Data); i++ {
-		cA.Data[i] *= bsm.scalar
-	}
-	return cA
-}
-
-// This funciton performs scalar multiplication on a tensor in place
-// It returns a pointer to a new tensor
-func (A *Tensor) Scalar_Mult(scalar float64, batching bool) *Tensor {
-
-	// initialize the batched op
-	scalarMult := ScalarMultOp{scalar: scalar}
-
-	if batching {
-		return BatchedOperation(scalarMult, A) // batched op
-	}
-	return scalarMult.Execute(A) // single op
-}
-
-// =========================================================================================================== Normalilze Tensor Across All Elements
+// ===================================================================================================================== Normalilze Tensor Across All Elements
 
 type NormalizizeOp struct{}
 
@@ -67,7 +35,29 @@ func (A *Tensor) Normalize(batching bool) *Tensor {
 	return normalize.Execute(A) // single op
 }
 
-// =========================================================================================================== Standardize a Batched Tensor
+// ===================================================================================================================== Normalize_Axis()
+
+// NormalizeOperation implements the normalization operation for a tensor slice
+type NormalizeAxisOp struct{}
+
+func (nop NormalizeAxisOp) Apply_InplaceOp(tensorSlice *Tensor) {
+	norm := calculateNorm(tensorSlice) // Implement this function to calculate the norm of the tensor slice
+	for i := range tensorSlice.Data {
+		tensorSlice.Data[i] /= norm
+	}
+}
+
+// calculateNorm calculates the norm of a tensor slice
+func calculateNorm(tensorSlice *Tensor) float64 {
+	return tensorSlice.Norm(false).Data[0]
+}
+
+// Normalize_Axis normalizes a tensor along the specified axis
+func (A *Tensor) Normalize_Axis(axis int) *Tensor {
+	return A.AxisInplaceOperation(axis, NormalizeAxisOp{})
+}
+
+// ===================================================================================================================== Standardize a Batched Tensor
 
 // This struct contains the means and std's along each feature. It is used to define the below method that standardizes each batch element.
 type StandardizeOp struct{ A_Mean_Axis_0, A_Std_Axis_0 *Tensor }
@@ -105,17 +95,20 @@ func (s StandardizeOp) Execute(tensors ...*Tensor) *Tensor {
 	return Standardized_A
 }
 
-// Standardize() is a batched-only method that standardizes each element of a batched tensors using z-score normalization z = (x - mean) / std
-// where x is the element of the batched tensor, and mean and std are the mean and standard deviation of that specific
-// element in the batched tensor.
-
-// Standardization() works for batched Tensors of arbitrary dimmensionality by first Using Mean_Axis() and Std_Axis() operations
-// to collapse the batch dimmension of the Tensor into their respective statistics. Then, each element is passed to the Execute()
-// Method of the Standardize_Operation struct, which iterates through the mulit-dimensional indices of the Tensor standarizing each
+/*
+* @notice Standardize() is a batched-only method that standardizes each element of a batched tensors using z-score normalization
+* @dev  works for batched Tensors of arbitrary dimmensionality by first Using Mean_Axis() and Std_Axis() operations
+* to collapse the batch dimmension of the Tensor into their respective statistics. Then, each element is passed to the Execute()
+* Method of the Standardize_Operation struct, which iterates through the mulit-dimensional indices of the Tensor standarizing each
+ */
 func (A *Tensor) Standardize() *Tensor {
 
+	if !A.Batched {
+		panic("Tensor must have Batched flag set to true to be standardized")
+	}
+
 	// In order for this to work we need to stack the batch
-	A_Mean_Axis_0 := A.Mean_Axis(0, false) // <--- batching set to false because we want to mean each feature
+	A_Mean_Axis_0 := A.Mean_Axis(0, false) // <--- batching set to false because we want to mean each feature along the batch axis
 	A_Std_Axis_0 := A.Std_Axis(0, false)
 
 	op := StandardizeOp{A_Mean_Axis_0, A_Std_Axis_0}

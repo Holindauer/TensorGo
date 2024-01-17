@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-//===================================================================================================================== Slice()
+//============================================================================================================================== Slice()
 
 /*
 * @notice Slice() uses Python-like slice notation to retrieve a subset of a Tensor. A slice from each dimension of the tensor
@@ -90,7 +90,7 @@ func (A *Tensor) Slice(slice string) *Tensor {
 	return slicedTensor
 }
 
-//=====================================================================================================================Reshape()
+//============================================================================================================================== Reshape()
 
 // / @dev This struct contains the new shape me
 type ReshapeOp struct{ shape []int }
@@ -136,7 +136,7 @@ func (A *Tensor) Reshape(shape []int, batching bool) *Tensor {
 	return reshape.Execute(A) // otherwise single reshape
 }
 
-//=====================================================================================================================Transpose()
+//============================================================================================================================== Transpose()
 
 /*
 * @notice Permute is used to reorder the dimmension of a Tensor.
@@ -193,7 +193,7 @@ func (A *Tensor) Permute(perumuation []int) *Tensor {
 	return B
 }
 
-//===================================================================================================================== Concat()
+//============================================================================================================================== Concat()
 
 /*
 * @notice Concat is used to Concatenate a Tensor to another Tensor along a particular axis of concatenation
@@ -323,7 +323,7 @@ func Check_Concat_Requirements(A *Tensor, B *Tensor, axis_cat int) {
 	}
 }
 
-//=====================================================================================================================Extend_Shape()
+//============================================================================================================================== Extend_Shape()
 
 /*
 * @notice Extend() method is used to add a new dimmension to the tensor.
@@ -376,7 +376,7 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	return extendedTensor
 }
 
-//=====================================================================================================================Extend_Dim()
+//============================================================================================================================== Extend_Dim()
 
 /*
 * @notice Extend_Dim() method is used to add new elements to an already existing axis within a tensor.
@@ -436,7 +436,7 @@ func Check_Extend_Dim_Requirements(A *Tensor, axis int, num_elements int) {
 	}
 }
 
-//=====================================================================================================================Remove_Dim()
+//============================================================================================================================== Remove_Dim()
 
 /*
 * @notice Remove dim removes an axis from a Tensor
@@ -471,7 +471,7 @@ func (A *Tensor) Remove_Dim(axis_of_removal int, element_of_retrieval int) *Tens
 	return A_Partial
 }
 
-//=====================================================================================================================Remove_Singleton()
+//============================================================================================================================== Remove_Singleton()
 
 /*
 * @notice Remove_Singleton() removes all singleton dimmensions from a Tensor
@@ -496,7 +496,7 @@ func (A *Tensor) Remove_Singletons() *Tensor {
 
 }
 
-//=====================================================================================================================Add_Singleton()
+//============================================================================================================================== Add_Singleton()
 
 /*
 * @notice Add_Singleton() adds a singleton dimmension to a Tensor

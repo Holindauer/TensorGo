@@ -6,19 +6,7 @@ import (
 	"math"
 )
 
-// this helper function checks if two Tensors are vectors of the same dimension
-func SameVectorSize(t1 *Tensor, t2 *Tensor) bool {
-
-	if len(t1.Shape) != 1 || len(t2.Shape) != 1 { // check if tensors are vectors (1D)
-		return false
-	}
-	if len(t1.Data) != len(t2.Data) { // check if vectors are of same length
-		return false
-	}
-	return true
-}
-
-//---------------------------------------------------------------------------------------------------------------------------- Dot()
+//============================================================================================================================== Dot()
 
 type DotOp struct{}
 
@@ -54,7 +42,7 @@ func Dot(A *Tensor, B *Tensor, batching bool) *Tensor {
 	return dot.Execute(A, B) // single op
 }
 
-//---------------------------------------------------------------------------------------------------------------------------- Norm()
+//============================================================================================================================== Norm()
 
 type NormOp struct{}
 
@@ -83,7 +71,7 @@ func (A *Tensor) Norm(batching bool) *Tensor {
 	return norm.Execute(A) // single op
 }
 
-//---------------------------------------------------------------------------------------------------------------------------- Unit()
+//============================================================================================================================== Unit()
 
 type UnitOp struct{}
 
@@ -121,7 +109,7 @@ func (A *Tensor) Unit(batching bool) *Tensor {
 	return unit.Execute(A) // single op
 }
 
-//---------------------------------------------------------------------------------------------------------------------------- Cosine_Similarity()
+//============================================================================================================================== Cosine_Similarity()
 
 type CosSimilarityOp struct{}
 
@@ -159,7 +147,7 @@ func Cosine_Similarity(A *Tensor, B *Tensor, batching bool) *Tensor {
 	return cos.Execute(A, B) // single op
 }
 
-//---------------------------------------------------------------------------------------------------------------------------- Angle()
+//============================================================================================================================== Angle()
 
 func Angle_Vector(A *Tensor, B *Tensor, batching bool) *Tensor {
 
@@ -177,7 +165,7 @@ func Angle_Vector(A *Tensor, B *Tensor, batching bool) *Tensor {
 	return applyArcCos(Cosine_Similarity(A, B, false)) // single op
 }
 
-//---------------------------------------------------------------------------------------------------------------------------- Funcs to check vector features --- which return bools
+//============================================================================================================================== Funcs to check vector features --- which return bools
 
 // TODO: These need to stop using BoolData and instead just return a Tensor of ones or zeros
 
@@ -270,7 +258,7 @@ func Angle_Vector(A *Tensor, B *Tensor, batching bool) *Tensor {
 // 	return Check_Vector_Feature(A, B, checker_func, batching)
 // }
 
-//---------------------------------------------------------------------------------------------------------------------------- Outer()
+//============================================================================================================================== Outer()
 
 type OuterOp struct{}
 

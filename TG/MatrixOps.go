@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-//-------------------------------------------------------------------------------------------------------------- Matmul()
+//===================================================================================================================== Matmul()
 
 type MatMulOp struct{}
 
@@ -52,7 +52,7 @@ func MatMul(A *Tensor, B *Tensor, batching bool) *Tensor {
 	}
 }
 
-//-------------------------------------------------------------------------------------------------------------- Display_Matrix()
+//===================================================================================================================== Display_Matrix()
 
 // TODO <--- implement batching for non returning functions into the new BatchedOperation abstraction
 
@@ -90,7 +90,7 @@ func Display_Matrix(A *Tensor, batching bool) {
 
 }
 
-//-------------------------------------------------------------------------------------------------------------- Augment_Matrix()
+//===================================================================================================================== Augment_Matrix()
 
 // This function creates an augmented matrix fromt two matrix (2D) Tensors for use in the Gaussian_Elimination function.
 // Put simply, this fucniton checks that the two matricies are compatible for contatination alogn the 1'th axis, are 2

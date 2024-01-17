@@ -14,8 +14,10 @@ type JSON_Tensor struct {
 	Batched  string
 }
 
-// This function marshals the members of a tensor to JSON and returns a JSON_Tensor
-// Note, the JSON_Tensor itself is not JSON, it is a struct with string members
+/*
+* @notice marshals the members of a tensor to JSON and returns a JSON_Tensor
+* Note, the JSON_Tensor itself is not JSON, it is a struct with string members
+ */
 func MarshalTensor(A *Tensor) *JSON_Tensor {
 
 	// Marshal Tensor Members to JSON
@@ -71,7 +73,9 @@ func (A *Tensor) Save_JSON(fileName string) {
 	fmt.Println(fileName, " written successfully")
 }
 
-// This function loads a tensor from a JSON file and returns it
+/*
+* @notice This function loads a tensor from a JSON file and returns it
+ */
 func Load_JSON(fileName string) *Tensor {
 	file, err := os.Open(fileName)
 	if err != nil {
