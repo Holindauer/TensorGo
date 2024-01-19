@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	. "github.com/Holindauer/Tensor-Go/TG"
+	. "github.com/Holindauer/Tensor-Go/TensorGo"
 )
 
 // Example usage and testing of the Value struct and its methods.
@@ -20,10 +20,10 @@ func main() {
 	r.Backward()
 
 	// Print gradients
-	fmt.Println("x.Grad:", x.Grad, "x.Data: ", x.Data, "x.Op: ", x.Op)
-	fmt.Println("y.Grad:", y.Grad, "y.Data: ", y.Data, "y.Op: ", y.Op)
-	fmt.Println("z.Grad:", z.Grad, "z.Data: ", z.Data, "z.Op: ", z.Op)
-	fmt.Println("w.Grad:", w.Grad, "w.Data: ", w.Data, "w.Op: ", w.Op)
-	fmt.Println("r.Grad:", r.Grad, "r.Data: ", r.Data, "r.Op: ", r.Op)
+	fmt.Println("x.Grad:", x.Grad, "x.Data: ", x.Scalar, "x.Op: ", x.Op)
+	fmt.Println("y.Grad:", y.Grad, "y.Data: ", y.Scalar, "y.Op: ", y.Op)
+	fmt.Println("z.Grad:", z.Grad, "z.Data: ", z.Scalar, "z.Op: ", z.Op)
+	fmt.Println("w.Grad:", w.Grad, "w.Data: ", w.Scalar, "w.Op: ", w.Op)
+	fmt.Println("r.Grad:", r.Grad, "r.Data: ", r.Scalar, "r.Op: ", r.Op)
 
 }

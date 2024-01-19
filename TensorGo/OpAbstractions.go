@@ -29,6 +29,28 @@ func ElementwiseOp(A *Tensor, B *Tensor, op _ElementwiseOp) *Tensor {
 	return C // <-- pointer
 }
 
+//============================================================================================================================== Gradient Tracked Elementwise Tensor Operations
+
+// This interace is used to generalize elementwise tensor operations on the level of individual elements
+type _ElementwiseOpGrad interface {
+	ExecuteElementwiseOp(a, b *Value) *Value
+}
+
+// This function is a generalization of elementwise tensor operations. It takes in two tensors and an Element_Operation.
+func ElementwiseOpGrad(A *Tensor, B *Tensor, op _ElementwiseOpGrad) *Tensor {
+
+	if !Same_Shape(A, B) {
+		panic("Within Elementwise_Operation(): Tensors must have the same shape")
+	}
+
+	C := Zero_Tensor(A.Shape, false)
+
+	for i := 0; i < len(A.Data); i++ {
+		C.DataReqGrad[i] = op.ExecuteElementwiseOp(A.DataReqGrad[i], B.DataReqGrad[i]) // perform operation with elements
+	}
+	return C
+}
+
 //============================================================================================================================== Broadcasting
 
 /*
