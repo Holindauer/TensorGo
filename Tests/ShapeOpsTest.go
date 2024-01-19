@@ -1,11 +1,13 @@
 package TG
 
-// shape_test.go contains tests for functions in shape.go
+/*
+* @notice ShapeOpsTest.go contains tests for functions in shape.go
+ */
 
 import (
 	"testing"
 
-	. "github.com/Holindauer/Tensor-Go/TG"
+	. "github.com/Holindauer/Tensor-Go/TensorGo"
 )
 
 func Test_Slice(t *testing.T) {
@@ -88,7 +90,7 @@ func Test_Concat(t *testing.T) {
 	}
 }
 
-func Test_Extend_Shape(t *testing.T) {
+func Test_ExtendShape(t *testing.T) {
 	// Test Extend_Shape()
 
 	// Create a 3x3x3 Range tensor
@@ -108,8 +110,7 @@ func Test_Extend_Shape(t *testing.T) {
 	}
 }
 
-func Test_Extend_Dim(t *testing.T) {
-	// Test Extend_Dim()
+func Test_ExtendDim(t *testing.T) {
 
 	// Create a 3x3x3 Range tensor
 	A := Range_Tensor([]int{3, 3, 3}, true)

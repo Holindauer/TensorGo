@@ -168,29 +168,6 @@ func Eye(shape []int, batching bool) *Tensor {
 	return A
 }
 
-//=============================================================================================================Gramien Matrix
-
-type GramienInitializer struct{}
-
-func (gi *GramienInitializer) Execute(tensors ...*Tensor) *Tensor { // <--- Execute() from Batch_Tensor_Tensor_Interface() in batching.go
-	A := tensors[0]
-	if len(A.Shape) != 2 {
-		panic("Within Gramien_Matrix(): Tensor must be 2D")
-	}
-	return MatMul(A, A.Permute([]int{1, 0}), false) // <--- A @ A.T
-}
-
-// Gramien_Matrix(A) returns A * A.T for a square matrix.
-func (A *Tensor) Gram(batching bool) *Tensor {
-
-	GI := &GramienInitializer{}
-	if !batching {
-		return GI.Execute(A) // single op
-	} else {
-		return BatchedOperation(GI, A) // batched op
-	}
-}
-
 //=============================================================================================================Sparse Matrix
 
 // type SparseInitializer struct{ percent_fill float64 }

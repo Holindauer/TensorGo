@@ -6,7 +6,7 @@ package TG
 import (
 	"testing"
 
-	. "github.com/Holindauer/Tensor-Go/TG"
+	. "github.com/Holindauer/Tensor-Go/TensorGo"
 )
 
 func Test_Ones_Init(t *testing.T) {
@@ -105,25 +105,4 @@ func Test_Eye(t *testing.T) {
 	if A_Extracted.Get([]int{0, 0}) != 1 || A_Extracted.Get([]int{1, 1}) != 1 || A_Extracted.Get([]int{2, 2}) != 1 {
 		t.Errorf("Eye() failed. Expected Output: 1 --- Actual Output: %v", A.Get([]int{0, 0}))
 	}
-}
-
-func Test_Gram_Init(t *testing.T) {
-
-	/// @notice Test Gram() Unbatched
-	A := Range_Tensor([]int{3, 3}, false)
-	B := A.Gram(false)
-
-	if B.Get([]int{0, 0}) != 5 || B.Get([]int{1, 1}) != 50 || B.Get([]int{2, 2}) != 149 {
-		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Get([]int{0, 0}), B.Get([]int{1, 1}), B.Get([]int{2, 2}))
-	}
-
-	/// @notice Test Gram() Batched
-	A = Range_Tensor([]int{3, 3, 3}, true)
-	B = A.Gram(true)
-	B_Extracted := B.GetBatchElement(1)
-
-	if B_Extracted.Get([]int{0, 0}) != 5 || B_Extracted.Get([]int{1, 1}) != 50 || B_Extracted.Get([]int{2, 2}) != 149 {
-		t.Errorf("Gram() failed. Expected Output: 5, 14, 23 --- Actual Output: %v, %v, %v", B.Get([]int{0, 0}), B.Get([]int{1, 1}), B.Get([]int{2, 2}))
-	}
-
 }

@@ -9,7 +9,7 @@ TODO: better test coverage is needed for these functions
 import (
 	"testing"
 
-	. "github.com/Holindauer/Tensor-Go/TG"
+	. "github.com/Holindauer/Tensor-Go/TensorGo"
 )
 
 func Test_Sum_Axis(t *testing.T) {

@@ -5,7 +5,7 @@ package TG
 import (
 	"testing"
 
-	. "github.com/Holindauer/Tensor-Go/TG"
+	. "github.com/Holindauer/Tensor-Go/TensorGo"
 )
 
 func Test_Index(t *testing.T) {
