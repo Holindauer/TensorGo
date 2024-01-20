@@ -48,4 +48,12 @@ func main() {
 	// update weights
 	learningRate := 0.001
 	mlp.Step(learningRate)
+
+	// Downlaod Iris dataset
+	var IrisDataset *Tensor = LoadCSV("iris_dataset.csv", true)
+	fmt.Println("Iris: ", IrisDataset.Shape)
+
+	// Save the Csv
+	SaveCSV(IrisDataset, "iris_dataset_copy.csv")
+
 }
