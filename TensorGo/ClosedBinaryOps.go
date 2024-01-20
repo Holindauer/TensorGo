@@ -29,6 +29,36 @@ func Add(A *Tensor, B *Tensor, batching bool) *Tensor {
 	return ewAddition.Execute(A, B) // single op
 }
 
+//===================================================================================================================== Gradient Tracked Elementwise Tensor Addition
+
+type EWAdditionGradTracked struct{}
+
+// @notice this method implements gradient tracked addition of 2 Value structs
+func (ea EWAdditionGradTracked) ExecuteElementwiseOp(a, b *Value) *Value {
+	return a.Add(b) // <--- Value Method from AutoGrad.go
+}
+
+func (ba EWAdditionGradTracked) Execute(tensors ...*Tensor) *Tensor {
+	A, B := tensors[0], tensors[1]
+	return ElementwiseOp(A, B, EWAddition{})
+}
+
+/*
+* @notice AddGrad() implements elementwise Tensor addition with gradient tracking.
+* @dev Gradient tracked data is stored in the DataReqGrad slice of the Tensor struct, different than the Data slice of just sclalars.
+* @dev The DataReqGrad slice stores pointers to Value structs, which store the computational graph and gradient for
+* reverse mode autodiff.
+ */
+func AddGrad(A *Tensor, B *Tensor, batching bool) *Tensor {
+
+	addGrad := EWAdditionGradTracked{} // Create an instance of EWAddition
+
+	if batching {
+		return BatchedOperation(addGrad, A, B) // batched op
+	}
+	return addGrad.Execute(A, B) // single op
+}
+
 //===================================================================================================================== Elementwise Tensor Subtraction
 
 // Define a struct that implements the Element_Operation interface

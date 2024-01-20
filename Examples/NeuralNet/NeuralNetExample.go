@@ -44,4 +44,8 @@ func main() {
 
 	// backward pass
 	output.DataReqGrad[0].Backward()
+
+	// update weights
+	learningRate := 0.001
+	mlp.Step(learningRate)
 }

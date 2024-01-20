@@ -97,7 +97,9 @@ func Linear(inputFeatures int, layerNodes int, activation string, prev *Layer) *
 
 /*
 * @notice Forward() is a function that is used to perform a forward pass through a multilayer perceptron.
-* @dev The forward pass by default works on batched Tensors. This
+* @dev The forward pass by default works on batched Tensors. The batch size is the first dimension of the Tensor.
+* @param Batch: A batch of Tensors to be passed through the MLP.
+* @param Net: A pointer to the first layer in the MLP linked list of Layer structs.
  */
 func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 
@@ -110,10 +112,9 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 	// Iterate layers in the network
 	for Net != nil {
 
-		// Matrix multiplication and bias addition
-		// Assuming a function MatMul for matrix multiplication and Add for addition
-		x = MatMulGrad(x, Net.Weights, true)
-		x = AddGrad(x, Net.Biases, true)
+		// Multiply weights, add biases
+		x = MatMulGrad(x, Net.Weights, true) // <-- MatrixOps.go
+		x = AddGrad(x, Net.Biases, true)     // <-- ClosedBinaryOps.go
 
 		// Apply activation function for the layer
 		switch Net.Activation {
@@ -171,89 +172,33 @@ func (layer *Layer) ZeroGrad() {
 	}
 }
 
-//===================================================================================================================== Gradient Tracked Elementwise Tensor Addition
-
-type EWAdditionGradTracked struct{}
-
-// @notice this method implements gradient tracked addition of 2 Value structs
-func (ea EWAdditionGradTracked) ExecuteElementwiseOp(a, b *Value) *Value {
-	return a.Add(b) // <--- Value Method from AutoGrad.go
-}
-
-func (ba EWAdditionGradTracked) Execute(tensors ...*Tensor) *Tensor {
-	A, B := tensors[0], tensors[1]
-	return ElementwiseOp(A, B, EWAddition{})
-}
-
 /*
-* @notice AddGrad() implements elementwise Tensor addition with gradient tracking.
-* @dev Gradient tracked data is stored in the DataReqGrad slice of the Tensor struct, different than the Data slice of just sclalars.
-* @dev The DataReqGrad slice stores pointers to Value structs, which store the computational graph and gradient for
-* reverse mode autodiff.
+* @notice Step() applies the gradient descent learning rule to the weights and biases of an MLP.
+* @dev for Step() to be used, first the gradient must be computed for each Value struct in the MLP. This is done by
+* calling .Backward() on the output of the MLP, which will call .Backward() on each Value struct in the MLP.
+* @param learningRate: The learning rate to be used in the gradient descent learning rule.
+* @param layer: The first layer in the MLP linked list of Layer structs.
  */
-func AddGrad(A *Tensor, B *Tensor, batching bool) *Tensor {
+func (layer *Layer) Step(learningRate float64) {
 
-	addGrad := EWAdditionGradTracked{} // Create an instance of EWAddition
+	// Iterate through each layer of the MLP
+	for layer != nil {
 
-	if batching {
-		return BatchedOperation(addGrad, A, B) // batched op
-	}
-	return addGrad.Execute(A, B) // single op
-}
-
-//===================================================================================================================== Gradient Tracked Matrix Mulitplication
-
-type MatMulGradOp struct{}
-
-// Implementing the Execute method of IBatching interface
-func (op MatMulGradOp) Execute(tensors ...*Tensor) *Tensor {
-	// Assumes tensors length will be 2 for matrix multiplication
-	A, B := tensors[0], tensors[1]
-
-	// In case of Matrix Vector Multiplication
-	if len(B.Shape) == 1 {
-		B = B.Add_Singleton(0)
-	}
-
-	// Check that the two Tensors are compatible for matrix multiplication
-	Check_MatMul_Compatibility(A, B)
-
-	C := Zero_Tensor([]int{A.Shape[0], B.Shape[1]}, false)
-	var sum *Value
-
-	for row := 0; row < C.Shape[0]; row++ {
-		for col := 0; col < C.Shape[1]; col++ {
-
-			sum = NewValue(0.0, nil, "")
-
-			for k := 0; k < A.Shape[1]; k++ {
-
-				// Gradient Tracked Dot Product
-				elementA := A.DataReqGrad[A.Index([]int{row, k})]
-				elementB := B.DataReqGrad[B.Index([]int{k, col})]
-
-				// grad tracked multiplication
-				var mul *Value = elementA.Mul(elementB)
-
-				sum = sum.Add(mul)
-			}
-
-			C.DataReqGrad[C.Index([]int{row, col})] = sum
+		// Update weights
+		numWeights := len(layer.Weights.DataReqGrad)
+		for i := 0; i < numWeights; i++ {
+			// Gradient descent update rule: W = W - learningRate * dW
+			layer.Weights.DataReqGrad[i].Scalar -= learningRate * layer.Weights.DataReqGrad[i].Grad
 		}
-	}
 
-	return C
-}
+		// Update biases
+		numBiases := len(layer.Biases.DataReqGrad)
+		for i := 0; i < numBiases; i++ {
+			// Gradient descent update rule: b = b - learningRate * db
+			layer.Biases.DataReqGrad[i].Scalar -= learningRate * layer.Biases.DataReqGrad[i].Grad
+		}
 
-func MatMulGrad(A *Tensor, B *Tensor, batching bool) *Tensor {
-
-	matmul := MatMulOp{} // Create an instance of Batched_Matmul
-
-	if batching {
-		// If batching is true, call BatchedOperation directly
-		return BatchedOperation(matmul, A, B)
-	} else {
-		// If batching is false, call the Execute method directly
-		return matmul.Execute(A, B)
+		// Proceed to the next layer
+		layer = layer.Next
 	}
 }

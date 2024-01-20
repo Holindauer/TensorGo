@@ -53,6 +53,63 @@ func MatMul(A *Tensor, B *Tensor, batching bool) *Tensor {
 	}
 }
 
+//===================================================================================================================== Gradient Tracked Matrix Mulitplication
+
+type MatMulGradOp struct{}
+
+// Implementing the Execute method of IBatching interface
+func (op MatMulGradOp) Execute(tensors ...*Tensor) *Tensor {
+	// Assumes tensors length will be 2 for matrix multiplication
+	A, B := tensors[0], tensors[1]
+
+	// In case of Matrix Vector Multiplication
+	if len(B.Shape) == 1 {
+		B = B.Add_Singleton(0)
+	}
+
+	// Check that the two Tensors are compatible for matrix multiplication
+	Check_MatMul_Compatibility(A, B)
+
+	C := Zero_Tensor([]int{A.Shape[0], B.Shape[1]}, false)
+	var sum *Value
+
+	for row := 0; row < C.Shape[0]; row++ {
+		for col := 0; col < C.Shape[1]; col++ {
+
+			sum = NewValue(0.0, nil, "")
+
+			for k := 0; k < A.Shape[1]; k++ {
+
+				// Gradient Tracked Dot Product
+				elementA := A.DataReqGrad[A.Index([]int{row, k})]
+				elementB := B.DataReqGrad[B.Index([]int{k, col})]
+
+				// grad tracked multiplication
+				var mul *Value = elementA.Mul(elementB)
+
+				sum = sum.Add(mul)
+			}
+
+			C.DataReqGrad[C.Index([]int{row, col})] = sum
+		}
+	}
+
+	return C
+}
+
+func MatMulGrad(A *Tensor, B *Tensor, batching bool) *Tensor {
+
+	matmul := MatMulOp{} // Create an instance of Batched_Matmul
+
+	if batching {
+		// If batching is true, call BatchedOperation directly
+		return BatchedOperation(matmul, A, B)
+	} else {
+		// If batching is false, call the Execute method directly
+		return matmul.Execute(A, B)
+	}
+}
+
 //===================================================================================================================== Display_Matrix()
 
 // TODO <--- implement batching for non returning functions into the new BatchedOperation abstraction
