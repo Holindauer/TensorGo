@@ -34,17 +34,17 @@ type Layer struct {
 * @dev The activation will be applied to each layer except the last.
 * @param the layerNodeslice is used to specify the number of neurons in each layer.
  */
-func MLP(inputFeatures int, layerNodes []int, activation string) *Layer {
+func MLP(inputFeatures int, layerNodes []int, activations []string) *Layer {
 
 	// create the first layer
-	var layer *Layer = Linear(inputFeatures, layerNodes[0], activation, nil)
+	var layer *Layer = Linear(inputFeatures, layerNodes[0], activations[0], nil)
 
 	// save the first layer pointer to return
 	var firstLayer *Layer = layer
 
 	// create the rest of the layers
 	for i := 1; i < len(layerNodes); i++ {
-		layer = Linear(layerNodes[i-1], layerNodes[i], activation, layer)
+		layer = Linear(layerNodes[i-1], layerNodes[i], activations[i], layer)
 	}
 
 	// return the first layer
@@ -65,7 +65,7 @@ func Linear(inputFeatures int, layerNodes int, activation string, prev *Layer) *
 	Weights.Shape = []int{layerNodes, inputFeatures}
 	Biases.Shape = []int{layerNodes}
 
-	// slice of value pointers for the weights and biases
+	// contiguous slice of value pointers for the weights and biases
 	Weights.DataReqGrad = make([]*Value, layerNodes*inputFeatures)
 	Biases.DataReqGrad = make([]*Value, layerNodes)
 
@@ -122,6 +122,14 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 			for i := 0; i < len(x.DataReqGrad); i++ {
 				x.DataReqGrad[i] = x.DataReqGrad[i].ReLU()
 			}
+		case "sigmoid":
+			// Apply Sigmoid to all elements in the hidden state
+			for i := 0; i < len(x.DataReqGrad); i++ {
+				x.DataReqGrad[i] = x.DataReqGrad[i].Sigmoid()
+			}
+		case "softmax":
+			// Apply Softmax to all elements in the hidden state
+			x = x.Softmax() // Softmax() requires the entire vector
 		}
 
 		// next layer
@@ -129,6 +137,38 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 	}
 
 	return x
+}
+
+/*
+* @notice ZeroGrad() is a function that is used to zero out the gradients of all the Value structs in all layers
+* in an MLP linked list of Layer structs.
+* @param layer: The first layer in the MLP linked list of Layer structs.
+ */
+func (layer *Layer) ZeroGrad() {
+
+	var numWeights int
+	var numBiases int
+
+	// print the number of neurons in each layer
+	for layer != nil {
+
+		// get the number of weights and biases in this layer
+		numWeights = layer.Weights.Shape[0] * layer.Weights.Shape[1]
+		numBiases = layer.Biases.Shape[0]
+
+		// zero weight grads
+		for i := 0; i < numWeights; i++ {
+			layer.Weights.DataReqGrad[i].Grad = 0.0
+		}
+
+		// zero bias grads
+		for i := 0; i < numBiases; i++ {
+			layer.Biases.DataReqGrad[i].Grad = 0.0
+		}
+
+		// next node
+		layer = layer.Next
+	}
 }
 
 //===================================================================================================================== Gradient Tracked Elementwise Tensor Addition
@@ -215,39 +255,5 @@ func MatMulGrad(A *Tensor, B *Tensor, batching bool) *Tensor {
 	} else {
 		// If batching is false, call the Execute method directly
 		return matmul.Execute(A, B)
-	}
-}
-
-//=====================================================================================================================
-
-/*
-* @notice ZeroGrad() is a function that is used to zero out the gradients of all the Value structs in all layers
-* in an MLP linked list of Layer structs.
-* @param layer: The first layer in the MLP linked list of Layer structs.
- */
-func (layer *Layer) ZeroGrad() {
-
-	var numWeights int
-	var numBiases int
-
-	// print the number of neurons in each layer
-	for layer != nil {
-
-		// get the number of weights and biases in this layer
-		numWeights = layer.Weights.Shape[0] * layer.Weights.Shape[1]
-		numBiases = layer.Biases.Shape[0]
-
-		// zero weight grads
-		for i := 0; i < numWeights; i++ {
-			layer.Weights.DataReqGrad[i].Grad = 0.0
-		}
-
-		// zero bias grads
-		for i := 0; i < numBiases; i++ {
-			layer.Biases.DataReqGrad[i].Grad = 0.0
-		}
-
-		// next node
-		layer = layer.Next
 	}
 }

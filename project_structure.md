@@ -55,7 +55,7 @@ You will notice that nearly every function in this library accepts a boolean arg
 [BatchedOps.go](TensorGo/BatchedOps.go) contains interfaces for generalizing the process of performing an operation aross a batch of Tensors. Nearly every function in this Tensor-Go accepts a boolean argument called "batching". If set to true, the function will be performed using one of the functions in BatchedOps.go to distributed the operation across batch elements.
 
 ## AutoGrad.go and NeuralNetwork.go
- [AutoGrad.go ]( TensorGo/AutoGrad.go ) contains an implementation of reverse mode automatic differentiation for the use of backpropogation in neural network training. This is a special functionality that involves maintaing a directed acyclic graph of all computation that went into creating a specific scalar value. This computational graph also tracks the gradient computation at each node for backpropogation. 
+ [AutoGrad.go ]( TensorGo/AutoGrad.go ) contains an implementation of reverse mode automatic differentiation for the use of backpropogation in neural network training. This is a special functionality that involves maintaing a directed acyclic graph of all computation involved in creating a specific scalar value. This computational graph also tracks the gradient computation at each node for backpropogation. 
 
  [NeuralNetwork.go](TensorGo/NeuralNetwork.go) allows for the creation of neural networks (atm only mlps). Neural nets use AutoGrad.go to track the gradient of the loss wrt each parameter in the network.
 

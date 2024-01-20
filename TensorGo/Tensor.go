@@ -10,7 +10,7 @@ package TG
 type Tensor struct {
 	Shape       []int
 	Data        []float64
-	DataReqGrad []*Value // <-- Value is in AutoGrad.go
+	DataReqGrad []*Value // <-- Value struct defined in AutoGrad.go
 	Batched     bool
 }
 

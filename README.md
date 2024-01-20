@@ -17,7 +17,7 @@
 - Operations on Tensors of n dimmensions
 - Neural Networks 
 - Reverse Mode Autodiff for Backpropgation
-- Linear Algebra Operations
+- Linear Algebra Functionality
 
 
 ## Setup

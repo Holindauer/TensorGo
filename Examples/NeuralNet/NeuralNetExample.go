@@ -10,9 +10,9 @@ import (
 func main() {
 
 	var mlp *Layer = MLP(
-		3,                 // input features
-		[]int{8, 8, 8, 1}, // neurons per layer
-		"relu",            // activation function
+		3,                                   // input features
+		[]int{16, 16, 2},                    // neurons per layer
+		[]string{"relu", "relu", "softmax"}, // activation function
 	)
 
 	i := 1
