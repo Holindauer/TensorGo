@@ -24,7 +24,7 @@ func (op DotOp) Execute(tensors ...*Tensor) *Tensor {
 	}
 
 	// create a tensor with one element to store the dot product
-	dot_tensor := Zero_Tensor([]int{1}, false)
+	dot_tensor := ZeroTensor([]int{1}, false)
 	dot_tensor.Data[0] = dot
 	return dot_tensor
 }
@@ -54,7 +54,7 @@ func (op NormOp) Execute(tensor ...*Tensor) *Tensor {
 		panic("Within Norm(): Tensor must be a vector to compute norm")
 	}
 
-	normTensor := Zero_Tensor([]int{1}, false)
+	normTensor := ZeroTensor([]int{1}, false)
 	normTensor.Data[0] = math.Sqrt(Dot(A, A, false).Data[0])
 
 	return normTensor
@@ -86,11 +86,11 @@ func (op UnitOp) Execute(tensors ...*Tensor) *Tensor {
 	norm := A.Norm(false).Data[0] // <-- single element Tensor
 
 	if norm == 0 { // handle the case where normalization involves division by zero
-		return Zero_Tensor(A.Shape, false)
+		return ZeroTensor(A.Shape, false)
 	}
 
 	// compute the unit vector of A
-	Unit_A := Zero_Tensor(A.Shape, false)
+	Unit_A := ZeroTensor(A.Shape, false)
 	for i := 0; i < len(A.Data); i++ {
 		Unit_A.Data[i] = A.Data[i] / norm
 	}
@@ -121,7 +121,7 @@ func (op CosSimilarityOp) Execute(tensrs ...*Tensor) *Tensor {
 		panic("Within Cosine_Similarity(): Tensors must both be vectors to compute cosine similarity")
 	}
 
-	similarityTensor := Zero_Tensor([]int{1}, false)
+	similarityTensor := ZeroTensor([]int{1}, false)
 
 	normA := A.Norm(false).Data[0]
 	normB := A.Norm(false).Data[0]
@@ -289,4 +289,46 @@ func Outer(A *Tensor, B *Tensor, batching bool) *Tensor {
 		return BatchedOperation(outer, A, B) // batched op
 	}
 	return outer.Execute(A, B) // single op
+}
+
+//============================================================================================================================== ArgmaxVector()
+
+type ArgmaxVectorOp struct{}
+
+func (op ArgmaxVectorOp) Execute(tensors ...*Tensor) *Tensor {
+
+	A := tensors[0]
+
+	if len(A.Shape) != 1 {
+		panic("Within ArgmaxVector(): Tensor must be a vector to compute argmax")
+	}
+
+	// initialize the argmax to the first element
+	argmax := 0
+	for i := 0; i < len(A.Data); i++ {
+		if A.Data[i] > A.Data[argmax] {
+			argmax = i
+		}
+	}
+
+	// create a tensor with one element to store the argmax
+	argmax_tensor := ZeroTensor([]int{1}, false)
+	argmax_tensor.Data[0] = float64(argmax)
+	return argmax_tensor
+}
+
+/*
+* @notice ArgmaxVector() is a function that is used to compute the argmax of a vector Tensor. It returns a single element Tensor
+* with the index of the maximum element in the vector.
+* @param A: The vector Tensor to compute the argmax of.
+* @param batching: A boolean that indicates whether the Tensor is being used as a batch of Tensors or not.
+ */
+func (A *Tensor) ArgmaxVector(batching bool) *Tensor {
+
+	argmax := ArgmaxVectorOp{}
+
+	if batching {
+		return BatchedOperation(argmax, A) // batched op
+	}
+	return argmax.Execute(A) // single op
 }
