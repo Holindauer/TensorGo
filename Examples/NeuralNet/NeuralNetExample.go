@@ -9,51 +9,78 @@ import (
 // Example usage and testing of the Value struct and its methods.
 func main() {
 
+	// Load Iris dataset
+	var Iris *Tensor = LoadCSV("iris_dataset.csv", true)
+	fmt.Println("Iris Dataset shape: ", Iris.Shape)
+
+	//Seperate the targets from the features
+	features, targets := Iris.Slice(":, :4"), Iris.Slice(":, 4:")
+
+	fmt.Println("Features shape: ", features.Shape, " Targets shape: ", targets.Shape)
+
+	//feature := Gradify(features.Remove_Dim(0, 2).Reshape([]int{4, 1}, false))
+
+	// Split data into train and test sets
+	trainFeatures, trainTargets := Gradify(features.Slice(":120, :")), Gradify(targets.Slice(":120, :"))
+	testFeatures, testTargets := features.Slice("120:, :"), targets.Slice("120:, :")
+
+	fmt.Println("\nTrain Features shape: ", trainFeatures.Shape)
+	fmt.Println("Train Targets shape: ", trainTargets.Shape)
+	fmt.Println("\nTest Features shape: ", testFeatures.Shape)
+	fmt.Println("Test Targets shape: ", testTargets.Shape)
+
+	// Create a new MLP
 	var mlp *Layer = MLP(
-		3,                                   // input features
-		[]int{16, 16, 2},                    // neurons per layer
-		[]string{"relu", "relu", "softmax"}, // activation function
+		4,                                   // input features
+		[]int{16, 16, 3},                    // neurons per layer
+		[]string{"relu", "relu", "softmax"}, // activations
 	)
 
-	i := 1
+	// Print a summary of the MLP
+	Summary(mlp)
 
-	// print the number of neurons in each layer
-	for mlp != nil {
-		fmt.Println("Layer: ", i, " Neurons: ", mlp.Neurons, " Activation: ", mlp.Activation, " Weights shape: ", mlp.Weights.Shape, " Biases shape: ", mlp.Biases.Shape)
-		mlp = mlp.Next
-		i++
-	}
+	var output *Tensor = mlp.Forward(trainFeatures)
+	fmt.Println("\nOutput shape: ", output.Shape)
 
-	// zero out the gradients
-	mlp.ZeroGrad()
+	// for i := 0; i < trainFeatures.Shape[0]; i++ {
 
-	// make a dummy input
-	var dummyInput *Tensor = new(Tensor)
-	dummyInput.Shape = []int{1, 3}
-	dummyInput.DataReqGrad = make([]*Value, 3)
-	dummyInput.Batched = true
-	for i := 0; i < 3; i++ {
-		dummyInput.DataReqGrad[i] = NewValue(1, nil, "")
-	}
+	// 	for j := 0; j < 4; j++ {
+	// 		fmt.Print("Feature: ", trainFeatures.DataReqGrad[i+j])
+	// 	}
 
-	// forward pass
-	var output *Tensor = mlp.Forward(dummyInput)
+	// 	fmt.Println("\nTrain Targets: ", trainTargets.Data[i])
+	// }
 
-	// print the output
-	fmt.Println("Output: ", output.DataReqGrad[0].Scalar)
+	// i := 1
 
-	// backward pass
-	output.DataReqGrad[0].Backward()
+	// var output *Tensor = mlp.Forward(trainFeatures)
+	// fmt.Println("Output shape: ", output.Shape)
 
-	// update weights
-	learningRate := 0.001
-	mlp.Step(learningRate)
+	//epochs := 10
+	//lr := 0.001
 
-	// Downlaod Iris dataset
-	var IrisDataset *Tensor = LoadCSV("iris_dataset.csv", true)
-	fmt.Println("Iris: ", IrisDataset.Shape)
+	// for i := 0; i < epochs; i++ {
 
-	// Save the Csv
-	SaveCSV(IrisDataset, "iris_dataset_copy.csv")
+	// 	// forward pass
+	// 	var output *Tensor = mlp.Forward(trainFeatures)
+	// 	fmt.Println("Output shape: ", output.Shape)
+
+	// 	mlp.ZeroGrad()
+
+	// 	fmt.Println("Output shape: ", output.Shape, "lr", lr)
+
+	// 	// make prediction
+	// 	var pred *Tensor = output.ArgmaxVector(true)
+	// 	fmt.Println("Pred shape: ", pred.Shape)
+
+	// 	var loss *Value = CrossEntropy(pred, trainTargets)
+
+	// 	loss.Backward()
+
+	// 	mlp.Step(lr)
+
+	// 	fmt.Println("Epoch: ", i)
+
+	// }
 
 }

@@ -17,7 +17,7 @@ func Test_Sum_Axis(t *testing.T) {
 	// @notice Testing Sum_Axis() Unbatched
 
 	// batch of individual 2D range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Set Batching flag to false
 	A.Batched = false
@@ -55,7 +55,7 @@ func Test_Mean_Axis(t *testing.T) {
 	// @notice Testing Mean_Axis() Unbatched
 
 	// <--- batch of individual 2D range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Set Batching flag to false
 	A.Batched = false
@@ -93,7 +93,7 @@ func Test_Var_Axis(t *testing.T) {
 	// @notice Testing Var_Axis() Unbatched
 
 	//  batch of individual 2D range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Set Batching flag to false
 	A.Batched = false
@@ -131,7 +131,7 @@ func Test_Std_Axis(t *testing.T) {
 	// @notice Testing Std_Axis() Unbatched
 
 	// batch of individual 2D range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Set Batching flag to false
 	A.Batched = false

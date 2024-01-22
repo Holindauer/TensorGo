@@ -1,6 +1,7 @@
 package TG
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -52,34 +53,38 @@ func MLP(inputFeatures int, layerNodes []int, activations []string) *Layer {
 }
 
 /*
-* @notice Linear() is a constructor function that is used to link together a series of
-* Layers into a neural network in the style of pytorch.
-*
+* @notice Linear() is a constructor function that creates and connects a new linked list node, the Layer struct
+* @dev if there is a previous node input as argument, the previous node is connected behind it.
+* @param inputFeatures: The number of input features moving into the Layer
+* @param layerNodes: The number of neurons in the Layer
  */
-func Linear(inputFeatures int, layerNodes int, activation string, prev *Layer) *Layer {
+func Linear(inputFeatures int, layerNeurons int, activation string, prev *Layer) *Layer {
 
 	// @dev matrix eq of Perceptron; y = activation(x * W + b)
 	var Weights *Tensor = new(Tensor) //(layers neurons x inputs) matrix of weights
 	var Biases *Tensor = new(Tensor)  // vector of length layer neurons,
 
-	Weights.Shape = []int{layerNodes, inputFeatures}
-	Biases.Shape = []int{layerNodes}
+	Weights.Shape = []int{layerNeurons, inputFeatures}
+	Biases.Shape = []int{layerNeurons}
 
 	// contiguous slice of value pointers for the weights and biases
-	Weights.DataReqGrad = make([]*Value, layerNodes*inputFeatures)
-	Biases.DataReqGrad = make([]*Value, layerNodes)
+	Weights.DataReqGrad = make([]*Value, layerNeurons*inputFeatures)
+	Biases.DataReqGrad = make([]*Value, layerNeurons)
 
 	// Initialize the Value structs in weights and biases to random values
-	for i := 0; i < layerNodes*inputFeatures; i++ {
-		Weights.DataReqGrad[i] = NewValue(rand.Float64(), nil, "")
+	for i := 0; i < layerNeurons*inputFeatures; i++ {
+		Weights.DataReqGrad[i] = NewValue(rand.Float64(), nil, "") // TODO: allow custom initialization
 	}
-	for i := 0; i < layerNodes; i++ {
+	for i := 0; i < layerNeurons; i++ {
 		Biases.DataReqGrad[i] = NewValue(rand.Float64(), nil, "")
 	}
 
+	// Set RequireGrad to true for the weights and biases
+	Weights.RequireGrad, Biases.RequireGrad = true, true
+
 	// create a new layer
 	layer := &Layer{
-		Neurons:    layerNodes,
+		Neurons:    layerNeurons,
 		Weights:    Weights,
 		Biases:     Biases,
 		Activation: activation,
@@ -91,6 +96,7 @@ func Linear(inputFeatures int, layerNodes int, activation string, prev *Layer) *
 	if prev != nil {
 		prev.Next = layer
 	}
+
 	// return the new layer
 	return layer
 }
@@ -107,14 +113,31 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 		panic("Within Forward(): Dataset must be batched")
 	}
 
-	var x *Tensor = Batch
+	var x *Tensor = Batch.Add_Singleton(2)
 
 	// Iterate layers in the network
 	for Net != nil {
 
-		// Multiply weights, add biases
-		x = MatMulGrad(x, Net.Weights, true) // <-- MatrixOps.go
-		x = AddGrad(x, Net.Biases, true)     // <-- ClosedBinaryOps.go
+		// Apply matrix multiplication to each element in the batch of inputs, concatenating the results
+		outputAccumulator := MatMulGrad(Net.Weights, x.Remove_Dim(0, 0).Add_Singleton(1), false) // <-- MatrixOps.go
+
+		// Add singleton dimension to the front of the outputAccumulator as concat dim
+		outputAccumulator.Shape = []int{1, outputAccumulator.Shape[0]}
+
+		// Iterate through the batch of inputs, applying matrix multiplication to each element
+		for i := 1; i < x.Shape[0]; i++ {
+			tempOutput := MatMulGrad(Net.Weights, x.Remove_Dim(0, i).Add_Singleton(1), false) // <-- MatrixOps.go
+			tempOutput.Shape = []int{1, tempOutput.Shape[0]}
+			outputAccumulator = outputAccumulator.Concat(tempOutput, 0)
+		}
+
+		x = outputAccumulator
+
+		// Broadcast gradient tracked addition
+		addBias := func(x *Tensor, bias *Tensor) *Tensor {
+			return AddGrad(x, bias, false)
+		}
+		x = Net.Biases.Broadcast(x, addBias) // <-- TensorOps.go
 
 		// Apply activation function for the layer
 		switch Net.Activation {
@@ -129,8 +152,19 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 				x.DataReqGrad[i] = x.DataReqGrad[i].Sigmoid()
 			}
 		case "softmax":
-			// Apply Softmax to all elements in the hidden state
-			x = x.Softmax() // Softmax() requires the entire vector
+
+			// Apply Softmax to each batch element individually
+			outputAccumulator = x.Remove_Dim(0, 0).Softmax()
+			outputAccumulator.Shape = []int{1, outputAccumulator.Shape[0]}
+
+			// Iterate through the batch of inputs, applying Softmax to each element, concatenating the results
+			for i := 1; i < x.Shape[0]; i++ {
+				tempOutput := x.Remove_Dim(0, i).Softmax()
+				tempOutput.Shape = []int{1, tempOutput.Shape[0]}
+				outputAccumulator = outputAccumulator.Concat(tempOutput, 0)
+			}
+
+			x = outputAccumulator
 		}
 
 		// next layer
@@ -200,5 +234,20 @@ func (layer *Layer) Step(learningRate float64) {
 
 		// Proceed to the next layer
 		layer = layer.Next
+	}
+}
+
+/*
+* @notice Summary() is a function that prints a summary of the MLP.
+* @param layer: The first layer in the MLP linked list of Layer structs.
+ */
+func Summary(mlp *Layer) {
+	i := 0
+	// print the number of neurons in each layer
+	fmt.Println("MLP Summary: ")
+	for mlp != nil {
+		fmt.Println("Layer: ", i, " Neurons: ", mlp.Neurons, " Activation: ", mlp.Activation, " Weights shape: ", mlp.Weights.Shape, " Biases shape: ", mlp.Biases.Shape)
+		mlp = mlp.Next
+		i++
 	}
 }

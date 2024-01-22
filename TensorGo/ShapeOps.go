@@ -18,6 +18,7 @@ import (
 * is specified by a colon-separated string. For example, the string "1:3, 2:4" would retrieve a 2x2 slice from a 5x5 tensor.
 * @dev slice notation is exclusive of the index to the right of the colon.
 * @dev if an end index is not specified, the slice will extend to the end of the dimension.
+* @dev RequiresGrad and Batched flags are preserved in the sliced tensor.
 * @param slice: A string containing the slice notation for each dimension of the tensor.
 * @return *Tensor: A pointer to a new tensor containing the sliced data.
  */
@@ -52,7 +53,9 @@ func (A *Tensor) Slice(slice string) *Tensor {
 	}
 
 	// Create a new tensor to store the partial data with the computed shape.
-	slicedTensor := Zero_Tensor(sliceShape, false)
+	slicedTensor := ZeroTensor(sliceShape, false)
+	slicedTensor.Batched = A.Batched
+	slicedTensor.RequireGrad = A.RequireGrad
 
 	// Initialize a slice to store the current multi-dimensional index being processed.
 	tempIndex := make([]int, len(sliceShape))
@@ -72,7 +75,14 @@ func (A *Tensor) Slice(slice string) *Tensor {
 			// Convert the multi-dimensional indices to flattened indices and use them to copy the data.
 			srcFlattenedIndex := A.Index(srcIndex)
 			dstFlattenedIndex := slicedTensor.Index(tempIndex)
-			slicedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
+
+			if A.RequireGrad {
+				// Copy the gradient tracked from the original tensor to the sliced tensor.
+				slicedTensor.DataReqGrad[dstFlattenedIndex].Scalar = A.DataReqGrad[srcFlattenedIndex].Scalar
+			} else {
+				// Copy the data from the original tensor to the sliced tensor.
+				slicedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
+			}
 
 			return
 		}
@@ -169,7 +179,7 @@ func (A *Tensor) Permute(perumuation []int) *Tensor {
 	}
 
 	// Create a Zero Tensor
-	B := Zero_Tensor(newShape, false)
+	B := ZeroTensor(newShape, false)
 
 	// Reindex and copy data
 	for i := range A.Data {
@@ -342,7 +352,7 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 	newShape[len(A.Shape)] = num_elements // set new dim num_elements
 
 	// Create a new tensor with the extended shape and zeroed data
-	extendedTensor := Zero_Tensor(newShape, false)
+	extendedTensor := ZeroTensor(newShape, false)
 
 	// Fill the extended tensor with data from the original tensor
 	// Initialize a slice to store the current multi-dimensional index for the new tensor
@@ -357,7 +367,9 @@ func (A *Tensor) Extend_Shape(num_elements int) *Tensor {
 			for i := 0; i < num_elements; i++ {
 				tempIndex[len(tempIndex)-1] = i
 				dstFlattenedIndex := TheoreticalIndex(tempIndex, newShape)
+
 				extendedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
+
 			}
 			return
 		}
@@ -395,7 +407,7 @@ func (A *Tensor) Extend_Dim(axis int, num_elements int) *Tensor {
 	newShape[axis] = num_elements + A.Shape[axis] // <--- Add the new dimension to axis
 
 	// Create a new tensor with the extended shape and zeroed data
-	extendedTensor := Zero_Tensor(newShape, false)
+	extendedTensor := ZeroTensor(newShape, false)
 
 	// Next is to fill the extended tensor with data from the original tensor. First,
 	// Initialize a slice to store the current multi-dimensional index for the new tensor

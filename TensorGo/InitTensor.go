@@ -15,7 +15,15 @@ func InitializeData(shape []int, initializer TensorInitializer) *Tensor {
 	A := new(Tensor)
 	A.Shape = shape
 	num_elements := Product(shape) // <--- Product() is a function from utils.go
+
+	// Populate the Data slice with float64 values
 	A.Data = make([]float64, num_elements)
+
+	// Populate the DataReqSlice slice with Value structs
+	A.DataReqGrad = make([]*Value, num_elements)
+	for i, value := range A.Data {
+		A.DataReqGrad[i] = NewValue(value, nil, "")
+	}
 
 	for i := range A.Data {
 		A.Data[i] = initializer.ValueAt(i) // set each element
@@ -35,7 +43,7 @@ func (ci *ConstInitializer) Execute(shape []int) *Tensor { // <--- Execute() fro
 	return InitializeData(shape, ci)
 }
 
-func Const_Tensor(shape []int, constant float64, batching bool) *Tensor {
+func ConstTensor(shape []int, constant float64, batching bool) *Tensor {
 
 	initializer := &ConstInitializer{value: constant} // <-- set cont val in initializer
 
@@ -50,12 +58,12 @@ func Const_Tensor(shape []int, constant float64, batching bool) *Tensor {
 	return A
 }
 
-func Zero_Tensor(shape []int, batching bool) *Tensor {
-	return Const_Tensor(shape, 0, batching)
+func ZeroTensor(shape []int, batching bool) *Tensor {
+	return ConstTensor(shape, 0, batching)
 }
 
-func Ones_Tensor(shape []int, batching bool) *Tensor {
-	return Const_Tensor(shape, 1, batching)
+func OnesTensor(shape []int, batching bool) *Tensor {
+	return ConstTensor(shape, 1, batching)
 }
 
 //=============================================================================================================Range Tensor
@@ -73,7 +81,7 @@ func (ri *RangeInitializer) Execute(shape []int) *Tensor { // <--- Execute() fro
 }
 
 // populates a tensor's contiguous mem with values from 0 to n-1
-func Range_Tensor(shape []int, batching bool) *Tensor {
+func RangeTensor(shape []int, batching bool) *Tensor {
 
 	var A *Tensor
 
@@ -103,7 +111,7 @@ func (ri *RandomInitializer) Execute(shape []int) *Tensor { // <--- Execute() fr
 	return InitializeData(shape, ri)
 }
 
-func RandFloat64_Tensor(shape []int, lower float64, upper float64, batching bool) *Tensor {
+func RandFloat64Tensor(shape []int, lower float64, upper float64, batching bool) *Tensor {
 
 	random := NewRandom() // <--- NewRandom() is a function from utils.go
 	ri := &RandomInitializer{min: lower, max: upper, random: random}
@@ -124,7 +132,7 @@ func RandFloat64_Tensor(shape []int, lower float64, upper float64, batching bool
 
 // copy_tensor = tensor.Copy() creates a copy of tensor
 func (A *Tensor) Copy() *Tensor {
-	B := Zero_Tensor(A.Shape, false)
+	B := ZeroTensor(A.Shape, false)
 	copy(B.Data, A.Data)  // <--- copy() is a built in func
 	B.Batched = A.Batched // <-- set batched flag
 	return B

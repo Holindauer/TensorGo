@@ -9,7 +9,7 @@ import (
 func Test_SaveLoad(t *testing.T) {
 
 	// Init a Tensor
-	A := RandFloat64_Tensor([]int{2, 3}, 0, 1, false)
+	A := RandFloat64Tensor([]int{2, 3}, 0, 1, false)
 
 	// Save the Tensor to a JSON file
 	A.Save_JSON("A.json")

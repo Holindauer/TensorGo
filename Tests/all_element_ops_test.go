@@ -11,7 +11,7 @@ import (
 func Test_Sum_All(t *testing.T) {
 
 	// @notice Testing Sum_All() Unbatched
-	A := Range_Tensor([]int{3, 3, 3}, true) // <--- batch of individual 2D range tensor
+	A := RangeTensor([]int{3, 3, 3}, true) // <--- batch of individual 2D range tensor
 
 	// set Batching flag to false
 	A.Batched = false
@@ -42,7 +42,7 @@ func Test_Mean_All(t *testing.T) {
 
 	// @notice Testing Mean_All() Unbatched
 
-	A := Range_Tensor([]int{3, 3, 3}, true) // <--- batch of individual 2D range tensor
+	A := RangeTensor([]int{3, 3, 3}, true) // <--- batch of individual 2D range tensor
 
 	// Test the mean within a tolerance of (1e-10)
 	if A.Mean_All() < 3.9999999999 || A.Mean_All() > 4.0000000001 {

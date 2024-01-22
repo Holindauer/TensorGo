@@ -1,6 +1,8 @@
 package TG
 
-import "sync"
+import (
+	"sync"
+)
 
 /*
 * @notice OpAbstractions.go contains functions that abstract the execution of specific types of oepraitons on tensors
@@ -22,11 +24,11 @@ func ElementwiseOp(A *Tensor, B *Tensor, op _ElementwiseOp) *Tensor {
 		panic("Within Elementwise_Operation(): Tensors must have the same shape")
 	}
 
-	C := Zero_Tensor(A.Shape, false)
+	C := ZeroTensor(A.Shape, false)
 	for i := 0; i < len(A.Data); i++ {
 		C.Data[i] = op.ExecuteElementwiseOp(A.Data[i], B.Data[i]) // perform operation with elements
 	}
-	return C // <-- pointer
+	return C
 }
 
 //============================================================================================================================== Gradient Tracked Elementwise Tensor Operations
@@ -43,7 +45,7 @@ func ElementwiseOpGrad(A *Tensor, B *Tensor, op _ElementwiseOpGrad) *Tensor {
 		panic("Within Elementwise_Operation(): Tensors must have the same shape")
 	}
 
-	C := Zero_Tensor(A.Shape, false)
+	C := ZeroTensor(A.Shape, false)
 
 	for i := 0; i < len(A.Data); i++ {
 		C.DataReqGrad[i] = op.ExecuteElementwiseOp(A.DataReqGrad[i], B.DataReqGrad[i]) // perform operation with elements
@@ -61,7 +63,7 @@ func ElementwiseOpGrad(A *Tensor, B *Tensor, op _ElementwiseOpGrad) *Tensor {
 * @param BroadcastOnto is the Tensor of dimensionality one greater than BroadcastArg
 * @param op is the function that will is desired to performed in a broadcasted manner
  */
-func (BroadcastArg *Tensor) Broadcast(BroadcastOnto *Tensor, op func(A *Tensor, B *Tensor) *Tensor) *Tensor {
+func (BroadcastArg *Tensor) Broadcast(BroadcastOnto *Tensor, op func(onto *Tensor, arg *Tensor) *Tensor) *Tensor {
 
 	if !isEqual(BroadcastArg.Shape, BroadcastOnto.Shape[1:]) {
 		panic("Broadcast() requires that the shape of the first Tensor be equal to the shape of the second Tensor with the first axis removed")
@@ -186,8 +188,8 @@ func (A *Tensor) AxisInplaceOperation(axis int, op InplaceOperation) *Tensor {
 //============================================================================================================================== AxisCollapsingOperation
 
 /*
-* @notice An AxisCollapsingOperation is A Tensor operation performed along an axis that results in the axis being collapsed
-* @dev The way this algorithm will work is that for a given Tensor and an axis to perform a collapsing operation along, we will first create
+* @notice An AxisCollapsingOperation is a Tensor operation performed along an axis that results in the axis being collapsed
+* @dev The way this algorithm works is that for a given Tensor and a specified axis to perform a collapsing operation along, we will first create
 * a Zero_Tensor that will contain the result. Then we will iterate through that axis, create a Partial of the Tensor on that axis and
 * element using Remove_Dim(). This Partial will then be passed into a go routine that will use Mutexes to add the Partial to the result
 * Tensor. This will be done in parallel for each element along the axis. The result Tensor will then be returned.
@@ -202,7 +204,7 @@ func (A *Tensor) Axis_Collapsing_Operation(axis int, op Collapsing_Operation) *T
 	resultShape := make([]int, 0, len(A.Shape)-1)
 	resultShape = append(resultShape, A.Shape[:axis]...)
 	resultShape = append(resultShape, A.Shape[axis+1:]...)
-	resultTensor := Zero_Tensor(resultShape, false)
+	resultTensor := ZeroTensor(resultShape, false)
 
 	// Use WaitGroup and mutex to synchronize go routines
 	var wg sync.WaitGroup

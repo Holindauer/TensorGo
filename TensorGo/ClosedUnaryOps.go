@@ -68,7 +68,7 @@ func (s StandardizeOp) Execute(tensors ...*Tensor) *Tensor {
 
 	A := tensors[0]
 
-	Standardized_A := Zero_Tensor(A.Shape, false)
+	Standardized_A := ZeroTensor(A.Shape, false)
 	indices := make([]int, len(A.Shape)) // <--- to hold a single multi-dimensional indices
 
 	// Consider a 3x3x3 tensor. The indices will start at [0, 0, 0], [0, 0, 1], then [0, 0, 2], [0, 1, 0]... etc.

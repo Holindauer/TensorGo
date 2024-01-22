@@ -1,5 +1,7 @@
 package TG
 
+import "fmt"
+
 /*
 * @notice batching.go contains a general interface for batching within any Tensor Operation.
  */
@@ -10,10 +12,13 @@ type IBatching interface {
 }
 
 func BatchedOperation(op IBatching, tensors ...*Tensor) *Tensor {
+
 	// Ensure all tensors have the same batch size
 	batchsize := tensors[0].Shape[0]
 	for _, tensor := range tensors {
+
 		if tensor.Shape[0] != batchsize {
+			fmt.Println("Tensor Shape 0: ", tensor.Shape[0])
 			panic("All tensors must have the same batch size")
 		}
 	}
@@ -36,6 +41,7 @@ func BatchedOperation(op IBatching, tensors ...*Tensor) *Tensor {
 
 	// Launch a goroutine for each element in the batch
 	for i := 0; i < batchsize; i++ {
+
 		go func(index int) {
 			output := batchedOp(index)
 			results <- result{index: index, tensor: output}

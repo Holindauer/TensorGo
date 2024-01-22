@@ -11,10 +11,10 @@ import (
 func Test_Dot(t *testing.T) {
 	/// @notice Test Dot() Unbatched
 
-	A := Zero_Tensor([]int{2}, false)
+	A := ZeroTensor([]int{2}, false)
 	A.Data = []float64{2, -2}
 
-	B := Zero_Tensor([]int{2}, false)
+	B := ZeroTensor([]int{2}, false)
 	B.Data = []float64{2, 2}
 
 	A_dot_B := Dot(A, B, false)
@@ -24,10 +24,10 @@ func Test_Dot(t *testing.T) {
 	}
 
 	/// @notice Test Dot() Batched
-	A = Zero_Tensor([]int{2, 2}, false)
+	A = ZeroTensor([]int{2, 2}, false)
 	A.Data = []float64{2, -2, 2, -2}
 
-	B = Zero_Tensor([]int{2, 2}, false)
+	B = ZeroTensor([]int{2, 2}, false)
 	B.Data = []float64{2, 2, 2, 2}
 
 	A_dot_B = Dot(A, B, true)
@@ -40,7 +40,7 @@ func Test_Dot(t *testing.T) {
 func Test_Norm(t *testing.T) {
 	/// @notice Test Norm() Unbatched
 
-	A := Zero_Tensor([]int{2}, false)
+	A := ZeroTensor([]int{2}, false)
 	A.Data = []float64{4, 4}
 
 	A_norm := A.Norm(false)
@@ -50,7 +50,7 @@ func Test_Norm(t *testing.T) {
 	}
 
 	/// @notice Test Norm() Batched
-	A = Zero_Tensor([]int{2, 2}, false)
+	A = ZeroTensor([]int{2, 2}, false)
 	A.Data = []float64{4, 4, 4, 4}
 
 	A_norm = A.Norm(true)
@@ -63,7 +63,7 @@ func Test_Norm(t *testing.T) {
 func Test_Unit(t *testing.T) {
 	/// @notice Test Unit() Unbatched
 
-	A := Zero_Tensor([]int{2}, false)
+	A := ZeroTensor([]int{2}, false)
 	A.Data = []float64{4, 4}
 
 	A_unit := A.Unit(false)
@@ -73,7 +73,7 @@ func Test_Unit(t *testing.T) {
 	}
 
 	/// @notice Test Unit() Batched
-	A = Zero_Tensor([]int{2, 2}, false)
+	A = ZeroTensor([]int{2, 2}, false)
 	A.Data = []float64{4, 4, 4, 4}
 
 	A_unit = A.Unit(true)

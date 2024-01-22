@@ -64,3 +64,33 @@ func (A *Tensor) Scalar_Mult(scalar float64, batching bool) *Tensor {
 	}
 	return scalarMult.Execute(A) // single op
 }
+
+// =========================================================================================================== Argmax
+
+// // Define a struct that implements the Batch_Tensor_Tensor_Operation interface. See batching.go for more details
+// type ArgmaxOp struct{}
+
+// func (argmax ArgmaxOp) Execute(tensors ...*Tensor) *Tensor {
+
+// 	A := tensors[0]
+
+// 	// create new tensor to store result
+// 	cA := A.Copy()
+// 	for i := 0; i < len(A.Data); i++ {
+// 		cA.Data[i] = float64(cA.Argmax())
+// 	}
+// 	return cA
+// }
+
+// // This funciton performs argmax on a tensor in place
+// // It returns a pointer to a new tensor
+// func (A *Tensor) Argmax(batching bool) *Tensor {
+
+// 	// initialize the batched op
+// 	argmax := ArgmaxOp{}
+
+// 	if batching {
+// 		return BatchedOperation(argmax, A) // batched op
+// 	}
+// 	return argmax.Execute(A) // single op
+// }

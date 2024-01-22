@@ -3,6 +3,7 @@ package TG
 // vector.go contains functions related to vector/1D Tensor operations
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -297,6 +298,8 @@ type ArgmaxVectorOp struct{}
 
 func (op ArgmaxVectorOp) Execute(tensors ...*Tensor) *Tensor {
 
+	fmt.Println("ArgmaxVectorOp.Execute()")
+
 	A := tensors[0]
 
 	if len(A.Shape) != 1 {
@@ -327,7 +330,10 @@ func (A *Tensor) ArgmaxVector(batching bool) *Tensor {
 
 	argmax := ArgmaxVectorOp{}
 
+	fmt.Println("ArgmaxVector()")
+
 	if batching {
+		fmt.Println("BatchedOperation")
 		return BatchedOperation(argmax, A) // batched op
 	}
 	return argmax.Execute(A) // single op

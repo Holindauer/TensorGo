@@ -11,8 +11,8 @@ import (
 func Test_MatMul(t *testing.T) {
 
 	/// @notice Test MatMul() Unbatched
-	A := Range_Tensor([]int{3, 3}, false)
-	B := Range_Tensor([]int{3, 3}, false)
+	A := RangeTensor([]int{3, 3}, false)
+	B := RangeTensor([]int{3, 3}, false)
 
 	C := MatMul(A, B, false)
 	if C.Sum_All() != 486 {
@@ -20,8 +20,8 @@ func Test_MatMul(t *testing.T) {
 	}
 
 	/// @notice Test MatMul() Batched
-	A = Range_Tensor([]int{3, 3, 3}, true)
-	B = Range_Tensor([]int{3, 3, 3}, true)
+	A = RangeTensor([]int{3, 3, 3}, true)
+	B = RangeTensor([]int{3, 3, 3}, true)
 
 	C = MatMul(A, B, true)
 
@@ -33,8 +33,8 @@ func Test_MatMul(t *testing.T) {
 func Test_Augment_Matrix(t *testing.T) {
 
 	// Test Augment Matrix
-	A := Range_Tensor([]int{3, 3}, false)
-	B := Range_Tensor([]int{3, 3}, false)
+	A := RangeTensor([]int{3, 3}, false)
+	B := RangeTensor([]int{3, 3}, false)
 
 	// Augment A with B
 	C := Augment_Matrix(A, B)

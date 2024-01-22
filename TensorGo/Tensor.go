@@ -11,6 +11,7 @@ type Tensor struct {
 	Shape       []int
 	Data        []float64
 	DataReqGrad []*Value // <-- Value struct defined in AutoGrad.go
+	RequireGrad bool
 	Batched     bool
 }
 

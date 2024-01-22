@@ -10,7 +10,7 @@ import (
 
 func Test_Index(t *testing.T) {
 	// Test Index()
-	A := Range_Tensor([]int{10, 12, 14}, false)
+	A := RangeTensor([]int{10, 12, 14}, false)
 
 	// Check that element at {2, 4, 3} is 395 in contiguous memory
 	if A.Index([]int{2, 4, 3}) != 395 {
@@ -22,7 +22,7 @@ func Test_Index(t *testing.T) {
 func Test_Retrieve(t *testing.T) {
 
 	// Test Retrieve()
-	A := Range_Tensor([]int{10, 12, 14}, false)
+	A := RangeTensor([]int{10, 12, 14}, false)
 
 	// Check that element at {2, 4, 3} is 395 in contiguous memory
 	if A.Get([]int{2, 4, 3}) != A.Data[395] {
@@ -33,7 +33,7 @@ func Test_Retrieve(t *testing.T) {
 func Test_UnravelIndex(t *testing.T) {
 
 	// Test UnravelIndex()
-	A := Range_Tensor([]int{10, 12, 14}, false)
+	A := RangeTensor([]int{10, 12, 14}, false)
 
 	// Check that element at {2, 4, 3} is 395 in contiguous memory
 	Unraveled := A.UnravelIndex(395)
@@ -47,9 +47,9 @@ func Test_UnravelIndex(t *testing.T) {
 func Test_Extract(t *testing.T) {
 
 	// Init 2 range tensors, then 1 ones Tensor, then 2 range ones tensor
-	ranges_1 := Range_Tensor([]int{2, 10, 10}, true)
-	randoms := Ones_Tensor([]int{1, 10, 10}, true)
-	ranges_2 := Range_Tensor([]int{2, 10, 10}, true)
+	ranges_1 := RangeTensor([]int{2, 10, 10}, true)
+	randoms := OnesTensor([]int{1, 10, 10}, true)
+	ranges_2 := RangeTensor([]int{2, 10, 10}, true)
 
 	// Concatenate the tensors
 	batched_tensors := ranges_1.Concat(randoms, 0)

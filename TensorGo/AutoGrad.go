@@ -60,19 +60,17 @@ func Gradify(A *Tensor) *Tensor {
 	var values []*Value = make([]*Value, len(A.Data))
 
 	// Convert the data to *Value
-	for i := 0; i < A.Shape[0]; i++ {
+	for i := 0; i < Product(A.Shape); i++ {
 		values[i] = NewValue(A.Data[i], nil, "")
 	}
 
-	// Create a new Tensor for the output
-	var gradTensor *Tensor = &Tensor{
-		Shape:       A.Shape,
-		DataReqGrad: values,
-		RequireGrad: true,
-		Batched:     A.Batched,
-	}
+	// Copy the *Value slice to the DataReqGrad slice
+	copy(A.DataReqGrad, values)
 
-	return gradTensor
+	// Set the RequireGrad flag to true
+	A.RequireGrad = true
+
+	return A
 }
 
 /*

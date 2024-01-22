@@ -23,7 +23,7 @@ func (op MatMulOp) Execute(tensors ...*Tensor) *Tensor {
 	// Check that the two Tensors are compatible for matrix multiplication
 	Check_MatMul_Compatibility(A, B)
 
-	C := Zero_Tensor([]int{A.Shape[0], B.Shape[1]}, false)
+	C := ZeroTensor([]int{A.Shape[0], B.Shape[1]}, false)
 	var sum float64
 
 	for row := 0; row < C.Shape[0]; row++ {
@@ -66,11 +66,15 @@ func (op MatMulGradOp) Execute(tensors ...*Tensor) *Tensor {
 	if len(B.Shape) == 1 {
 		B = B.Add_Singleton(0)
 	}
+	if len(A.Shape) == 1 {
+		A = A.Add_Singleton(0)
+	}
 
 	// Check that the two Tensors are compatible for matrix multiplication
 	Check_MatMul_Compatibility(A, B)
 
-	C := Zero_Tensor([]int{A.Shape[0], B.Shape[1]}, false)
+	C := ZeroTensor([]int{A.Shape[0], B.Shape[1]}, false)
+	C.DataReqGrad = make([]*Value, len(C.Data))
 	var sum *Value
 
 	for row := 0; row < C.Shape[0]; row++ {
@@ -81,8 +85,8 @@ func (op MatMulGradOp) Execute(tensors ...*Tensor) *Tensor {
 			for k := 0; k < A.Shape[1]; k++ {
 
 				// Gradient Tracked Dot Product
-				elementA := A.DataReqGrad[A.Index([]int{row, k})]
-				elementB := B.DataReqGrad[B.Index([]int{k, col})]
+				elementA := A.DataReqGrad[TheoreticalIndex([]int{row, k}, A.Shape)]
+				elementB := B.DataReqGrad[TheoreticalIndex([]int{k, col}, B.Shape)]
 
 				// grad tracked multiplication
 				var mul *Value = elementA.Mul(elementB)
@@ -99,9 +103,10 @@ func (op MatMulGradOp) Execute(tensors ...*Tensor) *Tensor {
 
 func MatMulGrad(A *Tensor, B *Tensor, batching bool) *Tensor {
 
-	matmul := MatMulOp{} // Create an instance of Batched_Matmul
+	matmul := MatMulGradOp{} // Create an instance of Batched_Matmul
 
 	if batching {
+
 		// If batching is true, call BatchedOperation directly
 		return BatchedOperation(matmul, A, B)
 	} else {

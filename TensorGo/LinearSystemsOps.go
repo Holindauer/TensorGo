@@ -131,7 +131,7 @@ func Forward_Elimination(Ab *Tensor) {
 // It returns a column vector x that is the solution to the system of linear equations.
 func Back_Substitution(Ab *Tensor, A *Tensor) *Tensor {
 	// Back Substitution
-	x := Zero_Tensor([]int{Ab.Shape[0], 1}, false)
+	x := ZeroTensor([]int{Ab.Shape[0], 1}, false)
 	for i := Ab.Shape[0] - 1; i >= 0; i-- { // <--- decrement through rows
 		sum := 0.0
 		for j := i + 1; j < Ab.Shape[0]; j++ {
@@ -172,7 +172,7 @@ func (A *Tensor) Swap_Rows(i int, j int) {
 func (A *Tensor) Get_Row(row int) *Tensor {
 
 	// Create a new Tensor to store the row
-	B := Zero_Tensor([]int{1, A.Shape[1]}, false)
+	B := ZeroTensor([]int{1, A.Shape[1]}, false)
 
 	// Copy the row into the new Tensor
 	for i := 0; i < A.Shape[1]; i++ {

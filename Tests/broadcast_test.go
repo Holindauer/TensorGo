@@ -12,8 +12,8 @@ import (
 func Test_BroadcastAdd(t *testing.T) {
 
 	// Testing Broadcast_Add() by adding a 3x3x3 batched ones tensor to a 3x3 unbached ones tensor
-	A := Ones_Tensor([]int{3, 3, 3}, true)
-	B := Ones_Tensor([]int{3, 3}, false)
+	A := OnesTensor([]int{3, 3, 3}, true)
+	B := OnesTensor([]int{3, 3}, false)
 
 	// Broadcast_Addition pf A onto B
 	B_broad_A := B.Broadcast_Add(A)
@@ -25,8 +25,8 @@ func Test_BroadcastAdd(t *testing.T) {
 
 func Test_BroadcastSubtract(t *testing.T) {
 	// Testing Broadcast_Subtract() by subtracting a 3x3x3 batched ones tensor to a 3x3 unbached ones tensor
-	A := Ones_Tensor([]int{3, 3, 3}, true)
-	B := Ones_Tensor([]int{3, 3}, false)
+	A := OnesTensor([]int{3, 3, 3}, true)
+	B := OnesTensor([]int{3, 3}, false)
 
 	// Broadcast_Addition pf A onto B
 	B_broad_A := B.Broadcast_Subtract(A)

@@ -13,7 +13,7 @@ import (
 func Test_Slice(t *testing.T) {
 
 	// Create a 3x3x3 tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Creates a 3x2x2 tensor
 	A_partial := A.Slice(":3, 1:3, 1:3")
@@ -29,7 +29,7 @@ func Test_Slice(t *testing.T) {
 func Test_Reshape(t *testing.T) {
 
 	/// @noice Test Reshape() Unbatched
-	A := Range_Tensor([]int{3, 3, 3}, false)
+	A := RangeTensor([]int{3, 3, 3}, false)
 	A_reshaped := A.Reshape([]int{3, 9}, false)
 
 	// Ensure data has not changed, just shape
@@ -38,7 +38,7 @@ func Test_Reshape(t *testing.T) {
 	}
 
 	/// @noice Test Reshape() Batched
-	A = Range_Tensor([]int{3, 3, 3}, true)
+	A = RangeTensor([]int{3, 3, 3}, true)
 
 	// Reshape each 3x3 element into a 9D vector
 	A_reshaped = A.Reshape([]int{9}, true)
@@ -58,7 +58,7 @@ func Test_Permute(t *testing.T) {
 	// Test Permute()
 
 	// Create a 3x3x6x8x9 tensor
-	A := Range_Tensor([]int{3, 3, 6, 8, 9}, true)
+	A := RangeTensor([]int{3, 3, 6, 8, 9}, true)
 
 	// Permute the tensor dimmensions
 	A_permuted := A.Permute([]int{1, 0, 3, 2, 4})
@@ -74,8 +74,8 @@ func Test_Concat(t *testing.T) {
 	// Test Concat()
 
 	// Create two 3x3x3 tensors
-	A := Range_Tensor([]int{1, 3, 3}, true)
-	B := Range_Tensor([]int{1, 3, 3}, true)
+	A := RangeTensor([]int{1, 3, 3}, true)
+	B := RangeTensor([]int{1, 3, 3}, true)
 
 	// Concatenate the two tensors along the first axis
 	C := A.Concat(B, 0)
@@ -94,7 +94,7 @@ func Test_ExtendShape(t *testing.T) {
 	// Test Extend_Shape()
 
 	// Create a 3x3x3 Range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Extend the shape of A to 4 dimensions
 	A_extended := A.Extend_Shape(4)
@@ -113,7 +113,7 @@ func Test_ExtendShape(t *testing.T) {
 func Test_ExtendDim(t *testing.T) {
 
 	// Create a 3x3x3 Range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Extend the second axis by 3 elements
 	A_extended := A.Extend_Dim(2, 3)
@@ -134,7 +134,7 @@ func Test_Remove_Dim(t *testing.T) {
 	// Test Remove_Dim()
 
 	// Init a 3x3x3 range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Remove the first axis, keeping the first element of the first axis
 	A_removed := A.Remove_Dim(0, 0)
@@ -156,7 +156,7 @@ func Test_Add_Singleton(t *testing.T) {
 	// Test Add_Singleton()
 
 	// Init a 3x3x3 range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Add a singleton dimension to the first axis
 	A_added := A.Add_Singleton(1)
@@ -172,7 +172,7 @@ func Test_Remove_Singleton(t *testing.T) {
 	// Test Remove_Singleton()
 
 	// Init a 3x1x1x3x3x1 range tensor
-	A := Range_Tensor([]int{3, 1, 1, 3, 3, 1}, true)
+	A := RangeTensor([]int{3, 1, 1, 3, 3, 1}, true)
 
 	// Remove all singleton dimensions
 	A_removed := A.Remove_Singletons()

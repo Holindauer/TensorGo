@@ -141,7 +141,7 @@ func LoadCSV(csvFile string, skipHeader bool) *Tensor {
 	}
 
 	// Create a Tensor to store the data
-	irisTensor := Zero_Tensor([]int{len(rawCSVData), len(rawCSVData[0])}, true)
+	irisTensor := ZeroTensor([]int{len(rawCSVData), len(rawCSVData[0])}, true)
 
 	// Convert CSV data into Tensor
 	for i, row := range rawCSVData {

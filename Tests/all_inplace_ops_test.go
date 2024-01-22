@@ -11,7 +11,7 @@ func Test_Add(t *testing.T) {
 	// @notice Testing Add() Unbatched
 
 	// batch of individual 2D range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Se Batching flag to false
 	A.Batched = false
@@ -46,7 +46,7 @@ func Test_Subtract(t *testing.T) {
 
 	// @notice Testing Subtract() Unbatched
 
-	A := Range_Tensor([]int{3, 3, 3}, true) // <--- batch of individual 2D range tensor
+	A := RangeTensor([]int{3, 3, 3}, true) // <--- batch of individual 2D range tensor
 
 	// Set Batching flag to false
 	A.Batched = false
@@ -82,7 +82,7 @@ func Test_Scalar_Mult(t *testing.T) {
 	// @ notice Testing Scalar_Mult_() Unbatched
 
 	// batch of individual 2D range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Set Batching flag to false
 	A.Batched = false
@@ -118,7 +118,7 @@ func Test_Normalize(t *testing.T) {
 	// @notice Testing Normalize() Unbatched
 
 	//  batch of individual 2D range tensor
-	A := Range_Tensor([]int{3, 3, 3}, true)
+	A := RangeTensor([]int{3, 3, 3}, true)
 
 	// Set Batching flag to false
 	A.Batched = false
