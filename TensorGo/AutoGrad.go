@@ -7,6 +7,7 @@ package TG
  */
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -41,6 +42,37 @@ func NewValue(scalar float64, _prev []*Value, _op string) *Value {
 		Op:        _op,
 		_backward: func() {},
 	}
+}
+
+/*
+* @notice Gradify() converts a Tensor that only has data stored in the Data slice to a Tensor that has
+* data stored in the DataReqGrad slice. This is used to convert the input Tensor to a Tensor that can
+* be used in the computational graph.
+ */
+func Gradify(A *Tensor) *Tensor {
+
+	if !A.Batched {
+		fmt.Println("Gradify() assumes a batched Tensor. Your Tensor's Batched flag is being set to true")
+		A.Batched = true
+	}
+
+	// Create a slice of *Value to store the values of the tensor
+	var values []*Value = make([]*Value, len(A.Data))
+
+	// Convert the data to *Value
+	for i := 0; i < A.Shape[0]; i++ {
+		values[i] = NewValue(A.Data[i], nil, "")
+	}
+
+	// Create a new Tensor for the output
+	var gradTensor *Tensor = &Tensor{
+		Shape:       A.Shape,
+		DataReqGrad: values,
+		RequireGrad: true,
+		Batched:     A.Batched,
+	}
+
+	return gradTensor
 }
 
 /*
@@ -202,6 +234,28 @@ func (v *Value) Exp() *Value {
 }
 
 /*
+* @notice Log computes the natural logarithm of the Value.
+* @dev The out._backward function is defined here, which implements the chain rule for log at this
+* node in the computational graph. Note that because this is reverse mode autodiff, the chain rule is
+* implemented in reverse order and relies on the previously computed gradients.
+* @param v: The Value to be logged.
+* @return A pointer to a new Value representing the result of the log operation.
+ */
+func (v *Value) Log() *Value {
+	// compute log(x)
+	logVal := math.Log(v.Scalar)
+
+	// create a new Value struct for the log
+	out := NewValue(logVal, []*Value{v}, "log")
+
+	out._backward = func() {
+		v.Grad += 1 / v.Scalar * out.Grad // d(log(x))/dx = 1/x
+	}
+
+	return out
+}
+
+/*
 * @notice ReLU applies the Rectified Linear Unit activation function to the Value.
 * @dev The out._backward function is defined here, which implements the chain rule for ReLU at this
 * node in the computational graph. Note that because this is reverse mode autodiff, the chain rule is
@@ -283,4 +337,34 @@ func (x *Tensor) Softmax() *Tensor {
 	}
 
 	return softmaxTensor
+}
+
+/*
+* @notice CrossEntropy computes the cross-entropy loss between the predictions and labels.
+* @dev CrossEntropy is defined as -y_i * log(p_i) where y_i is the true label and p_i is the predicted label.
+* @param predictions: *Tensor representing the predictions (after applying softmax).
+* @param labels: *Tensor representing the true labels.
+* @return *Value representing the cross-entropy loss.
+ */
+func CrossEntropy(predictions, labels *Tensor) *Value {
+
+	// Ensure predictions and labels are of the same length
+	if len(predictions.DataReqGrad) != len(labels.Data) {
+		panic("Length of predictions and labels must be the same.")
+	}
+
+	// Create a new Value to store the loss
+	var loss *Value = NewValue(0.0, nil, "cross-entropy")
+
+	// Compute the cross-entropy loss
+	for i := 0; i < len(predictions.DataReqGrad); i++ {
+		// -y_i * log(p_i)
+		loss = loss.Add(
+			labels.DataReqGrad[i].Mul(predictions.DataReqGrad[i].Log()),
+		)
+
+	}
+
+	// Return the negative of the loss since we added the negative values
+	return loss.Mul(NewValue(-1.0, nil, ""))
 }
