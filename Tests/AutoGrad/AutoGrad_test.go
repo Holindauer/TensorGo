@@ -56,3 +56,38 @@ func Test_AutoDiff_SanityCheck(t *testing.T) {
 		t.Errorf("Sanity Check failed. Expected Output: 46.0 --- Actual Output: %v", x.Grad)
 	}
 }
+
+/*
+* @notice This is a test of the Gradify() function. It should convert a Tensor's normal float64 values stored in the Data field
+* to Values with the same values stored in the DataReqGrad field.
+ */
+func Test_Gradify(t *testing.T) {
+
+	A := RangeTensor([]int{2, 5, 5, 2}, true)
+
+	var values []float64
+	for i := 0; i < len(A.Data); i++ {
+		values = append(values, A.Data[i])
+	}
+
+	A_Grad := Gradify(A)
+
+	for i := 0; i < len(A_Grad.DataReqGrad); i++ {
+
+		// grad data should be the same as the original data
+		if A_Grad.DataReqGrad[i].Scalar != values[i] {
+			t.Errorf("Gradify() failed. Expected Output: %v --- Actual Output: %v", values[i], A_Grad.DataReqGrad[i].Scalar)
+		}
+
+		// grad should be zero
+		if A_Grad.DataReqGrad[i].Grad != 0.0 {
+			t.Errorf("Gradify() failed. Expected Output: 0.0 --- Actual Output: %v", A_Grad.DataReqGrad[i].Grad)
+		}
+
+		// Data should be the same as the original data
+		if A_Grad.Data[i] != values[i] {
+			t.Errorf("Gradify() failed. Expected Output: %v --- Actual Output: %v", values[i], A_Grad.Data[i])
+		}
+	}
+
+}
