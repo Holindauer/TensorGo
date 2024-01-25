@@ -62,6 +62,9 @@ func (op MatMulGradOp) Execute(tensors ...*Tensor) *Tensor {
 	// Assumes tensors length will be 2 for matrix multiplication
 	A, B := tensors[0], tensors[1]
 
+	A.RequireGrad = true
+	B.RequireGrad = true
+
 	// In case of Matrix Vector Multiplication
 	if len(B.Shape) == 1 {
 		B = B.Add_Singleton(0)

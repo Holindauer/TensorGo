@@ -55,7 +55,8 @@ func (A *Tensor) Slice(slice string) *Tensor {
 	// Create a new tensor to store the partial data with the computed shape.
 	slicedTensor := ZeroTensor(sliceShape, false)
 	slicedTensor.Batched = A.Batched
-	slicedTensor.RequireGrad = A.RequireGrad
+
+	slicedTensor.RequireGrad = true
 
 	// Initialize a slice to store the current multi-dimensional index being processed.
 	tempIndex := make([]int, len(sliceShape))
@@ -77,10 +78,8 @@ func (A *Tensor) Slice(slice string) *Tensor {
 			dstFlattenedIndex := slicedTensor.Index(tempIndex)
 
 			if A.RequireGrad {
-				// Copy the gradient tracked from the original tensor to the sliced tensor.
 				slicedTensor.DataReqGrad[dstFlattenedIndex].Scalar = A.DataReqGrad[srcFlattenedIndex].Scalar
 			} else {
-				// Copy the data from the original tensor to the sliced tensor.
 				slicedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 			}
 

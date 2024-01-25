@@ -113,6 +113,8 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 		panic("Within Forward(): Dataset must be batched")
 	}
 
+	Batch.RequireGrad = true
+
 	var x *Tensor = Batch.Add_Singleton(2)
 
 	// Iterate layers in the network
@@ -184,7 +186,6 @@ func (layer *Layer) ZeroGrad() {
 	var numWeights int
 	var numBiases int
 
-	// print the number of neurons in each layer
 	for layer != nil {
 
 		// get the number of weights and biases in this layer
@@ -244,10 +245,12 @@ func (layer *Layer) Step(learningRate float64) {
 func Summary(mlp *Layer) {
 	i := 0
 	// print the number of neurons in each layer
-	fmt.Println("MLP Summary: ")
+	fmt.Println("\nMLP Summary: ")
 	for mlp != nil {
 		fmt.Println("Layer: ", i, " Neurons: ", mlp.Neurons, " Activation: ", mlp.Activation, " Weights shape: ", mlp.Weights.Shape, " Biases shape: ", mlp.Biases.Shape)
 		mlp = mlp.Next
 		i++
 	}
+
+	fmt.Println()
 }

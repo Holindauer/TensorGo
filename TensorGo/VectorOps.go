@@ -3,7 +3,6 @@ package TG
 // vector.go contains functions related to vector/1D Tensor operations
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -298,26 +297,21 @@ type ArgmaxVectorOp struct{}
 
 func (op ArgmaxVectorOp) Execute(tensors ...*Tensor) *Tensor {
 
-	fmt.Println("ArgmaxVectorOp.Execute()")
-
 	A := tensors[0]
 
-	if len(A.Shape) != 1 {
-		panic("Within ArgmaxVector(): Tensor must be a vector to compute argmax")
-	}
+	var max float64 = -math.MaxFloat64
 
-	// initialize the argmax to the first element
-	argmax := 0
 	for i := 0; i < len(A.Data); i++ {
-		if A.Data[i] > A.Data[argmax] {
-			argmax = i
+		if A.Data[i] > max {
+			max = A.Data[i]
 		}
 	}
 
-	// create a tensor with one element to store the argmax
-	argmax_tensor := ZeroTensor([]int{1}, false)
-	argmax_tensor.Data[0] = float64(argmax)
-	return argmax_tensor
+	// create a tensor with one element to store the argmax product
+	argmaxTensor := ZeroTensor([]int{1}, false)
+	argmaxTensor.Data[0] = max
+
+	return argmaxTensor
 }
 
 /*
@@ -326,14 +320,12 @@ func (op ArgmaxVectorOp) Execute(tensors ...*Tensor) *Tensor {
 * @param A: The vector Tensor to compute the argmax of.
 * @param batching: A boolean that indicates whether the Tensor is being used as a batch of Tensors or not.
  */
-func (A *Tensor) ArgmaxVector(batching bool) *Tensor {
+func ArgmaxVector(A *Tensor, batching bool) *Tensor {
 
+	// initialize the batched op
 	argmax := ArgmaxVectorOp{}
 
-	fmt.Println("ArgmaxVector()")
-
 	if batching {
-		fmt.Println("BatchedOperation")
 		return BatchedOperation(argmax, A) // batched op
 	}
 	return argmax.Execute(A) // single op
