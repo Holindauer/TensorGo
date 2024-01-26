@@ -79,9 +79,8 @@ func (A *Tensor) Slice(slice string) *Tensor {
 
 			if A.RequireGrad {
 				slicedTensor.DataReqGrad[dstFlattenedIndex].Scalar = A.DataReqGrad[srcFlattenedIndex].Scalar
-			} else {
-				slicedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 			}
+			slicedTensor.Data[dstFlattenedIndex] = A.Data[srcFlattenedIndex]
 
 			return
 		}

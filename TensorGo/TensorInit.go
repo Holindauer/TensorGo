@@ -133,8 +133,10 @@ func RandFloat64Tensor(shape []int, lower float64, upper float64, batching bool)
 // copy_tensor = tensor.Copy() creates a copy of tensor
 func (A *Tensor) Copy() *Tensor {
 	B := ZeroTensor(A.Shape, false)
-	copy(B.Data, A.Data)  // <--- copy() is a built in func
+	copy(B.Data, A.Data) // <--- copy() is a built in func
+	copy(B.DataReqGrad, A.DataReqGrad)
 	B.Batched = A.Batched // <-- set batched flag
+
 	return B
 }
 

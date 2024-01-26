@@ -59,57 +59,62 @@ type MatMulGradOp struct{}
 
 // Implementing the Execute method of IBatching interface
 func (op MatMulGradOp) Execute(tensors ...*Tensor) *Tensor {
+
 	// Assumes tensors length will be 2 for matrix multiplication
 	A, B := tensors[0], tensors[1]
 
-	A.RequireGrad = true
-	B.RequireGrad = true
+	// for i := 0; i < len(B.DataReqGrad); i++ {
+	// 	fmt.Println(B.DataReqGrad[i].Scalar)
+	// }
 
-	// In case of Matrix Vector Multiplication
-	if len(B.Shape) == 1 {
-		B = B.Add_Singleton(0)
-	}
-	if len(A.Shape) == 1 {
-		A = A.Add_Singleton(0)
+	// Check dimensions for matrix multiplication
+	if len(A.Shape) != 2 || len(B.Shape) != 2 || A.Shape[1] != B.Shape[0] {
+		panic("Incompatible dimensions for MatMul")
 	}
 
-	// Check that the two Tensors are compatible for matrix multiplication
-	Check_MatMul_Compatibility(A, B)
-
-	C := ZeroTensor([]int{A.Shape[0], B.Shape[1]}, false)
-	C.DataReqGrad = make([]*Value, len(C.Data))
-	var sum *Value
-
-	for row := 0; row < C.Shape[0]; row++ {
-		for col := 0; col < C.Shape[1]; col++ {
-
-			sum = NewValue(0.0, nil, "")
-
+	// Compute the result of A * B
+	result := make([]*Value, A.Shape[0]*B.Shape[1])
+	for i := 0; i < A.Shape[0]; i++ {
+		for j := 0; j < B.Shape[1]; j++ {
+			sum := NewValue(0.0, nil, "matmul")
 			for k := 0; k < A.Shape[1]; k++ {
 
-				// Gradient Tracked Dot Product
-				elementA := A.DataReqGrad[TheoreticalIndex([]int{row, k}, A.Shape)]
-				elementB := B.DataReqGrad[TheoreticalIndex([]int{k, col}, B.Shape)]
+				AVal := A.DataReqGrad[A.Index([]int{i, k})]
+				BVal := B.DataReqGrad[B.Index([]int{k, j})]
+				mulAB := AVal.Mul(BVal)
 
-				// grad tracked multiplication
-				var mul *Value = elementA.Mul(elementB)
+				// fmt.Println(AVal.Scalar)
+				// fmt.Println(BVal.Scalar)
+				// fmt.Println(AVal.Scalar * BVal.Scalar)
 
-				sum = sum.Add(mul)
+				sum = sum.Add(mulAB)
+
+				// fmt.Println(sum.Scalar)
+
+				if k == 4 {
+					break
+				}
 			}
-
-			C.DataReqGrad[C.Index([]int{row, col})] = sum
+			result[i*B.Shape[1]+j] = sum
 		}
 	}
 
-	return C
+	return &Tensor{
+		Shape:       []int{A.Shape[0], B.Shape[1]},
+		DataReqGrad: result,
+		Batched:     A.Batched || B.Batched,
+	}
 }
 
 func MatMulGrad(A *Tensor, B *Tensor, batching bool) *Tensor {
 
 	matmul := MatMulGradOp{} // Create an instance of Batched_Matmul
 
-	if batching {
+	// for i := 0; i < len(B.DataReqGrad); i++ {
+	// 	fmt.Println(B.DataReqGrad[i].Scalar)
+	// }
 
+	if batching {
 		// If batching is true, call BatchedOperation directly
 		return BatchedOperation(matmul, A, B)
 	} else {

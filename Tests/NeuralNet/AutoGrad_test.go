@@ -91,3 +91,50 @@ func Test_Gradify(t *testing.T) {
 	}
 
 }
+
+/*
+* @notice This is a test of the Gradify() function that tests using the Slice function from ShapeOps immediately prior to applying
+* Gradify() will still work in the same way.
+ */
+func Test_Gradify_With_Sliced_Data(t *testing.T) {
+
+	// Load Iris dataset
+	var Iris *Tensor = LoadCSV("iris_dataset.csv", true)
+
+	if Iris.Shape[0] != 151 || Iris.Shape[1] != 5 || Product(Iris.Shape) != len(Iris.Data) {
+		t.Errorf("LoadCSV() failed. Expected Output: [150, 5] --- Actual Output: %v", Iris.Shape)
+	}
+
+	// Seperate the targets from the features by slicing the Tensor
+	features, targets := Iris.Slice("1:, :4"), Iris.Slice("1:, 4:")
+
+	// Check that the shapes and num elements are correct
+	if features.Shape[0] != 150 || features.Shape[1] != 4 || Product(features.Shape) != len(features.Data) {
+		t.Errorf("Slice() failed. Expected Output: [150, 4] --- Actual Output: %v", features.Shape)
+	}
+	if targets.Shape[0] != 150 || targets.Shape[1] != 1 || Product(targets.Shape) != len(targets.Data) {
+		t.Errorf("Slice() failed. Expected Output: [150, 1] --- Actual Output: %v", targets.Shape)
+	}
+
+	features_Grad := Gradify(features)
+	targets_Grad := Gradify(targets)
+
+	// Check that Scalar vals in DataReqGrad Value structs are the same as the original data
+	for i := 0; i < len(features.Data); i++ {
+		if features_Grad.DataReqGrad[i].Scalar != features.Data[i] ||
+			features_Grad.Data[i] != features.Data[i] ||
+			features_Grad.DataReqGrad[i].Grad != 0.0 {
+			t.Errorf("Gradify() failed. Expected Output: %v --- Actual Output: %v", features.Data[i], features_Grad.DataReqGrad[i].Scalar)
+		}
+	}
+	for i := 0; i < len(targets.Data); i++ {
+		if targets_Grad.DataReqGrad[i].Scalar != targets.Data[i] ||
+			targets_Grad.Data[i] != targets.Data[i] ||
+			targets_Grad.DataReqGrad[i].Grad != 0.0 {
+			t.Errorf("Gradify() failed. Expected Output: %v --- Actual Output: %v", targets.Data[i], targets_Grad.DataReqGrad[i].Scalar)
+		}
+	}
+}
+
+
+

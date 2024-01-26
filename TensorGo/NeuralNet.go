@@ -31,9 +31,8 @@ type Layer struct {
 /*
 * @notice MLP() is a constructor function that is used to create a multilayer perceptron.
 * @dev The MLP is constructed as a linked list of Layer structs.
-* @dev
-* @dev The activation will be applied to each layer except the last.
-* @param the layerNodeslice is used to specify the number of neurons in each layer.
+* @dev The activation will be applied to each layer in the list.
+* @param layerNodeslice is used to specify the number of neurons in each layer.
  */
 func MLP(inputFeatures int, layerNodes []int, activations []string) *Layer {
 
@@ -43,12 +42,11 @@ func MLP(inputFeatures int, layerNodes []int, activations []string) *Layer {
 	// save the first layer pointer to return
 	var firstLayer *Layer = layer
 
-	// create the rest of the layers
+	// create and link together the rest of the layers
 	for i := 1; i < len(layerNodes); i++ {
 		layer = Linear(layerNodes[i-1], layerNodes[i], activations[i], layer)
 	}
 
-	// return the first layer
 	return firstLayer
 }
 
@@ -60,10 +58,11 @@ func MLP(inputFeatures int, layerNodes []int, activations []string) *Layer {
  */
 func Linear(inputFeatures int, layerNeurons int, activation string, prev *Layer) *Layer {
 
-	// @dev matrix eq of Perceptron; y = activation(x * W + b)
-	var Weights *Tensor = new(Tensor) //(layers neurons x inputs) matrix of weights
-	var Biases *Tensor = new(Tensor)  // vector of length layer neurons,
+	// @dev matrix eq of Perceptron; y = activation(Wx + b)
+	var Weights *Tensor = new(Tensor)
+	var Biases *Tensor = new(Tensor)
 
+	// set shapes
 	Weights.Shape = []int{layerNeurons, inputFeatures}
 	Biases.Shape = []int{layerNeurons}
 
@@ -97,13 +96,14 @@ func Linear(inputFeatures int, layerNeurons int, activation string, prev *Layer)
 		prev.Next = layer
 	}
 
-	// return the new layer
 	return layer
 }
 
 /*
 * @notice Forward() is a function that is used to perform a forward pass through a multilayer perceptron.
 * @dev The forward pass by default works on batched Tensors. The batch size is the first dimension of the Tensor.
+* @dev we are manually splitting up the batch here instead of calling MatMulGrad w/ batching set to true because
+* the batch size of the input will not match to the batch size of the weights (which there is none)
 * @param Batch: A batch of Tensors to be passed through the MLP.
 * @param Net: A pointer to the first layer in the MLP linked list of Layer structs.
  */
@@ -112,28 +112,21 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 	if !Batch.Batched {
 		panic("Within Forward(): Dataset must be batched")
 	}
+	if !Batch.RequireGrad {
+		panic("Within Forward(): Dataset must require gradient")
+	}
+	if len(Batch.Shape) != 2 {
+		panic("Within Forward(): MultiLayer Perceptrons Require input Tensor to be shaped: [BatchSize, InputFeatures]")
+	}
 
-	Batch.RequireGrad = true
-
+	// Add singleton dimension to the front of the batch as concat dim
 	var x *Tensor = Batch.Add_Singleton(2)
 
 	// Iterate layers in the network
 	for Net != nil {
 
-		// Apply matrix multiplication to each element in the batch of inputs, concatenating the results
-		outputAccumulator := MatMulGrad(Net.Weights, x.Remove_Dim(0, 0).Add_Singleton(1), false) // <-- MatrixOps.go
-
-		// Add singleton dimension to the front of the outputAccumulator as concat dim
-		outputAccumulator.Shape = []int{1, outputAccumulator.Shape[0]}
-
-		// Iterate through the batch of inputs, applying matrix multiplication to each element
-		for i := 1; i < x.Shape[0]; i++ {
-			tempOutput := MatMulGrad(Net.Weights, x.Remove_Dim(0, i).Add_Singleton(1), false) // <-- MatrixOps.go
-			tempOutput.Shape = []int{1, tempOutput.Shape[0]}
-			outputAccumulator = outputAccumulator.Concat(tempOutput, 0)
-		}
-
-		x = outputAccumulator
+		// multiply weights
+		x = multiplyWeights(x, Net.Weights)
 
 		// Broadcast gradient tracked addition
 		addBias := func(x *Tensor, bias *Tensor) *Tensor {
@@ -156,17 +149,15 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 		case "softmax":
 
 			// Apply Softmax to each batch element individually
-			outputAccumulator = x.Remove_Dim(0, 0).Softmax()
-			outputAccumulator.Shape = []int{1, outputAccumulator.Shape[0]}
+			x = x.Remove_Dim(0, 0).Softmax()
+			x.Shape = []int{1, x.Shape[0]}
 
 			// Iterate through the batch of inputs, applying Softmax to each element, concatenating the results
 			for i := 1; i < x.Shape[0]; i++ {
 				tempOutput := x.Remove_Dim(0, i).Softmax()
 				tempOutput.Shape = []int{1, tempOutput.Shape[0]}
-				outputAccumulator = outputAccumulator.Concat(tempOutput, 0)
+				x = x.Concat(tempOutput, 0)
 			}
-
-			x = outputAccumulator
 		}
 
 		// next layer
@@ -174,6 +165,38 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 	}
 
 	return x
+}
+
+/*
+* @notice this helper function applies gradient tracked matmul to each element in a batch of inputs for an mlp
+* @param batch: a batch of inputs
+* @param weights: the weights of the layer
+ */
+func multiplyWeights(batch *Tensor, weights *Tensor) *Tensor {
+
+	// Anon func used to extract a single element from a 2D batch of inputs
+	getElement := func(batch *Tensor, index int) *Tensor {
+		batchElement := ZeroTensor([]int{batch.Shape[1], 1}, false)
+		for i := 0; i < batch.Shape[1]; i++ {
+			batchElement.DataReqGrad[i] = batch.DataReqGrad[i+index]
+		}
+		return batchElement
+	}
+
+	// Apply matrix multiplication to each element in the batch of inputs, concatenating the results
+	outputAccumulator := MatMulGrad(weights, getElement(batch, 0), false) // <-- MatrixOps.go
+
+	// Iterate through the batch of inputs, applying matrix multiplication to each element
+	for i := 1; i < batch.Shape[0]; i++ {
+		tempOutput := MatMulGrad(weights, getElement(batch, i), false) // <-- MatrixOps.go
+
+		// append the results to the output accumulator
+		outputAccumulator.DataReqGrad = append(outputAccumulator.DataReqGrad, tempOutput.DataReqGrad...)
+	}
+	// set the shape of the output accumulator to the correct shape post matmul
+	outputAccumulator.Shape = []int{batch.Shape[0], outputAccumulator.Shape[0]}
+
+	return outputAccumulator
 }
 
 /*

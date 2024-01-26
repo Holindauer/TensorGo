@@ -58,14 +58,17 @@ func Gradify(A *Tensor) *Tensor {
 
 	// Create a slice of *Value to store the values of the tensor
 	var values []*Value = make([]*Value, len(A.Data))
+	var floatData []float64 = make([]float64, len(A.Data))
 
 	// Convert the data to *Value
 	for i := 0; i < Product(A.Shape); i++ {
 		values[i] = NewValue(A.Data[i], nil, "")
+		floatData[i] = A.Data[i]
 	}
 
 	// Copy the *Value slice to the DataReqGrad slice
 	copy(A.DataReqGrad, values)
+	copy(A.Data, floatData)
 
 	// Set the RequireGrad flag to true
 	A.RequireGrad = true
@@ -347,7 +350,7 @@ func (x *Tensor) Softmax() *Tensor {
 func CrossEntropy(predictions, labels *Tensor) *Value {
 
 	// Ensure predictions and labels are of the same length
-	if len(predictions.DataReqGrad) != len(labels.Data) {
+	if predictions.Shape[0] != labels.Shape[0] {
 		panic("Length of predictions and labels must be the same.")
 	}
 
