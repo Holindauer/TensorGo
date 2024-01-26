@@ -36,3 +36,39 @@ func Test_BroadcastSubtract(t *testing.T) {
 	}
 
 }
+
+func Test_Scalar_Mult(t *testing.T) {
+
+	// @ notice Testing Scalar_Mult_() Unbatched
+
+	// batch of individual 2D range tensor
+	A := RangeTensor([]int{3, 3, 3}, true)
+
+	// Set Batching flag to false
+	A.Batched = false
+
+	// Scalar_Mult A by 2 unbatched
+	Scalar_Multed := A.Scalar_Mult(2, false)
+
+	// Test is the expected output is equal to the actual output
+	if Scalar_Multed.Sum_All() != 216 {
+
+		t.Errorf("Scalar_Mult_() Unbatched failed. Expected Output: 216 --- Actual Output: %v", Scalar_Multed.Sum_All())
+	}
+
+	// @notice Testing Scalar_Mult_() Batched
+
+	// Add a singleton dim to the beginning of A
+	A.Shape = []int{1, 3, 3, 3}
+
+	// Concatenate A with itself twice
+	A = A.Concat(A.Concat(A, 0), 0)
+
+	// Set Batching flag to true
+	Scalar_Multed = A.Scalar_Mult(2, true)
+
+	if Scalar_Multed.Sum_All() != 648 {
+
+		t.Errorf("Scalar_Mult_() Batched failed. Expected Output: 648 --- Actual Output: %v", Scalar_Multed.Sum_All())
+	}
+}
