@@ -28,7 +28,7 @@ func main() {
 	Summary(mlp)
 
 	epochs := 10
-	lr := 0.001
+	//lr := 0.001
 
 	for i := 0; i < epochs; i++ {
 
@@ -40,18 +40,18 @@ func main() {
 
 		mlp.ZeroGrad()
 
-		fmt.Println("Output shape: ", output)
+		fmt.Println("Output shape: ", output.Shape)
 
 		//make prediction
-		var pred *Tensor = ArgmaxVector(output, true)
+		// var pred *Tensor = ArgmaxVector(output, true)
 
-		fmt.Println("Pred shape: ", pred.Shape)
+		// fmt.Println("Pred shape: ", pred.Shape)
 
-		var loss *Value = CrossEntropy(pred, targets)
+		// var loss *Value = CrossEntropy(pred, targets)
 
-		loss.Backward()
+		// loss.Backward()
 
-		mlp.Step(lr)
+		// mlp.Step(lr)
 
 	}
 

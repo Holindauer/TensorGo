@@ -125,14 +125,8 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 	// Iterate layers in the network
 	for Net != nil {
 
-		// multiply weights
-		x = multiplyWeights(x, Net.Weights)
-
-		// Broadcast gradient tracked addition
-		addBias := func(x *Tensor, bias *Tensor) *Tensor {
-			return AddGrad(x, bias, false)
-		}
-		x = Net.Biases.Broadcast(x, addBias) // <-- TensorOps.go
+		// multiply weights and add biases
+		x = weightsBiases(x, Net.Weights, Net.Biases)
 
 		// Apply activation function for the layer
 		switch Net.Activation {
@@ -160,7 +154,6 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 			}
 		}
 
-		// next layer
 		Net = Net.Next
 	}
 
@@ -168,11 +161,11 @@ func (Net *Layer) Forward(Batch *Tensor) *Tensor {
 }
 
 /*
-* @notice this helper function applies gradient tracked matmul to each element in a batch of inputs for an mlp
+* @notice this helper function applies gradient tracked matmul adn addition for weights/biases to each element in a batch of inputs for an mlp.
 * @param batch: a batch of inputs
 * @param weights: the weights of the layer
  */
-func multiplyWeights(batch *Tensor, weights *Tensor) *Tensor {
+func weightsBiases(batch *Tensor, weights, bias *Tensor) *Tensor {
 
 	// Anon func used to extract a single element from a 2D batch of inputs
 	getElement := func(batch *Tensor, index int) *Tensor {
@@ -188,7 +181,14 @@ func multiplyWeights(batch *Tensor, weights *Tensor) *Tensor {
 
 	// Iterate through the batch of inputs, applying matrix multiplication to each element
 	for i := 1; i < batch.Shape[0]; i++ {
+
+		// multiply weights
 		tempOutput := MatMulGrad(weights, getElement(batch, i), false) // <-- MatrixOps.go
+
+		// add biases
+		for j := 0; j < len(tempOutput.DataReqGrad); j++ {
+			tempOutput.DataReqGrad[j] = tempOutput.DataReqGrad[j].Add(bias.DataReqGrad[j]) // <-- AutoGrad.go
+		}
 
 		// append the results to the output accumulator
 		outputAccumulator.DataReqGrad = append(outputAccumulator.DataReqGrad, tempOutput.DataReqGrad...)
